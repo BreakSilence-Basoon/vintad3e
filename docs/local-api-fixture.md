@@ -65,3 +65,10 @@ node scripts/local-api-fixture.cjs
 이 예시는 외부 로그인 제공자에 연결하거나 접근 토큰을 발급하지 않습니다. 실제 사용자 인증, 브라우저 로그인, 권한 관리, HTTPS 배포, 백업·복구와 실제 업무 처리는 아직 검증되지 않았습니다. 인터넷에 서버를 공개하거나 이 예시를 운영 환경으로 사용하지 마세요.
 
 참고: [Ledger API 실험](../apps/ledger-api/README.md), [Timetable API 실험](../apps/timetable-api/README.md). Windows에서의 전체 실행과 새 컴퓨터의 설치 과정은 별도로 확인해야 합니다.
+
+
+## 가상 직원 예제
+
+`examples/timetable/staff.json`에는 사용자가 지정한 가명 10명과 임의의 표시용 직급이 들어 있습니다. 모두 합성 데이터이며 실제 직원이나 계정과 연결하지 않습니다. 직급은 화면 표시용일 뿐 권한을 부여하지 않습니다.
+
+공개 TimeTable 직원 저장 스키마는 사업장 ID와 직원 ID만 저장하며 이름과 직급은 저장하지 않습니다. `examples/timetable/timetable-projection.mjs`는 명시한 가상 사업장 ID와 직원 ID만 변환합니다. 기존 API fixture에 이 예제는 자동으로 추가되지 않으며 실제 데이터베이스에 쓰지 않습니다. 다른 앱에서 사용하기 전에는 각 앱의 데이터 형식과 연결 방식을 따로 확인해야 합니다.

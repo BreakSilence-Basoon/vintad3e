@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "synthetic": true,
+  "staff": [
+    {
+      "staffId": "078366c3-8c9a-51fb-bbdf-e3587197d197",
+      "displayName": "구기곤",
+      "jobTitle": "구성원"
+    },
+    {
+      "staffId": "37e143bf-d753-58b1-90ec-0895f4ba7feb",
+      "displayName": "조명재",
+      "jobTitle": "선임"
+    },
+    {
+      "staffId": "b6945fbf-6a1b-5533-973d-9aa77d8ca9b7",
+      "displayName": "김성균",
+      "jobTitle": "책임"
+    },
+    {
+      "staffId": "a18ad47f-bbb0-5dce-a787-6b126b5825af",
+      "displayName": "이주호",
+      "jobTitle": "리드"
+    },
+    {
+      "staffId": "71a2eddc-9f32-5965-86bf-b25df627e6c7",
+      "displayName": "이재환",
+      "jobTitle": "구성원"
+    },
+    {
+      "staffId": "9a412e86-1970-5835-9171-2ebabd15996c",
+      "displayName": "정준영",
+      "jobTitle": "선임"
+    },
+    {
+      "staffId": "394b3b9b-5de0-54b0-80ae-86815ab8bedb",
+      "displayName": "정태순",
+      "jobTitle": "책임"
+    },
+    {
+      "staffId": "8b80e570-70c2-528e-84b5-92c369d15c4e",
+      "displayName": "임태권",
+      "jobTitle": "리드"
+    },
+    {
+      "staffId": "d656976a-bda9-58d0-90a1-21251f8d98c8",
+      "displayName": "김태훈",
+      "jobTitle": "구성원"
+    },
+    {
+      "staffId": "2ba1a551-5372-577e-96ba-ad4b540739ff",
+      "displayName": "박하빈",
+      "jobTitle": "선임"
+    }
+  ]
+}

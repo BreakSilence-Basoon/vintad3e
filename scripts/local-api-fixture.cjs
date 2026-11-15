@@ -1,7 +1,8 @@
 // Local synthetic Ledger/Timetable experiment. Never use real data or credentials.
-const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),net=require('node:net'),http=require('node:http');
+const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),net=require('node:net');
 const {generateKeyPairSync}=require('node:crypto'),{spawnSync}=require('node:child_process');
 const {startChild,stopChild,hasExited}=require('./fixture-process.cjs');
+const {probe}=require('./fixture-http.cjs');
 const repo=process.cwd(),args=process.argv.slice(2),check=args.length===1&&args[0]==='--check';
 if(args.length && !check){console.error('Usage: node scripts/local-api-fixture.cjs [--check]');process.exit(1)}
 const fixture=fs.mkdtempSync(path.join(os.tmpdir(),'vintage-api-fixture-')); 
@@ -13,7 +14,6 @@ const children=[];
 async function stop(){const results=await Promise.all(children.map(child=>stopChild(child)));return results.every(Boolean)}
 function init(entry,env,data){const p=spawnSync(process.execPath,[entry],{cwd:repo,env,input:JSON.stringify(data),encoding:'utf8',timeout:30000,windowsHide:true});if(p.status!==0)throw Error('Fixture database initialization failed')}
 async function start(label,entry,env,port){const {child,ready}=startChild(entry,{cwd:repo,env,port});children.push(child);try{await ready}catch{throw Error(label+' 서버를 시작하지 못했습니다. 포트와 설치 상태를 확인하세요.')}console.log(label+' 서버가 로컬에서 시작됐습니다.');return child}
-function probe(port){return new Promise(resolve=>{const q=http.get({host:'127.0.0.1',port,path:'/'},r=>{r.resume();r.on('end',()=>resolve(r.statusCode))});q.on('error',()=>resolve(null));q.setTimeout(1000,()=>q.destroy())})}
 process.once('SIGINT',()=>{void stop().then(ok=>process.exit(ok?0:1))});process.once('SIGTERM',()=>{void stop().then(ok=>process.exit(ok?0:1))});
 (async()=>{console.log('가상 자료 폴더: '+fixture);const {publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});const jwk=publicKey.export({format:'jwk'});Object.assign(jwk,{kid:'fixture',alg:'RS256',use:'sig'});fs.writeFileSync(path.join(fixture,'public-jwks.json'),JSON.stringify({keys:[jwk]}),{mode:0o600,flag:'wx'});
 init('apps/ledger-api/src/init-db.mjs',ledger,{businessId:business,grant:{issuer,subject:'example-user',actorId:'example-actor',active:true,read:true,write:true,tokenValidAfter:0,operatorId:'example-operator',reason:'Example setup'}});

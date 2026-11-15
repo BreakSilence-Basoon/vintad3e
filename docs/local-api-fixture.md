@@ -4,10 +4,31 @@
 
 ## 준비할 것
 
-- Node.js 24와 Corepack으로 실행하는 pnpm 10.11.0이 필요합니다. 터미널에서 `node --version`과 `corepack pnpm --version`으로 확인합니다.
-- 빈타제 저장소의 루트 폴더에서 명령을 실행합니다. 저장소에 포함된 `scripts/local-api-fixture.cjs`와 `scripts/fixture-process.cjs`가 필요합니다.
+- 명령을 입력할 터미널과 인터넷 연결이 필요합니다. 아래 준비 단계에서는 Git과 Node.js 24, Corepack으로 실행하는 pnpm 10.11.0을 확인합니다.
+- 빈타제 저장소의 루트 폴더에서 명령을 실행합니다. 루트 폴더는 `package.json`과 `scripts` 폴더가 함께 있는 곳입니다. 저장소에 포함된 `scripts/local-api-fixture.cjs`와 `scripts/fixture-process.cjs`가 필요합니다.
 - 아래 설치 명령은 공개 커밋만 담은 격리된 Linux 환경에서 빈 캐시와 공개 패키지 저장소를 사용해 검증했습니다. `--ignore-scripts`로 설치 단계 스크립트를 실행하지 않은 시험입니다. Windows에서의 새 설치는 별도 확인이 필요합니다.
 - 로컬 포트 43131과 43132를 사용합니다. 이미 다른 프로그램이 사용 중이면 시험을 중단하고 해당 프로그램을 확인하세요.
+
+## 0. 저장소와 프로그램 확인
+
+이미 빈타제 저장소를 내려받았다면 터미널에서 그 폴더로 이동하고 아래 버전 확인으로 넘어갑니다. 처음이라면 터미널을 열고, 새 폴더를 만들 위치에서 다음을 한 줄씩 실행합니다.
+
+```sh
+git --version
+git clone https://github.com/BreakSilence-Basoon/vintage.git
+cd vintage
+```
+
+첫 명령에서 버전 대신 명령을 찾을 수 없다는 오류가 나오면 [Git 설치 안내](https://git-scm.com/install/)를 확인하고 다시 시작하세요. `git clone`은 현재 위치에 `vintage` 폴더를 만듭니다. 같은 이름의 폴더가 이미 있다면 내용을 지우거나 덮어쓰지 말고, 기존 저장소로 이동하거나 다른 빈 위치에서 시작하세요. `cd vintage`는 그 폴더 안으로 이동하는 명령입니다.
+
+이제 같은 터미널에서 다음을 한 줄씩 실행합니다.
+
+```sh
+node --version
+corepack pnpm --version
+```
+
+첫 결과가 `v24.`로 시작하고 두 번째 결과가 `10.11.0`인지 확인합니다. Corepack은 처음 실행할 때 필요한 pnpm을 내려받을 수 있으므로 인터넷 연결이 필요합니다. `node` 또는 `corepack`을 찾지 못하거나 버전이 다르면 설치 단계로 넘어가지 말고 [Node.js 설치 안내](https://nodejs.org/en/download)와 [Corepack 안내](https://github.com/nodejs/corepack#readme)를 확인하세요. 이 저장소의 pnpm 버전은 루트의 `package.json`에 지정돼 있으므로, 버전 확인도 저장소 루트에서 실행합니다.
 
 ## 1. 시험에 필요한 패키지 설치
 

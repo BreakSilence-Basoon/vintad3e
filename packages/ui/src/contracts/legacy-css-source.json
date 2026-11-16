@@ -1,0 +1,2375 @@
+{
+  "sourceBase": "withheld",
+  "scope": "exact extracted primitive/appearance declarations, not a rendered baseline",
+  "sourceFiles": {
+    "apparel": {
+      "file": "apps/apparel/src/app/globals.css",
+      "sha256": "2681e1447a58281beb9df0c8f2b487d096d3e39edd33a1ef103caf63cd8d7a2f"
+    },
+    "supporters": {
+      "file": "apps/supporters/src/app/globals.css",
+      "sha256": "fcaaa7a690c8e1b9166d951104c3e2ea49aba61d3cefd7b3de4ebae49d77fb90"
+    },
+    "timetable": {
+      "file": "apps/timetable/src/app/globals.css",
+      "sha256": "b47cf765b73caa2c04155baa010881de877dd14aa5b605f1e9b530ad928ab803"
+    },
+    "showroom": {
+      "file": "apps/apparel/src/app/admin/showroom/showroom.css",
+      "sha256": "9be8f9e1815627b3301fd0635257e3e5269344cd2ed6074d53b723f32408d888"
+    },
+    "floor": {
+      "file": "apps/floor/src/app/globals.css",
+      "sha256": "77d16d8ee52bad6fd10e6c87e9780e5bf6cfbfedfe6effaf888cc66dccac84af"
+    },
+    "library": {
+      "file": "apps/library/src/app/globals.css",
+      "sha256": "0584306fb761e7f414e5b6a4c7ef04c442827d0474f7e36d3c42145c9a2b4b2f"
+    },
+    "staff-web": {
+      "file": "packages/staff-web/src/styles/staff-web.css",
+      "sha256": "d3b2a22964359c33d9b2f030683d5ee4c46ab9736d8cccc1c8cb52a850a09105"
+    }
+  },
+  "records": {
+    "apparel": [
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "display",
+        "value": "inline-flex"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "align-items",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "justify-content",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "min-height",
+        "value": "44px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "padding",
+        "value": "0 16px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border",
+        "value": "1px solid transparent"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border-radius",
+        "value": "10px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "cursor",
+        "value": "pointer"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "white-space",
+        "value": "nowrap"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "font-weight",
+        "value": "800"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "letter-spacing",
+        "value": "-0.01em"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "transition",
+        "value": "opacity 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "cursor",
+        "value": "not-allowed"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "opacity",
+        "value": "0.5"
+      },
+      {
+        "context": "",
+        "selector": ".button.is-pending",
+        "property": "opacity",
+        "value": "0.82"
+      },
+      {
+        "context": "",
+        "selector": ".button[aria-busy='true']",
+        "property": "opacity",
+        "value": "0.82"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "background",
+        "value": "var(--accent)"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "color",
+        "value": "#f8f5ef"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "box-shadow",
+        "value": "0 8px 18px rgba(31, 52, 45, 0.14)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "border-color",
+        "value": "var(--border)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "background",
+        "value": "rgba(255, 252, 248, 0.72)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "color",
+        "value": "var(--foreground)"
+      },
+      {
+        "context": "",
+        "selector": ".button:hover:not(:disabled)",
+        "property": "transform",
+        "value": "translateY(-1px)"
+      },
+      {
+        "context": "",
+        "selector": ".button--danger",
+        "property": "border-color",
+        "value": "rgba(160, 47, 33, 0.22)"
+      },
+      {
+        "context": "",
+        "selector": ".button--danger",
+        "property": "color",
+        "value": "#8d2c20"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "min-height",
+        "value": "36px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "padding",
+        "value": "0 12px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "font-size",
+        "value": "0.88rem"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "border-radius",
+        "value": "9px"
+      },
+      {
+        "context": "",
+        "selector": ".field",
+        "property": "display",
+        "value": "grid"
+      },
+      {
+        "context": "",
+        "selector": ".field",
+        "property": "gap",
+        "value": "8px"
+      },
+      {
+        "context": "",
+        "selector": ".field__label",
+        "property": "font-size",
+        "value": "0.92rem"
+      },
+      {
+        "context": "",
+        "selector": ".field__label",
+        "property": "font-weight",
+        "value": "700"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "width",
+        "value": "100%"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "width",
+        "value": "100%"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "min-height",
+        "value": "48px"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "min-height",
+        "value": "48px"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "padding",
+        "value": "12px 14px"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "padding",
+        "value": "12px 14px"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "border-radius",
+        "value": "16px"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "border-radius",
+        "value": "16px"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "border",
+        "value": "1px solid var(--border)"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "border",
+        "value": "1px solid var(--border)"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "background",
+        "value": "rgba(255, 253, 248, 0.92)"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "background",
+        "value": "rgba(255, 253, 248, 0.92)"
+      },
+      {
+        "context": "",
+        "selector": ".field__control:focus",
+        "property": "outline",
+        "value": "2px solid rgba(32, 72, 62, 0.24)"
+      },
+      {
+        "context": "",
+        "selector": ".field__control:focus",
+        "property": "outline-offset",
+        "value": "1px"
+      },
+      {
+        "context": "",
+        "selector": ".field__control--textarea",
+        "property": "min-height",
+        "value": "120px"
+      },
+      {
+        "context": "",
+        "selector": ".field__control--textarea",
+        "property": "resize",
+        "value": "vertical"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "color",
+        "value": "var(--muted)"
+      },
+      {
+        "context": "",
+        "selector": ".field__hint",
+        "property": "color",
+        "value": "var(--muted)"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "font-size",
+        "value": "0.9rem"
+      },
+      {
+        "context": "",
+        "selector": ".field__hint",
+        "property": "font-size",
+        "value": "0.9rem"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "line-height",
+        "value": "1.6"
+      },
+      {
+        "context": "",
+        "selector": ".field__hint",
+        "property": "line-height",
+        "value": "1.6"
+      },
+      {
+        "context": "",
+        "selector": ".field__label-note",
+        "property": "color",
+        "value": "var(--muted)"
+      },
+      {
+        "context": "",
+        "selector": ".field__label-note",
+        "property": "font-size",
+        "value": "0.9em"
+      },
+      {
+        "context": "",
+        "selector": ".field__label-note",
+        "property": "font-weight",
+        "value": "650"
+      },
+      {
+        "context": "",
+        "selector": ".field__label-note",
+        "property": "white-space",
+        "value": "nowrap"
+      }
+    ],
+    "supporters": [
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "display",
+        "value": "inline-flex"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "align-items",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "justify-content",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "min-height",
+        "value": "44px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "padding",
+        "value": "0 16px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border",
+        "value": "1px solid transparent"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border-radius",
+        "value": "10px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "cursor",
+        "value": "pointer"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "white-space",
+        "value": "nowrap"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "font-weight",
+        "value": "800"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "letter-spacing",
+        "value": "-0.01em"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "transition",
+        "value": "opacity 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "cursor",
+        "value": "not-allowed"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "opacity",
+        "value": "0.5"
+      },
+      {
+        "context": "",
+        "selector": ".button.is-pending",
+        "property": "opacity",
+        "value": "0.82"
+      },
+      {
+        "context": "",
+        "selector": ".button[aria-busy='true']",
+        "property": "opacity",
+        "value": "0.82"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "background",
+        "value": "var(--accent)"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "color",
+        "value": "#f8f5ef"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "box-shadow",
+        "value": "0 8px 18px rgba(31, 52, 45, 0.14)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "border-color",
+        "value": "var(--border)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "background",
+        "value": "rgba(255, 252, 248, 0.72)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "color",
+        "value": "var(--foreground)"
+      },
+      {
+        "context": "",
+        "selector": ".button:hover:not(:disabled)",
+        "property": "transform",
+        "value": "translateY(-1px)"
+      },
+      {
+        "context": "",
+        "selector": ".button--danger",
+        "property": "border-color",
+        "value": "rgba(160, 47, 33, 0.22)"
+      },
+      {
+        "context": "",
+        "selector": ".button--danger",
+        "property": "color",
+        "value": "#8d2c20"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "min-height",
+        "value": "36px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "padding",
+        "value": "0 12px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "font-size",
+        "value": "0.88rem"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "border-radius",
+        "value": "9px"
+      },
+      {
+        "context": "",
+        "selector": ".field",
+        "property": "display",
+        "value": "grid"
+      },
+      {
+        "context": "",
+        "selector": ".field",
+        "property": "gap",
+        "value": "8px"
+      },
+      {
+        "context": "",
+        "selector": ".field__label",
+        "property": "font-size",
+        "value": "0.92rem"
+      },
+      {
+        "context": "",
+        "selector": ".field__label",
+        "property": "font-weight",
+        "value": "700"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "width",
+        "value": "100%"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "width",
+        "value": "100%"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "min-height",
+        "value": "48px"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "min-height",
+        "value": "48px"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "padding",
+        "value": "12px 14px"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "padding",
+        "value": "12px 14px"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "border-radius",
+        "value": "16px"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "border-radius",
+        "value": "16px"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "border",
+        "value": "1px solid var(--border)"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "border",
+        "value": "1px solid var(--border)"
+      },
+      {
+        "context": "",
+        "selector": ".field__control",
+        "property": "background",
+        "value": "rgba(255, 253, 248, 0.92)"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "background",
+        "value": "rgba(255, 253, 248, 0.92)"
+      },
+      {
+        "context": "",
+        "selector": ".field__control:focus",
+        "property": "outline",
+        "value": "2px solid rgba(32, 72, 62, 0.24)"
+      },
+      {
+        "context": "",
+        "selector": ".field__control:focus",
+        "property": "outline-offset",
+        "value": "1px"
+      },
+      {
+        "context": "",
+        "selector": ".field__control--textarea",
+        "property": "min-height",
+        "value": "120px"
+      },
+      {
+        "context": "",
+        "selector": ".field__control--textarea",
+        "property": "resize",
+        "value": "vertical"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "color",
+        "value": "var(--muted)"
+      },
+      {
+        "context": "",
+        "selector": ".field__hint",
+        "property": "color",
+        "value": "var(--muted)"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "font-size",
+        "value": "0.9rem"
+      },
+      {
+        "context": "",
+        "selector": ".field__hint",
+        "property": "font-size",
+        "value": "0.9rem"
+      },
+      {
+        "context": "",
+        "selector": ".field__helper",
+        "property": "line-height",
+        "value": "1.6"
+      },
+      {
+        "context": "",
+        "selector": ".field__hint",
+        "property": "line-height",
+        "value": "1.6"
+      },
+      {
+        "context": "",
+        "selector": ".field__label-note",
+        "property": "color",
+        "value": "var(--muted)"
+      },
+      {
+        "context": "",
+        "selector": ".field__label-note",
+        "property": "font-size",
+        "value": "0.9em"
+      },
+      {
+        "context": "",
+        "selector": ".field__label-note",
+        "property": "font-weight",
+        "value": "650"
+      },
+      {
+        "context": "",
+        "selector": ".field__label-note",
+        "property": "white-space",
+        "value": "nowrap"
+      }
+    ],
+    "timetable": [
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "min-height",
+        "value": "44px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "padding",
+        "value": "0 16px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "display",
+        "value": "inline-flex"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "align-items",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "justify-content",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border",
+        "value": "1px solid transparent"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border-radius",
+        "value": "10px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "background",
+        "value": "transparent"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "color",
+        "value": "inherit"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "cursor",
+        "value": "pointer"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "font-weight",
+        "value": "800"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "letter-spacing",
+        "value": "-0.01em"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "white-space",
+        "value": "nowrap"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "transition",
+        "value": "opacity 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "cursor",
+        "value": "not-allowed"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "opacity",
+        "value": "0.5"
+      },
+      {
+        "context": "",
+        "selector": ".button.is-pending",
+        "property": "cursor",
+        "value": "progress"
+      },
+      {
+        "context": "",
+        "selector": ".button[aria-busy='true']",
+        "property": "cursor",
+        "value": "progress"
+      },
+      {
+        "context": "",
+        "selector": ".button.is-pending",
+        "property": "opacity",
+        "value": "0.82"
+      },
+      {
+        "context": "",
+        "selector": ".button[aria-busy='true']",
+        "property": "opacity",
+        "value": "0.82"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "background",
+        "value": "var(--accent)"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "color",
+        "value": "#f8f5ef"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "box-shadow",
+        "value": "0 8px 18px rgba(31, 52, 45, 0.14)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "border-color",
+        "value": "var(--border)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "background",
+        "value": "rgba(255, 252, 248, 0.72)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "color",
+        "value": "var(--foreground)"
+      },
+      {
+        "context": "",
+        "selector": ".button:hover:not(:disabled)",
+        "property": "transform",
+        "value": "translateY(-1px)"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "min-height",
+        "value": "36px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "padding",
+        "value": "0 12px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "border-radius",
+        "value": "9px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "font-size",
+        "value": "0.88rem"
+      },
+      {
+        "context": "",
+        "selector": ".button.kiosk-select-active",
+        "property": "border-color",
+        "value": "rgba(46, 125, 82, 0.26)"
+      },
+      {
+        "context": "",
+        "selector": ".button.kiosk-select-active",
+        "property": "background",
+        "value": "rgba(46, 125, 82, 0.1)"
+      },
+      {
+        "context": "",
+        "selector": ".button.kiosk-select-active",
+        "property": "color",
+        "value": "#2d6b47"
+      },
+      {
+        "context": "",
+        "selector": ".button.kiosk-select-active",
+        "property": "cursor",
+        "value": "default"
+      },
+      {
+        "context": "",
+        "selector": ".button.kiosk-select-active:hover",
+        "property": "transform",
+        "value": "none"
+      }
+    ],
+    "showroom": [
+      {
+        "context": "",
+        "selector": ".graphic-inventory.showroom-settlement",
+        "property": "border-color",
+        "value": "#566e65"
+      },
+      {
+        "context": "",
+        "selector": ".graphic-inventory.showroom-settlement",
+        "property": "background",
+        "value": "#566e65"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement .showroom-settlement__hint",
+        "property": "color",
+        "value": "rgba(255, 253, 248, 0.82)"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement .showroom-settlement__hint.is-error",
+        "property": "color",
+        "value": "#ffd9cc"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement__hint.is-error",
+        "property": "color",
+        "value": "#9d2e1d"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement__summary div",
+        "property": "display",
+        "value": "grid"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement__summary div",
+        "property": "gap",
+        "value": "6px"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement__summary div",
+        "property": "min-width",
+        "value": "0"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement__summary div",
+        "property": "padding",
+        "value": "14px 16px"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement__summary div",
+        "property": "border",
+        "value": "0"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement__summary div",
+        "property": "border-radius",
+        "value": "12px"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement__summary div",
+        "property": "background",
+        "value": "var(--surface-strong)"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement__summary div",
+        "property": "box-shadow",
+        "value": "0 6px 16px rgba(31, 52, 45, 0.16)"
+      },
+      {
+        "context": "",
+        "selector": ".showroom-settlement__summary .is-payout dd",
+        "property": "color",
+        "value": "#c0501a"
+      }
+    ],
+    "floor": [
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "min-height",
+        "value": "44px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "padding",
+        "value": "0 16px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "display",
+        "value": "inline-flex"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "align-items",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "justify-content",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border",
+        "value": "1px solid transparent"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border-radius",
+        "value": "10px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "background",
+        "value": "transparent"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "color",
+        "value": "inherit"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "cursor",
+        "value": "pointer"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "font-weight",
+        "value": "800"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "letter-spacing",
+        "value": "-0.01em"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "white-space",
+        "value": "nowrap"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "transition",
+        "value": "opacity 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "cursor",
+        "value": "not-allowed"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "opacity",
+        "value": "0.5"
+      },
+      {
+        "context": "",
+        "selector": ".button.is-pending",
+        "property": "cursor",
+        "value": "progress"
+      },
+      {
+        "context": "",
+        "selector": ".button[aria-busy=\"true\"]",
+        "property": "cursor",
+        "value": "progress"
+      },
+      {
+        "context": "",
+        "selector": ".button.is-pending",
+        "property": "opacity",
+        "value": "0.82"
+      },
+      {
+        "context": "",
+        "selector": ".button[aria-busy=\"true\"]",
+        "property": "opacity",
+        "value": "0.82"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "background",
+        "value": "var(--accent)"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "color",
+        "value": "#f8f5ef"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "box-shadow",
+        "value": "0 8px 18px rgba(31, 52, 45, 0.14)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "border-color",
+        "value": "var(--border)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "background",
+        "value": "rgba(255, 252, 248, 0.72)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "color",
+        "value": "var(--foreground)"
+      },
+      {
+        "context": "",
+        "selector": ".button:hover:not(:disabled)",
+        "property": "transform",
+        "value": "translateY(-1px)"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "min-height",
+        "value": "36px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "padding",
+        "value": "0 12px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "border-radius",
+        "value": "9px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "font-size",
+        "value": "0.88rem"
+      }
+    ],
+    "library": [
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "display",
+        "value": "inline-flex"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "align-items",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "justify-content",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "min-height",
+        "value": "44px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "padding",
+        "value": "0 16px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border",
+        "value": "1px solid transparent"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border-radius",
+        "value": "10px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "cursor",
+        "value": "pointer"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "white-space",
+        "value": "nowrap"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "font-weight",
+        "value": "800"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "letter-spacing",
+        "value": "-0.01em"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "transition",
+        "value": "opacity 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "border-color",
+        "value": "var(--border)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "background",
+        "value": "rgba(255, 252, 248, 0.72)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "color",
+        "value": "var(--foreground)"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "border-color",
+        "value": "var(--accent-strong)"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "background",
+        "value": "var(--accent-strong)"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "color",
+        "value": "#fffdf8"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary:hover:not(:disabled)",
+        "property": "background",
+        "value": "var(--accent)"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary:hover:not(:disabled)",
+        "property": "border-color",
+        "value": "var(--accent)"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "cursor",
+        "value": "wait"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "opacity",
+        "value": "0.58"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "min-height",
+        "value": "36px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "padding",
+        "value": "0 12px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "border-radius",
+        "value": "9px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "font-size",
+        "value": "0.88rem"
+      },
+      {
+        "context": "",
+        "selector": ".button:hover:not(:disabled)",
+        "property": "transform",
+        "value": "translateY(-1px)"
+      }
+    ],
+    "staff-web": [
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "min-height",
+        "value": "44px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "padding",
+        "value": "0 16px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "display",
+        "value": "inline-flex"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "align-items",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "justify-content",
+        "value": "center"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border",
+        "value": "1px solid transparent"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "border-radius",
+        "value": "10px"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "background",
+        "value": "transparent"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "color",
+        "value": "inherit"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "cursor",
+        "value": "pointer"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "font-weight",
+        "value": "800"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "letter-spacing",
+        "value": "-0.01em"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "white-space",
+        "value": "nowrap"
+      },
+      {
+        "context": "",
+        "selector": ".button",
+        "property": "transition",
+        "value": "opacity 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "cursor",
+        "value": "not-allowed"
+      },
+      {
+        "context": "",
+        "selector": ".button:disabled",
+        "property": "opacity",
+        "value": "0.5"
+      },
+      {
+        "context": "",
+        "selector": ".button[aria-busy='true']",
+        "property": "cursor",
+        "value": "progress"
+      },
+      {
+        "context": "",
+        "selector": ".button[aria-busy='true']",
+        "property": "opacity",
+        "value": "0.82"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "background",
+        "value": "var(--accent)"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "color",
+        "value": "#f8f5ef"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary",
+        "property": "box-shadow",
+        "value": "0 8px 18px rgba(31, 52, 45, 0.14)"
+      },
+      {
+        "context": "",
+        "selector": ".button--primary:hover:not(:disabled)",
+        "property": "background",
+        "value": "var(--accent-strong)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "border-color",
+        "value": "var(--border)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "background",
+        "value": "rgba(255, 252, 248, 0.72)"
+      },
+      {
+        "context": "",
+        "selector": ".button--ghost",
+        "property": "color",
+        "value": "var(--foreground)"
+      },
+      {
+        "context": "",
+        "selector": ".button:hover:not(:disabled)",
+        "property": "transform",
+        "value": "translateY(-1px)"
+      },
+      {
+        "context": "",
+        "selector": ".button:active:not(:disabled)",
+        "property": "transform",
+        "value": "translateY(0)"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "min-height",
+        "value": "36px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "padding",
+        "value": "0 12px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "border-radius",
+        "value": "9px"
+      },
+      {
+        "context": "",
+        "selector": ".button--small",
+        "property": "font-size",
+        "value": "0.88rem"
+      }
+    ]
+  },
+  "retainedConsumerSlots": {
+    "apparel": [
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field",
+        "property": "display",
+        "value": "grid",
+        "slot": "snapshot-filter.field",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field",
+        "property": "grid-template-rows",
+        "value": "auto 36px",
+        "slot": "snapshot-filter.field",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field",
+        "property": "gap",
+        "value": "5px",
+        "slot": "snapshot-filter.field",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__label",
+        "property": "color",
+        "value": "var(--muted)",
+        "slot": "snapshot-filter.label",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__label",
+        "property": "font-size",
+        "value": "0.74rem",
+        "slot": "snapshot-filter.label",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__label",
+        "property": "font-weight",
+        "value": "750",
+        "slot": "snapshot-filter.label",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__label",
+        "property": "line-height",
+        "value": "1.2",
+        "slot": "snapshot-filter.label",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__label",
+        "property": "white-space",
+        "value": "nowrap",
+        "slot": "snapshot-filter.label",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__control",
+        "property": "min-height",
+        "value": "36px",
+        "slot": "snapshot-filter.control",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__control",
+        "property": "height",
+        "value": "36px",
+        "slot": "snapshot-filter.control",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__control",
+        "property": "padding",
+        "value": "0 12px",
+        "slot": "snapshot-filter.control",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__control",
+        "property": "border-radius",
+        "value": "12px",
+        "slot": "snapshot-filter.control",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__control",
+        "property": "font-size",
+        "value": "0.92rem",
+        "slot": "snapshot-filter.control",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".admin-filter-bar__actions .button",
+        "property": "min-height",
+        "value": "44px",
+        "slot": "apparel.filterActions.button",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".audit-filter-bar__actions .button",
+        "property": "min-height",
+        "value": "38px",
+        "slot": "audit.filterActions.button",
+        "source": "apps/apparel/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      }
+    ],
+    "supporters": [
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field",
+        "property": "display",
+        "value": "grid",
+        "slot": "snapshot-filter.field",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field",
+        "property": "grid-template-rows",
+        "value": "auto 36px",
+        "slot": "snapshot-filter.field",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field",
+        "property": "gap",
+        "value": "5px",
+        "slot": "snapshot-filter.field",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__label",
+        "property": "color",
+        "value": "var(--muted)",
+        "slot": "snapshot-filter.label",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__label",
+        "property": "font-size",
+        "value": "0.74rem",
+        "slot": "snapshot-filter.label",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__label",
+        "property": "font-weight",
+        "value": "750",
+        "slot": "snapshot-filter.label",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__label",
+        "property": "line-height",
+        "value": "1.2",
+        "slot": "snapshot-filter.label",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__label",
+        "property": "white-space",
+        "value": "nowrap",
+        "slot": "snapshot-filter.label",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__control",
+        "property": "min-height",
+        "value": "36px",
+        "slot": "snapshot-filter.control",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__control",
+        "property": "height",
+        "value": "36px",
+        "slot": "snapshot-filter.control",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__control",
+        "property": "padding",
+        "value": "0 12px",
+        "slot": "snapshot-filter.control",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__control",
+        "property": "border-radius",
+        "value": "12px",
+        "slot": "snapshot-filter.control",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".snapshot-trigger-form .field__control",
+        "property": "font-size",
+        "value": "0.92rem",
+        "slot": "snapshot-filter.control",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".gtm-filter-bar__actions .button",
+        "property": "min-height",
+        "value": "44px",
+        "slot": "supporters.filterActions.button",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".audit-filter-bar__actions .button",
+        "property": "min-height",
+        "value": "38px",
+        "slot": "audit.filterActions.button",
+        "source": "apps/supporters/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      }
+    ],
+    "timetable": [
+      {
+        "context": "",
+        "selector": ".attendance-history-filter__actions .button",
+        "property": "width",
+        "value": "100%",
+        "slot": "timetable.historyFilter.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-filter__actions .button",
+        "property": "min-height",
+        "value": "38px",
+        "slot": "timetable.historyFilter.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__actions .button",
+        "property": "width",
+        "value": "auto",
+        "slot": "timetable.historyEditor.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__delete-actions .button",
+        "property": "width",
+        "value": "auto",
+        "slot": "timetable.historyDelete.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__actions .button",
+        "property": "min-width",
+        "value": "84px",
+        "slot": "timetable.historyEditor.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__delete-actions .button",
+        "property": "min-width",
+        "value": "84px",
+        "slot": "timetable.historyDelete.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__actions .button",
+        "property": "min-height",
+        "value": "40px",
+        "slot": "timetable.historyEditor.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__delete-actions .button",
+        "property": "min-height",
+        "value": "40px",
+        "slot": "timetable.historyDelete.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__actions .button",
+        "property": "padding",
+        "value": "8px 15px",
+        "slot": "timetable.historyEditor.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__delete-actions .button",
+        "property": "padding",
+        "value": "8px 15px",
+        "slot": "timetable.historyDelete.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__actions .button",
+        "property": "font-size",
+        "value": "0.88rem",
+        "slot": "timetable.historyEditor.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__delete-actions .button",
+        "property": "font-size",
+        "value": "0.88rem",
+        "slot": "timetable.historyDelete.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__actions .button",
+        "property": "justify-self",
+        "value": "center",
+        "slot": "timetable.historyEditor.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".attendance-history-editor__delete-actions .button",
+        "property": "justify-self",
+        "value": "center",
+        "slot": "timetable.historyDelete.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "",
+        "selector": ".kiosk-registration-form .button",
+        "property": "min-height",
+        "value": "48px",
+        "slot": "timetable.kioskRegistration.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".topbar__auth .button",
+        "property": "width",
+        "value": "44px",
+        "slot": "mobile-auth.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".topbar__auth .button",
+        "property": "min-width",
+        "value": "44px",
+        "slot": "mobile-auth.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".topbar__auth .button",
+        "property": "min-height",
+        "value": "44px",
+        "slot": "mobile-auth.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".topbar__auth .button",
+        "property": "padding",
+        "value": "0",
+        "slot": "mobile-auth.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".attendance-history-filter__actions .button",
+        "property": "width",
+        "value": "100%",
+        "slot": "timetable.historyFilter.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".attendance-history-filter__actions .button",
+        "property": "min-height",
+        "value": "44px",
+        "slot": "timetable.historyFilter.button",
+        "source": "apps/timetable/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 승인된 현재 UX를 보존하기 위해 정확한 기존 context/selector/property/value를 named legacy slot으로 유지"
+      }
+    ],
+    "showroom": [],
+    "floor": [
+      {
+        "context": "@media (prefers-reduced-motion: reduce)",
+        "selector": ".button",
+        "property": "transition",
+        "value": "none",
+        "slot": "floor.preserved-domain-1",
+        "source": "apps/floor/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      },
+      {
+        "context": "@media (prefers-reduced-motion: reduce)",
+        "selector": ".button:hover:not(:disabled)",
+        "property": "transform",
+        "value": "none",
+        "slot": "floor.preserved-domain-2",
+        "source": "apps/floor/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".topbar__auth .button",
+        "property": "width",
+        "value": "44px",
+        "slot": "floor.preserved-domain-3",
+        "source": "apps/floor/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".topbar__auth .button",
+        "property": "min-width",
+        "value": "44px",
+        "slot": "floor.preserved-domain-4",
+        "source": "apps/floor/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".topbar__auth .button",
+        "property": "min-height",
+        "value": "44px",
+        "slot": "floor.preserved-domain-5",
+        "source": "apps/floor/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".topbar__auth .button",
+        "property": "padding",
+        "value": "0",
+        "slot": "floor.preserved-domain-6",
+        "source": "apps/floor/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      }
+    ],
+    "library": [
+      {
+        "context": "@media (prefers-reduced-motion: reduce)",
+        "selector": ".button",
+        "property": "transition",
+        "value": "none",
+        "slot": "library.preserved-domain-1",
+        "source": "apps/library/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      },
+      {
+        "context": "@media (prefers-reduced-motion: reduce)",
+        "selector": ".button:hover:not(:disabled)",
+        "property": "transform",
+        "value": "none",
+        "slot": "library.preserved-domain-2",
+        "source": "apps/library/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".library-field__control .button",
+        "property": "width",
+        "value": "100%",
+        "slot": "library.preserved-domain-3",
+        "source": "apps/library/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      },
+      {
+        "context": "@media (max-width: 640px)",
+        "selector": ".library-field__control .button",
+        "property": "min-height",
+        "value": "48px",
+        "slot": "library.preserved-domain-4",
+        "source": "apps/library/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      },
+      {
+        "context": "",
+        "selector": ".publication-community fieldset > .button",
+        "property": "justify-self",
+        "value": "start",
+        "slot": "library.preserved-domain-5",
+        "source": "apps/library/src/app/globals.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-11-07-ci-baseline-partners-ui.md",
+        "decisionOwner": "withheld",
+        "interpretation": "기존 선언의 현상 유지를 기록하며 신규 시각 승인을 의미하지 않는다."
+      }
+    ],
+    "staff-web": [
+      {
+        "context": "@media (prefers-reduced-motion: reduce)",
+        "selector": ".button",
+        "property": "transition",
+        "value": "none",
+        "slot": "staff-web.preserved-domain-1",
+        "source": "packages/staff-web/src/styles/staff-web.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      },
+      {
+        "context": "@media (prefers-reduced-motion: reduce)",
+        "selector": ".button:hover:not(:disabled)",
+        "property": "transform",
+        "value": "none",
+        "slot": "staff-web.preserved-domain-2",
+        "source": "packages/staff-web/src/styles/staff-web.css",
+        "sourceBase": "withheld",
+        "approval": "docs/worklog/platform/2026-10-05-shadcn-shared-ui-decision.md",
+        "decisionOwner": "withheld",
+        "interpretation": "AI: 기존 소비 화면의 정확한 선언 보존; 새 시각 승인 아님"
+      }
+    ]
+  }
+}

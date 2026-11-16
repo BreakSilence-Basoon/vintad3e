@@ -1,0 +1,10 @@
+/* [운영 담당자 개발자] 승인된 Supporters 화면(#2150 37589d883, #2099)에 이미 있던 색을 이름 붙인 token으로 옮긴다.
+   새 색·새 모양이 아니다. 앱 CSS는 이 token을 var()·color-mix()로만 쓰고 raw 색을 다시 적지 않는다.
+   Import after shared shell and the profile stylesheet. No reset, font, body layout or new visual default. */
+:root {
+  --sns-instagram-gradient: linear-gradient(90deg, #833ab4 0%, #c13584 45%, #f77737 100%);
+  --sns-tiktok-gradient: linear-gradient(90deg, #25c8d1 0%, #15171c 50%, #ee1d52 100%);
+  --control-focus: #2a5746;
+  --chart-bar: #2b644d;
+  --border-strong: rgba(54, 44, 32, 0.2);
+}

@@ -1,0 +1,51 @@
+{
+  "name": "@vintage/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "exports": {
+    ".": "./src/components/index.ts",
+    "./components": "./src/components/index.ts",
+    "./components/button": "./src/components/button.tsx",
+    "./components/input": "./src/components/input.tsx",
+    "./components/label": "./src/components/label.tsx",
+    "./components/native-select": "./src/components/native-select.tsx",
+    "./slots": "./src/slots.ts",
+    "./lib/classes": "./src/lib/classes.ts",
+    "./styles/controls.css": "./src/styles/controls.css",
+    "./styles/timetable.css": "./src/styles/timetable.css",
+    "./styles/showroom.css": "./src/styles/showroom.css",
+    "./eslint/config": "./eslint/config.mjs",
+    "./design-contract": "./src/design-contract.mjs",
+    "./styles/library.css": "./src/styles/library.css",
+    "./styles/staff-web.css": "./src/styles/staff-web.css",
+    "./toast": "./src/components/staff-toast.tsx",
+    "./toast-text": "./src/lib/toast-text.ts",
+    "./styles/toast.css": "./src/styles/toast.css",
+    "./styles/tokens.css": "./src/styles/tokens.css"
+  },
+  "scripts": {
+    "test": "node --test --test-concurrency=1 test/inline-slots.test.mjs eslint/policy.test.mjs test/react-native-props.mjs test/public-css-contract.test.mjs test/public-render.test.cjs test/public-svg-fill.test.mjs",
+    "test:lint": "node --test eslint/official-integration.mjs",
+    "test:react": "node --test test/react-native-props.mjs",
+    "typecheck": "tsc --noEmit --project tsconfig.json"
+  },
+  "dependencies": {
+    "class-variance-authority": "0.7.1"
+  },
+  "peerDependencies": {
+    "react": "19.2.4"
+  },
+  "devDependencies": {
+    "@shadcn/lint": "0.2.0",
+    "@types/react": "^19",
+    "@typescript-eslint/parser": "8.58.1",
+    "eslint": "9.39.4",
+    "react": "19.2.4",
+    "typescript": "5.9.3",
+    "react-dom": "19.2.4"
+  }
+}

@@ -1,0 +1,13 @@
+/* Named Timetable status only. Existing span[role=status] remains a span.
+   Import after controls and after any app legacy button declarations until
+   those exact declarations are removed. No global default override. */
+.button.kiosk-select-active {
+  border-color: rgba(46, 125, 82, 0.26);
+  background: rgba(46, 125, 82, 0.1);
+  color: #2d6b47;
+  cursor: default;
+}
+
+.button.kiosk-select-active:hover {
+  transform: none;
+}

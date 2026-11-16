@@ -1,0 +1,28 @@
+/* Named settlement-sage appearance, exact existing class/slot selectors.
+   Do not globally import this domain stylesheet into other apps. Preserve
+   its place in showroom's cascade when removing the matching declarations. */
+.graphic-inventory.showroom-settlement {
+  border-color: #566e65;
+  background: #566e65;
+}
+
+.showroom-settlement .showroom-settlement__hint {
+  color: rgba(255, 253, 248, 0.82);
+}
+
+.showroom-settlement .showroom-settlement__hint.is-error {
+  color: #ffd9cc;
+}
+
+.showroom-settlement__hint.is-error {
+  color: #9d2e1d;
+}
+
+.showroom-settlement__summary div {
+  background: var(--surface-strong);
+  box-shadow: 0 6px 16px rgba(31, 52, 45, 0.16);
+}
+
+.showroom-settlement__summary .is-payout dd {
+  color: #c0501a;
+}

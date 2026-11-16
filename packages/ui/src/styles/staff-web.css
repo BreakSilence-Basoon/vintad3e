@@ -1,0 +1,8 @@
+/* Exact staff-web appearance from withheld; no reset or extra visual defaults. */
+.button--primary:hover:not(:disabled) {
+  background: var(--accent-strong);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(0);
+}

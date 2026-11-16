@@ -17,6 +17,7 @@ jobs:
       - run: corepack enable
       - run: corepack pnpm install --frozen-lockfile --ignore-scripts
       - run: corepack pnpm test
+      - run: corepack pnpm --filter @vintage/ui test
       - run: corepack pnpm --filter @vintage/timetable-policy test
       - run: corepack pnpm --filter @vintage/ledger-facts test
       - run: corepack pnpm --filter @vintage/ledger-evidence-vault test

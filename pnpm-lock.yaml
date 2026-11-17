@@ -37,6 +37,9 @@ importers:
 
   apps/timetable-web:
     dependencies:
+      '@vintad3e/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: 16.2.9
         version: 16.2.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4)

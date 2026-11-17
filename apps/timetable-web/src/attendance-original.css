@@ -1,0 +1,142 @@
+.attendance-history-filter {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) 66px;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  padding: 26px 0 30px;
+  border-bottom: 1px solid rgba(54, 44, 32, 0.12);
+}
+
+.attendance-history-filter--viewer {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) 66px;
+}
+
+.attendance-history-filter label,
+.attendance-history-filter__range {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.attendance-history-filter__range {
+  position: relative;
+}
+
+.attendance-history-filter input:not([type="hidden"]),
+.attendance-history-filter select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid rgba(54, 44, 32, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.72);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 720;
+  outline: none;
+}
+
+.attendance-history-filter input:not([type="hidden"]):focus,
+.attendance-history-filter select:focus {
+  border-color: rgba(42, 87, 70, 0.48);
+  box-shadow: 0 0 0 3px rgba(42, 87, 70, 0.12);
+}
+
+.attendance-date-range-popover {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 7px);
+  left: 0;
+  width: min(320px, calc(100vw - 32px));
+}
+
+.attendance-date-range-popover__panel {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(54, 44, 32, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 253, 248, 0.98);
+  box-shadow: 0 18px 40px rgba(54, 44, 32, 0.16);
+}
+
+.attendance-date-range-popover__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.attendance-date-range-popover__grid label {
+  gap: 6px;
+}
+
+.attendance-date-range-popover__grid span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.attendance-date-range-popover__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.attendance-history-filter__actions {
+  display: block;
+  white-space: nowrap;
+}
+
+.attendance-history-filter__actions .button {
+  width: 100%;
+  min-height: 38px;
+}
+
+@media (max-width: 920px) {
+.attendance-history-filter,
+  .attendance-history-filter--viewer {
+    gap: 10px;
+  }
+.attendance-history-filter {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 66px;
+  }
+.attendance-history-filter--viewer {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) 66px;
+  }
+}
+
+@media (max-width: 640px) {
+.attendance-history-filter,
+  .attendance-history-filter--viewer {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 58px;
+    gap: 10px 8px;
+    margin: 0;
+    padding: 26px 0 30px;
+  }
+.attendance-history-filter--viewer {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) 58px;
+  }
+.attendance-history-filter input:not([type="hidden"]),
+  .attendance-history-filter select {
+    min-height: 44px;
+    padding: 0 7px;
+    font-size: 0.76rem;
+  }
+.attendance-history-filter__actions {
+    grid-column: auto;
+    display: block;
+    margin-top: 0;
+  }
+.attendance-history-filter__actions .button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 390px) {
+.attendance-date-range-popover__grid {
+    grid-template-columns: 1fr;
+  }
+}

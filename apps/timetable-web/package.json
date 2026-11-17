@@ -7,9 +7,10 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3824",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/view.test.ts src/calendar-cells.test.ts"
+    "test": "node --test src/view.test.ts src/calendar-cells.test.ts src/history-filters.test.ts"
   },
   "dependencies": {
+    "@vintad3e/ui": "workspace:*",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4"

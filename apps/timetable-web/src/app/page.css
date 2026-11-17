@@ -6,6 +6,4 @@ body:has(.timetable-console) { background:var(--background); }
 .attendance-history-list { display:grid; gap:10px; }
 .schedule-calendar-page { width:min(600px,100%); min-width:0; margin:0 auto; }
 .attendance-history-empty { margin:0; padding:20px 0; border-bottom:1px solid rgba(54,44,32,.1); color:var(--muted); font-size:.9rem; font-weight:720; }
-.empty-state { min-height:190px; padding:40px 20px; display:grid; place-content:center; gap:8px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); text-align:center; }
-.empty-state p { color:var(--muted); }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }

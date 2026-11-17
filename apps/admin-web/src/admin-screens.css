@@ -1,0 +1,90 @@
+
+.preview-visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+.admin-audit .audit-list { display: grid; gap: 10px; }
+.admin-audit .audit-filter-bar { display: grid; grid-template-columns: minmax(190px, 1.3fr) minmax(112px, .7fr) minmax(132px, .85fr) minmax(112px, .7fr) auto; gap: 12px 14px; align-items: center; margin: 0; padding: 26px 0 30px; border-bottom: 1px solid var(--border); }
+.admin-audit .audit-filter-bar label, .admin-audit .audit-filter-bar__range { display: grid; gap: 7px; min-width: 0; }
+.admin-audit .audit-filter-bar__range { position: relative; }
+.admin-audit .audit-filter-bar__keyword { min-width: min(150px, 100%); }
+.admin-audit .audit-filter-bar input, .admin-audit .audit-filter-bar select { width: 100%; min-height: 38px; padding: 0 11px; border: 1px solid color-mix(in srgb, var(--border-strong) 70%, transparent); border-radius: 8px; background: color-mix(in srgb, var(--surface-strong) 72%, transparent); color: var(--foreground); font: inherit; font-size: .86rem; font-weight: 720; outline: none; }
+.admin-audit .audit-filter-bar select { appearance: none; padding-left: 14px; padding-right: 34px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23211910' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: right 14px center; background-repeat: no-repeat; background-size: 10px 6px; }
+.admin-audit .audit-filter-bar input:focus-visible, .admin-audit .audit-filter-bar select:focus-visible { border-color: color-mix(in srgb, var(--control-focus) 48%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--control-focus) 12%, transparent); }
+.admin-audit .audit-filter-bar__actions { display: flex; gap: 10px; justify-content: flex-end; white-space: nowrap; min-height: 38px; }
+.admin-audit .date-range-popover { position: absolute; z-index: 40; top: calc(100% + 7px); left: 0; width: min(320px, calc(100vw - 32px)); }
+.admin-audit .date-range-popover__panel { width: 100%; padding: 12px; border: 1px solid color-mix(in srgb, var(--border-strong) 70%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--surface-strong) 98%, transparent); box-shadow: 0 18px 40px color-mix(in srgb, var(--border-strong) 80%, transparent); }
+.admin-audit .date-range-popover__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.admin-audit .date-range-popover__grid span { color: var(--muted); font-size: .74rem; font-weight: 850; }
+.admin-audit .date-range-popover__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.admin-audit .audit-date { color: var(--muted); font-size: .88rem; margin-top: 14px; }
+.admin-audit .audit-card { display: grid; grid-template-columns: minmax(170px, .28fr) minmax(0, 1fr) max-content; gap: 12px 24px; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--border-strong) 50%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--surface-strong) 62%, transparent); box-shadow: var(--shadow-soft); }
+.admin-audit .audit-card__topline { display: contents; }
+.admin-audit .audit-card__topline time, .admin-audit .audit-card__actor { display: block; line-height: 1.35; }
+.admin-audit .audit-card__topline time { grid-column: 1; grid-row: 1; color: var(--foreground); font-size: .9rem; font-variant-numeric: tabular-nums; font-weight: 850; }
+.admin-audit .audit-card__actor { grid-column: 3; grid-row: 1; align-self: start; color: var(--accent); font-size: .82rem; font-weight: 820; text-align: right; }
+.admin-audit .audit-card__body { grid-column: 2; grid-row: 1; min-width: 0; }
+.admin-audit .audit-card__summary { margin: 0; color: var(--foreground); font-size: .93rem; font-weight: 780; line-height: 1.55; overflow-wrap: anywhere; }
+.admin-audit .audit-card details { margin-top: 8px; font-size: .82rem; }
+.admin-audit .audit-card summary { cursor: pointer; color: var(--accent-strong); }
+.admin-audit .audit-card dl { display: grid; gap: 8px; padding-top: 8px; }
+.admin-audit .audit-card dl div { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 12px; }
+.admin-audit .audit-card dd { overflow-wrap: anywhere; }
+.admin-audit .audit-empty { margin: 0; padding: 20px 0; border-bottom: 1px solid color-mix(in srgb, var(--border-strong) 50%, transparent); color: var(--muted); font-size: .9rem; font-weight: 720; }
+.admin-audit .load-more-pager { display: flex; justify-content: center; gap: 12px; align-items: center; padding-top: 16px; color: var(--muted); font-size: .84rem; font-weight: 800; }
+@media (max-width: 920px) {
+  .admin-audit .audit-filter-bar, .admin-audit .audit-card { grid-template-columns: 1fr; }
+  .admin-audit .audit-filter-bar { gap: 28px; }
+  .admin-audit .audit-filter-bar__actions { justify-content: flex-start; margin-top: 2px; }
+  .admin-audit .audit-card__topline { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+  .admin-audit .audit-card__topline time, .admin-audit .audit-card__actor, .admin-audit .audit-card__body { grid-column: auto; grid-row: auto; }
+}
+@media (max-width: 640px) { .admin-audit .audit-filter-bar__actions { flex-direction: column-reverse; gap: 14px; margin-top: 4px; } }
+
+
+.matrix-scroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 18px; background: var(--surface-strong); box-shadow: var(--shadow-soft); }
+.matrix-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.matrix-table th, .matrix-table td { padding: 13px 16px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; white-space: nowrap; }
+.matrix-table thead th { color: var(--muted); background: var(--surface); font-size: .76rem; font-weight: 800; }
+.matrix-table th:first-child { text-align: left; }
+.matrix-table tbody:last-child tr:last-child > * { border-bottom: 0; }
+.home-scroll, .permissions-scroll { width: 100%; }
+.home-matrix, .permissions-matrix { width: 100%; min-width: 0; table-layout: fixed; }
+.home-matrix th:nth-child(1) { width: 30%; }
+.home-matrix th:nth-child(2) { width: 18%; }
+.home-matrix th:nth-child(3) { width: 24%; }
+.home-matrix th:nth-child(4) { width: 28%; }
+.permissions-matrix th, .permissions-matrix td { padding: 13px 4px; font-size: .88rem; font-weight: 780; }
+.permissions-matrix thead th { padding-top: 11px; padding-bottom: 11px; font-size: .76rem; font-weight: 860; white-space: normal; overflow-wrap: anywhere; }
+.permissions-matrix th:first-child { width: 112px; }
+.permissions-matrix th:first-child, .permissions-matrix td:first-child { padding-left: 16px; padding-right: 12px; }
+.permissions-matrix th:last-child, .permissions-matrix td:last-child { padding-right: 16px; }
+.permissions-matrix .permissions-toggle { display: none; }
+@media (max-width: 640px) {
+  .home-scroll, .permissions-scroll { width: 100%; }
+  .home-matrix { width: 100%; table-layout: fixed; }
+  .home-matrix th:nth-child(1) { width: 24%; }
+  .home-matrix th:nth-child(2) { width: 25%; }
+  .home-matrix th:nth-child(3) { width: 22%; }
+  .home-matrix th:nth-child(4) { width: 29%; }
+  .home-matrix th, .home-matrix td { padding: 11px 3px; white-space: normal; overflow-wrap: anywhere; font-size: .76rem; }
+  .home-matrix .status-pill { padding: 0 5px; font-size: .72rem; }
+  .permissions-scroll[data-expanded='false'] { overflow-x: hidden; }
+  .permissions-scroll[data-expanded='false'] .permissions-matrix { width: 100%; table-layout: fixed; }
+  .permissions-scroll[data-expanded='false'] .permissions-matrix th:first-child { width: auto; }
+  .permissions-scroll[data-expanded='false'] .permissions-extra { display: none; }
+  .permissions-scroll[data-expanded='true'] .permissions-matrix { width: max-content; table-layout: auto; }
+  .permissions-matrix .permissions-toggle { display: table-cell; width: 48px; padding: 0; text-align: center; }
+  .permissions-matrix .permissions-toggle button { display: inline-flex; align-items: center; justify-content: center; padding: 4px 2px; border: 0; background: transparent; color: var(--accent-strong); cursor: pointer; }
+  .permissions-matrix .permissions-toggle button:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 24%, transparent); outline-offset: 3px; }
+  .permissions-matrix .permissions-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+}
+.menu-permission-details > summary { cursor: pointer; color: var(--accent-strong); font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+.menu-permission-details > summary::before { content: '▸'; margin-right: 8px; }
+.menu-permission-details[open] > summary::before { content: '▾'; }
+.preview-menu-permissions { display: grid; gap: 24px; padding-top: 12px; }
+
+
+.coupon-staff-stage { display: flex; justify-content: flex-end; align-items: center; height: 44px; }
+.coupon-staff-selector { display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; }
+.coupon-staff-selector select { appearance: none; min-width: 200px; max-width: 100%; min-height: 44px; padding: 10px 38px 10px 17px; border: 1px solid color-mix(in srgb, var(--border-strong) 70%, transparent); border-radius: 10px; background-color: color-mix(in srgb, var(--surface-strong) 76%, transparent); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23211910' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-position: right 14px center; background-repeat: no-repeat; background-size: 10px 6px; color: var(--foreground); font: inherit; font-size: .9rem; font-weight: 720; cursor: pointer; outline: none; }
+.coupon-staff-selector select:focus-visible { border-color: color-mix(in srgb, var(--control-focus) 48%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--control-focus) 12%, transparent); }
+.coupon-staff-selector select:disabled { cursor: progress; opacity: .72; }

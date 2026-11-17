@@ -1,0 +1,1 @@
+export default function Page() { return <main className="staff-console"><header className="staff-page__header"><h1>구성원</h1></header><section className="staff-section" aria-labelledby="members-title"><div className="staff-section__heading"><h2 id="members-title">직원</h2></div><div className="staff-empty" role="status"><strong>등록된 직원이 없습니다.</strong></div></section></main>; }

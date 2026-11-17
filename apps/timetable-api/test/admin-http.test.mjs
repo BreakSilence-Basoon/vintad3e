@@ -6,12 +6,12 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { once } from 'node:events';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
-import { migrateWithBackup } from '@vintage/timetable-store/operations';
+import { migrateWithBackup } from '@vintad3e/timetable-store/operations';
 import { initializeNewDatabase } from '../src/init-db.mjs';
 import { prepareService } from '../src/main.mjs';
 
 test('opt-in write HTTP enforces scope, current admin role, tenant and audit', async () => {
-  const prefix = join(tmpdir(), 'vintage-admin-http-');
+  const prefix = join(tmpdir(), 'vintad3e-admin-http-');
   const temp = mkdtempSync(prefix);
   let writer, service;
   try {
@@ -39,11 +39,11 @@ test('opt-in write HTTP enforces scope, current admin role, tenant and audit', a
     const publicKey = { ...await exportJWK(keys.publicKey), kid: 'fixture-key', alg: 'RS256', use: 'sig' };
     const keyFile = join(temp, 'fixture-public-keys.json');
     writeFileSync(keyFile, JSON.stringify({ keys: [publicKey] }));
-    const config = { VINTAGE_ISSUER: issuer, VINTAGE_AUDIENCE: 'example-api', VINTAGE_CLIENT_ID: 'example-client',
-      VINTAGE_REQUIRED_SCOPE: 'timetable:access', VINTAGE_WRITE_SCOPE: 'timetable:write', VINTAGE_ENABLE_WRITES: 'true',
-      VINTAGE_JWKS_FILE: keyFile, VINTAGE_DATABASE_FILE: database, VINTAGE_PORT: '3004' };
-    assert.throws(() => prepareService({ ...config, VINTAGE_WRITE_SCOPE: 'timetable:access' }));
-    assert.throws(() => prepareService({ ...config, VINTAGE_ENABLE_WRITES: 'yes' }));
+    const config = { VINTAD3E_ISSUER: issuer, VINTAD3E_AUDIENCE: 'example-api', VINTAD3E_CLIENT_ID: 'example-client',
+      VINTAD3E_REQUIRED_SCOPE: 'timetable:access', VINTAD3E_WRITE_SCOPE: 'timetable:write', VINTAD3E_ENABLE_WRITES: 'true',
+      VINTAD3E_JWKS_FILE: keyFile, VINTAD3E_DATABASE_FILE: database, VINTAD3E_PORT: '3004' };
+    assert.throws(() => prepareService({ ...config, VINTAD3E_WRITE_SCOPE: 'timetable:access' }));
+    assert.throws(() => prepareService({ ...config, VINTAD3E_ENABLE_WRITES: 'yes' }));
     writer.exec('PRAGMA user_version = 2');
     assert.throws(() => prepareService(config), /Migration required/);
     writer.exec('PRAGMA user_version = 10');

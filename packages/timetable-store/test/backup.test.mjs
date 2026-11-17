@@ -8,7 +8,7 @@ import { initializeTimetableStore } from '../src/index.mjs';
 import { copyTimetableDatabase } from '../src/backup.mjs';
 
 test('backs up and restores into new files without overwriting existing files', async () => {
-  const prefix = join(tmpdir(), 'vintage-backup-');
+  const prefix = join(tmpdir(), 'vintad3e-backup-');
   const temp = mkdtempSync(prefix);
   let source, restored;
   try {
@@ -25,11 +25,11 @@ test('backs up and restores into new files without overwriting existing files', 
     writeFileSync(existing, 'existing-file');
     await assert.rejects(copyTimetableDatabase(original, existing));
     assert.equal(readFileSync(existing, 'utf8'), 'existing-file');
-    assert.equal(readdirSync(temp).some((name) => name.startsWith('.vintage-copy-')), false);
+    assert.equal(readdirSync(temp).some((name) => name.startsWith('.vintad3e-copy-')), false);
     await assert.rejects(copyTimetableDatabase(original, original));
     await copyTimetableDatabase(original, snapshot);
     await copyTimetableDatabase(snapshot, recovered);
-    assert.equal(readdirSync(temp).some((name) => name.startsWith('.vintage-copy-')), false);
+    assert.equal(readdirSync(temp).some((name) => name.startsWith('.vintad3e-copy-')), false);
     if (process.platform !== 'win32') assert.equal(statSync(snapshot).mode & 0o077, 0);
     restored = new DatabaseSync(recovered, { readOnly: true });
     assert.equal(restored.prepare('SELECT COUNT(*) AS count FROM history').get().count, 1);
@@ -43,7 +43,7 @@ test('backs up and restores into new files without overwriting existing files', 
 });
 
 test('backs up a live WAL database into a standalone copy without staging sidecars', async () => {
-  const prefix = join(tmpdir(), 'vintage-backup-wal-');
+  const prefix = join(tmpdir(), 'vintad3e-backup-wal-');
   const temp = mkdtempSync(prefix);
   let source, snapshot;
   try {
@@ -57,7 +57,7 @@ test('backs up a live WAL database into a standalone copy without staging sideca
       .run('shop-a', 'record-a', 'staff-a', '2026-01-01T09:00:00.000Z');
     assert.ok(statSync(`${original}-wal`).size > 0);
     await copyTimetableDatabase(original, output);
-    assert.equal(readdirSync(temp).some((name) => name.startsWith('.vintage-copy-')), false);
+    assert.equal(readdirSync(temp).some((name) => name.startsWith('.vintad3e-copy-')), false);
     assert.equal(existsSync(`${output}-wal`), false);
     assert.equal(existsSync(`${output}-shm`), false);
     snapshot = new DatabaseSync(output, { readOnly: true });
@@ -72,7 +72,7 @@ test('backs up a live WAL database into a standalone copy without staging sideca
 });
 
 test('rejects missing or incompatible sources without creating a destination', async () => {
-  const prefix = join(tmpdir(), 'vintage-backup-invalid-');
+  const prefix = join(tmpdir(), 'vintad3e-backup-invalid-');
   const temp = mkdtempSync(prefix);
   let db;
   try {

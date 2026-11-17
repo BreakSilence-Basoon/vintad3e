@@ -6,4 +6,4 @@
 
 **이 검사만으로 안전한 API를 만들 수 없습니다.** 별도 Ledger 저장소 실험은 같은 DB의 명시적 권한을 사용해 실제 읽기·쓰기 트랜잭션에서 다시 검사하지만, 이 패키지를 단독으로 호출하면 검사 이후 권한이 회수될 수 있습니다. 토큰 자체의 제공자 측 철회, 키 교체, 실제 제공자와의 호환성, 브라우저 세션, 암호화 전송, 파일 권한, 외부 API와 실사용은 미완료입니다. 테스트 키와 자격은 가상 자료이며 실제 거래를 넣거나 사용하면 안 됩니다.
 
-토큰 검증은 공통 [`@vintage/access-token`](../access-token/README.md)의 RS256 JWT 접근 토큰 지원을 그대로 사용합니다. [RFC 9068](https://www.rfc-editor.org/rfc/rfc9068.html)과 [OWASP 권한 검사 지침](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)을 참고했으며, 모든 인증 제공자 호환이나 보안 인증을 의미하지 않습니다.
+토큰 검증은 공통 [`@vintad3e/access-token`](../access-token/README.md)의 RS256 JWT 접근 토큰 지원을 그대로 사용합니다. [RFC 9068](https://www.rfc-editor.org/rfc/rfc9068.html)과 [OWASP 권한 검사 지침](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)을 참고했으며, 모든 인증 제공자 호환이나 보안 인증을 의미하지 않습니다.

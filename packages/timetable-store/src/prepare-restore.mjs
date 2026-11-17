@@ -11,7 +11,7 @@ export async function prepareRestoredDatabase(source, destination) {
   if (!isAbsolute(source ?? '') || !isAbsolute(destination ?? '') || resolve(source) === resolve(destination)) throw new Error('Invalid paths');
   try { lstatSync(destination); throw new Error('Destination exists'); }
   catch (error) { if (error.code !== 'ENOENT') throw error; }
-  const staging = mkdtempSync(join(dirname(destination), '.vintage-restore-'));
+  const staging = mkdtempSync(join(dirname(destination), '.vintad3e-restore-'));
   const staged = join(staging, 'prepared.sqlite');
   let db;
   let cutoff;

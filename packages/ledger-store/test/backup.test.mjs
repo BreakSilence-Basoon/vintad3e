@@ -11,7 +11,7 @@ const fact = { id: 'example-a', type: 'invoice-issued', date: '2026-01-01', curr
 const request = { operationId: 'operation-a', actorId: 'operator-a', expectedRevision: 0, fact };
 
 test('a standalone snapshot restores into a new file without replacing newer records', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-backup-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-backup-'), temp = mkdtempSync(prefix);
   let db, restored;
   try {
     const source = join(temp, 'source.sqlite'), snapshot = join(temp, 'snapshot.sqlite'), target = join(temp, 'restored.sqlite');
@@ -41,7 +41,7 @@ test('a standalone snapshot restores into a new file without replacing newer rec
 });
 
 test('rejects missing, incompatible or foreign-key-invalid sources and preserves existing targets', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-backup-invalid-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-backup-invalid-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const source = join(temp, 'source.sqlite'), output = join(temp, 'output.sqlite');
@@ -68,7 +68,7 @@ test('rejects missing, incompatible or foreign-key-invalid sources and preserves
 });
 
 test('concurrent copies to the same destination never overwrite each other', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-backup-race-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-backup-race-'), temp = mkdtempSync(prefix);
   let db, output;
   try {
     const source = join(temp, 'source.sqlite'), destination = join(temp, 'snapshot.sqlite');
@@ -87,7 +87,7 @@ test('concurrent copies to the same destination never overwrite each other', asy
 });
 
 test('a WAL snapshot excludes a concurrent uncommitted correction', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-backup-write-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-backup-write-'), temp = mkdtempSync(prefix);
   let writer, snapshot;
   try {
     const source = join(temp, 'source.sqlite'), destination = join(temp, 'snapshot.sqlite');

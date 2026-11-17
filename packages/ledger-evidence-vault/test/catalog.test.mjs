@@ -8,7 +8,7 @@ import { createEvidenceVault } from '../src/index.mjs';
 import { initializeEvidenceCatalog, inspectEvidenceCatalog, registerEvidenceReference } from '../src/catalog.mjs';
 
 test('failed registration leaves the synthetic file for later inspection and retry', () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-catalog-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-catalog-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const directory = join(temp, 'vault'); mkdirSync(directory);
@@ -33,7 +33,7 @@ test('failed registration leaves the synthetic file for later inspection and ret
 });
 
 test('inspection distinguishes missing, unreadable and unregistered synthetic files without deletion', () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-inspect-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-inspect-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const directory = join(temp, 'vault'); mkdirSync(directory);
@@ -51,7 +51,7 @@ test('inspection distinguishes missing, unreadable and unregistered synthetic fi
 });
 
 test('invalid catalog references and changed files do not register', () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-catalog-invalid-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-catalog-invalid-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const directory = join(temp, 'vault'); mkdirSync(directory);
@@ -67,7 +67,7 @@ test('invalid catalog references and changed files do not register', () => {
 });
 
 test('restoring only the catalog reports missing files and preserves the original', async () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-catalog-restore-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-catalog-restore-'), temp = mkdtempSync(prefix);
   let db, restored;
   try {
     const original = join(temp, 'original'), empty = join(temp, 'empty'); mkdirSync(original); mkdirSync(empty);
@@ -88,7 +88,7 @@ test('restoring only the catalog reports missing files and preserves the origina
 });
 
 test('a competing catalog writer leaves the synthetic file intact for a later retry', () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-catalog-lock-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-catalog-lock-'), temp = mkdtempSync(prefix);
   let db, holder;
   try {
     const directory = join(temp, 'vault'), path = join(temp, 'catalog.sqlite'); mkdirSync(directory);

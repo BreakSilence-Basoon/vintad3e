@@ -5,8 +5,8 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createTimetableStore, initializeTimetableStore } from '../src/index.mjs';
-import { createHistoryHandler } from '@vintage/timetable-read-api';
-import { createAccessTokenVerifier } from '@vintage/access-token';
+import { createHistoryHandler } from '@vintad3e/timetable-read-api';
+import { createAccessTokenVerifier } from '@vintad3e/access-token';
 import { generateKeyPair, SignJWT } from 'jose';
 
 const fixture = (db) => {
@@ -27,7 +27,7 @@ const fixture = (db) => {
 };
 
 test('persists isolated records across database reopen and applies server authorization', async () => {
-  const prefix = join(tmpdir(), 'vintage-store-');
+  const prefix = join(tmpdir(), 'vintad3e-store-');
   const temp = mkdtempSync(prefix);
   let db;
   try {

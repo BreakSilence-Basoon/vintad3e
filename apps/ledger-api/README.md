@@ -6,37 +6,37 @@
 
 - 실행 명령은 `127.0.0.1`에만 수신하며 쿠키와 브라우저 `Origin`, 다른 Host, URL 쿼리를 거부합니다. HTTPS나 프록시를 제공하지 않으며, 다른 컴퓨터나 브라우저와 안전하게 연결하는 방식은 구현·검증하지 않았습니다.
 - 별도의 읽기·쓰기 범위를 가진 서명 JWT와 같은 DB의 현재 활성 권한이 필요합니다. 서버가 사용하는 공개 검증 키 파일은 설치자가 신뢰할 수 있는 곳에서 준비해야 하며 비밀키를 포함하면 시작하지 않습니다. 실제 발급자, 키 교체·토큰 철회, 사용자 초대와 권한 관리 화면은 연결하지 않았습니다.
-- 쓰기는 기본적으로 꺼져 있고 `VINTAGE_LEDGER_ENABLE_WRITES=true`를 명시해야 합니다. 명시적 읽기·쓰기 권한은 해당 DB의 모든 기록에 적용되며 기록별 역할·소유자 접근 정책은 없습니다. 권한 회수 후 다음 요청과 재시도는 거부되지만 이미 시작한 읽기는 이전 상태를 볼 수 있습니다.
+- 쓰기는 기본적으로 꺼져 있고 `VINTAD3E_LEDGER_ENABLE_WRITES=true`를 명시해야 합니다. 명시적 읽기·쓰기 권한은 해당 DB의 모든 기록에 적용되며 기록별 역할·소유자 접근 정책은 없습니다. 권한 회수 후 다음 요청과 재시도는 거부되지만 이미 시작한 읽기는 이전 상태를 볼 수 있습니다.
 - `POST /v1/facts/read`는 JSON `id`를, 쓰기가 켜진 `POST /v1/facts/write`는 `operationId`, `expectedRevision`, `fact`를 받습니다. `Authorization` 헤더에 접근 토큰을 넣고 `Content-Type: application/json`, 8KB 이하의 명시적 Content-Length를 사용합니다. ID와 토큰을 URL에 넣지 않습니다.
 - `fact`에 사용자가 입력한 선택적 `description`을 넣어 기록을 구분할 수 있습니다. 비어 있지 않고 앞뒤 공백·제어문자가 없는 최대 500 UTF-16 코드 단위 문자열입니다. 정정은 전체 기록을 교체하므로 기존 설명을 유지하려면 다시 포함해야 하며 생략하면 현재 기록에서 없어집니다. 설명과 이전 이력은 민감할 수 있으며, 화면에 표시할 때는 입력된 문자를 HTML 코드로 실행하지 않도록 처리해야 합니다. 설명은 증빙·거래 상대방이나 실제 발생의 확인이 아닙니다. 이전 버전의 프로그램은 설명이 포함된 기록을 읽지 못할 수 있으므로 버전을 되돌릴 때 호환성을 확인해야 합니다.
 - `POST /v1/facts/list`는 읽기 권한으로 기록 목록을 반환합니다. 선택 항목은 `type`, `from`, `to`, `currency`, `amountMinor`, `descriptionContains`, `limit`, `cursor`입니다. `descriptionContains`는 앞뒤 공백·제어문자가 없는 1~100 UTF-16 코드 단위의 문자열로 설명에 포함된 문자를 그대로 찾습니다. 대소문자와 유니코드 표기 차이를 자동 보정하지 않습니다. 날짜는 `YYYY-MM-DD`, 범위는 `from` 포함·`to` 미포함입니다. `type`은 현재 세 사실 종류 중 하나, `limit`은 1~100이고 기본값은 20입니다. `currency`는 영문 대문자 세 글자이며 실제 통화 코드인지는 검증하지 않습니다. `amountMinor`는 해당 통화의 최소 단위 정수 **문자열**로 정확히 같은 금액을 찾으며, 금액 검색에는 `currency`도 필요합니다. 음수와 0을 지원하고 숫자로 변환하거나 합산하지 않습니다. 단위와 금액의 적합성은 검증하지 않습니다. 결과는 날짜순이 아닌 기록 ID 오름차순이며 각 기록의 금액이 포함됩니다. `nextCursor`가 있으면 같은 검색 조건과 함께 다음 요청에 사용합니다.
 - 각 페이지는 현재 읽기 권한을 다시 검사하지만 전체 페이지가 하나의 고정된 스냅샷은 아닙니다. 페이지 사이에 추가·정정된 기록은 빠지거나 필터 결과에 새로 나타날 수 있습니다. 커서는 암호화되지 않아 기록 ID와 통화·금액·설명 검색어를 포함한 검색 조건을 복원할 수 있고 임의로 변경할 수 있으므로 비밀이나 권한 증명으로 쓰면 안 됩니다. 검색 본문·결과·커서도 민감할 수 있어 로그와 외부 분석에 남기지 않도록 보호해야 합니다. 검색은 대량 데이터 성능과 색인을 아직 검증하지 않았습니다.
-- 정정 이력 조회는 기본적으로 꺼져 있습니다. `VINTAGE_LEDGER_HISTORY_SCOPE`에 기존 읽기·쓰기와 다른 범위를 명시하면 `POST /v1/facts/history`를 사용할 수 있습니다. 토큰의 읽기 범위와 별도 이력 범위, 현재 활성 DB 읽기 권한이 모두 필요하고 매 요청에서 다시 검사합니다. 이력 범위의 부여·회수는 로그인 제공자의 정책에 달렸으며 이미 발급된 토큰의 제공자 측 철회는 검증하지 않습니다. 기록별 권한이나 이력 전용 DB grant는 없습니다.
+- 정정 이력 조회는 기본적으로 꺼져 있습니다. `VINTAD3E_LEDGER_HISTORY_SCOPE`에 기존 읽기·쓰기와 다른 범위를 명시하면 `POST /v1/facts/history`를 사용할 수 있습니다. 토큰의 읽기 범위와 별도 이력 범위, 현재 활성 DB 읽기 권한이 모두 필요하고 매 요청에서 다시 검사합니다. 이력 범위의 부여·회수는 로그인 제공자의 정책에 달렸으며 이미 발급된 토큰의 제공자 측 철회는 검증하지 않습니다. 기록별 권한이나 이력 전용 DB grant는 없습니다.
 - 이력 요청은 JSON `id`와 선택적인 `afterRevision`, `limit`을 받습니다. 한 번에 기본 20건, 최대 100건을 수정 순서로 반환하며 `nextAfterRevision`이 있으면 같은 ID와 함께 다음 요청에 사용합니다. 각 항목에는 당시 기록과 기록 시각이 포함되고 작업자·작업 ID는 반환하지 않습니다. 여러 페이지는 하나의 고정 스냅샷이 아닙니다. 이전 금액도 민감하며 결과와 요청을 보호해야 합니다. DB 쓰기 권한자는 이력을 바꿀 수 있어 변조 방지 감사나 실제 거래의 증명이 아닙니다.
 - 권한 실패, 충돌, DB 잠금 등은 구체적 이유를 공개하지 않고 `503 unavailable`로 처리할 수 있습니다. 이 응답이나 응답 유실이 미저장을 증명하지 않습니다. 같은 `operationId`와 같은 내용을 유지해 확인해야 합니다. 서로 다른 ID의 실제 거래 중복은 찾지 못합니다.
 
 ## 실험 설정
 
-Node.js 24와 이 저장소의 pnpm 설정을 사용합니다. `init-db`는 `VINTAGE_LEDGER_DATABASE_FILE`에 아직 없는 절대 경로를 지정하고 표준 입력 JSON으로 `businessId`와 `grant`를 받아 빈 DB와 첫 명시적 권한을 만듭니다. `grant`는 신뢰된 운영자가 확인한 `issuer`, `subject`, `actorId`, `active`, `read`, `write`, `tokenValidAfter`, `operatorId`, `reason`을 포함해야 합니다. 이 명령은 입력자의 신원이나 권한의 정당성을 검증하지 않습니다. 실패해도 새 불완전 파일이 남을 수 있으므로 보존하고 확인한 뒤 조치해야 합니다.
+Node.js 24와 이 저장소의 pnpm 설정을 사용합니다. `init-db`는 `VINTAD3E_LEDGER_DATABASE_FILE`에 아직 없는 절대 경로를 지정하고 표준 입력 JSON으로 `businessId`와 `grant`를 받아 빈 DB와 첫 명시적 권한을 만듭니다. `grant`는 신뢰된 운영자가 확인한 `issuer`, `subject`, `actorId`, `active`, `read`, `write`, `tokenValidAfter`, `operatorId`, `reason`을 포함해야 합니다. 이 명령은 입력자의 신원이나 권한의 정당성을 검증하지 않습니다. 실패해도 새 불완전 파일이 남을 수 있으므로 보존하고 확인한 뒤 조치해야 합니다.
 
-신뢰된 로컬 운영자는 `change-grant`에 같은 `grant` JSON을 표준 입력으로 전달해 명시적 권한을 변경할 수 있습니다. `VINTAGE_LEDGER_DATABASE_FILE`은 기존 DB의 절대 경로이고 `VINTAGE_LEDGER_BACKUP_FILE`은 아직 없는 백업 파일의 절대 경로입니다. 변경 전 같은 DB의 쓰기를 잠그고 백업을 만들어 검사한 후 권한과 감사 기록을 함께 변경합니다. 실패해도 백업 또는 임시 파일이 남을 수 있습니다. 서버를 중지하고 검토하는 운용을 권장합니다. 재활성화나 권한 확대에는 현재 시각보다 이후의 `tokenValidAfter`가 필요하며 시계와 토큰 발급을 확인해야 합니다. 이 명령은 운영자를 인증하거나 권한의 정당성을 결정하지 않습니다.
+신뢰된 로컬 운영자는 `change-grant`에 같은 `grant` JSON을 표준 입력으로 전달해 명시적 권한을 변경할 수 있습니다. `VINTAD3E_LEDGER_DATABASE_FILE`은 기존 DB의 절대 경로이고 `VINTAD3E_LEDGER_BACKUP_FILE`은 아직 없는 백업 파일의 절대 경로입니다. 변경 전 같은 DB의 쓰기를 잠그고 백업을 만들어 검사한 후 권한과 감사 기록을 함께 변경합니다. 실패해도 백업 또는 임시 파일이 남을 수 있습니다. 서버를 중지하고 검토하는 운용을 권장합니다. 재활성화나 권한 확대에는 현재 시각보다 이후의 `tokenValidAfter`가 필요하며 시계와 토큰 발급을 확인해야 합니다. 이 명령은 운영자를 인증하거나 권한의 정당성을 결정하지 않습니다.
 
 백업에는 예전 권한과 민감한 기록이 남을 수 있으므로 DB와 백업 및 임시 파일을 보호해야 합니다. 이전 백업을 그대로 복사해 사용하지 말고 복구 검토와 권한 대조 절차를 거쳐야 합니다. 파일 접근권한과 암호화는 이 명령이 보장하지 않습니다. 백업 중 DB 경로를 바꾸거나 파일을 교체할 수 있는 다른 작업이 없도록 운영자가 보장해야 합니다.
 
 ### 로컬 백업과 복구 시험
 
-`pnpm --filter @vintage/ledger-api recovery <명령>`은 신뢰된 로컬 담당자가 오프라인에서 사용하는 시험 명령입니다. 아래 경로는 모두 절대 경로입니다. 실제 자료를 넣기 위한 운영 절차가 아니며, DB와 백업·임시 파일을 보호하는 기능도 아닙니다.
+`pnpm --filter @vintad3e/ledger-api recovery <명령>`은 신뢰된 로컬 담당자가 오프라인에서 사용하는 시험 명령입니다. 아래 경로는 모두 절대 경로입니다. 실제 자료를 넣기 위한 운영 절차가 아니며, DB와 백업·임시 파일을 보호하는 기능도 아닙니다.
 
 | 명령 | 환경변수와 동작 |
 |---|---|
-| `backup` | `VINTAGE_LEDGER_DATABASE_FILE`의 기존 DB에서 `VINTAGE_LEDGER_DESTINATION_FILE`에 새 백업을 만듭니다. 기존 파일은 덮어쓰지 않습니다. |
-| `prepare` | `VINTAGE_LEDGER_DATABASE_FILE`의 백업으로 `VINTAGE_LEDGER_DESTINATION_FILE`에 검토 대기 복구 사본을 만듭니다. 기록 쓰기를 막고 기존 사용자 권한을 비활성화합니다. |
-| `compare` | `VINTAGE_LEDGER_DATABASE_FILE`의 검토 대기 사본을 `VINTAGE_LEDGER_REFERENCE_FILE`과 읽기 전용으로 비교해 기록·작업의 차이 건수만 출력합니다. 두 DB를 쓰지 않는 동안 실행해야 합니다. |
-| `unlock` | `VINTAGE_LEDGER_DATABASE_FILE`의 검토 대기 사본에 표준 입력 JSON `operatorId`, `reason`, `reconciled: true`를 전달해 담당자의 확인을 기록하고 쓰기 차단을 해제합니다. 사용자 권한을 다시 켜지는 않습니다. |
+| `backup` | `VINTAD3E_LEDGER_DATABASE_FILE`의 기존 DB에서 `VINTAD3E_LEDGER_DESTINATION_FILE`에 새 백업을 만듭니다. 기존 파일은 덮어쓰지 않습니다. |
+| `prepare` | `VINTAD3E_LEDGER_DATABASE_FILE`의 백업으로 `VINTAD3E_LEDGER_DESTINATION_FILE`에 검토 대기 복구 사본을 만듭니다. 기록 쓰기를 막고 기존 사용자 권한을 비활성화합니다. |
+| `compare` | `VINTAD3E_LEDGER_DATABASE_FILE`의 검토 대기 사본을 `VINTAD3E_LEDGER_REFERENCE_FILE`과 읽기 전용으로 비교해 기록·작업의 차이 건수만 출력합니다. 두 DB를 쓰지 않는 동안 실행해야 합니다. |
+| `unlock` | `VINTAD3E_LEDGER_DATABASE_FILE`의 검토 대기 사본에 표준 입력 JSON `operatorId`, `reason`, `reconciled: true`를 전달해 담당자의 확인을 기록하고 쓰기 차단을 해제합니다. 사용자 권한을 다시 켜지는 않습니다. |
 
 비교는 담당자가 지정한 기준이 최신인지, 같은 사업장인지 또는 외부에서 처리한 작업이 빠졌는지 확인하지 않으며 사용자 권한도 비교하지 않습니다. 차이가 0이어도 복구가 완전하다는 뜻은 아닙니다. `unlock`은 비교 실행을 강제하지 않으며 입력된 확인을 사실이나 담당자의 신원으로 검증하지 않습니다. 실제 대조를 끝내기 전에는 해제하지 마세요. 이 명령은 사본을 운영 DB에 자동 적용하지 않습니다. 실패해도 대상 또는 임시 파일이 남을 수 있으므로 확인 전 보존해야 합니다. [복구 실험의 상세 한계](../../packages/ledger-store/README.md)를 함께 확인하세요.
 
-실험용 `start`는 위 DB 경로 외에 `VINTAGE_LEDGER_JWKS_FILE`, `VINTAGE_LEDGER_PORT`, `VINTAGE_LEDGER_ISSUER`, `VINTAGE_LEDGER_AUDIENCE`, `VINTAGE_LEDGER_CLIENT_ID`, `VINTAGE_LEDGER_BUSINESS_ID`, `VINTAGE_LEDGER_READ_SCOPE`, `VINTAGE_LEDGER_WRITE_SCOPE`가 필요합니다. 사업장 값은 DB 설정과 같아야 하고 범위는 서로 달라야 합니다. DB와 공개 키 파일은 이미 존재하는 일반 파일의 절대 경로여야 합니다. 복구 확인이 끝나지 않은 사본은 시작하지 않습니다.
+실험용 `start`는 위 DB 경로 외에 `VINTAD3E_LEDGER_JWKS_FILE`, `VINTAD3E_LEDGER_PORT`, `VINTAD3E_LEDGER_ISSUER`, `VINTAD3E_LEDGER_AUDIENCE`, `VINTAD3E_LEDGER_CLIENT_ID`, `VINTAD3E_LEDGER_BUSINESS_ID`, `VINTAD3E_LEDGER_READ_SCOPE`, `VINTAD3E_LEDGER_WRITE_SCOPE`가 필요합니다. 사업장 값은 DB 설정과 같아야 하고 범위는 서로 달라야 합니다. DB와 공개 키 파일은 이미 존재하는 일반 파일의 절대 경로여야 합니다. 복구 확인이 끝나지 않은 사본은 시작하지 않습니다.
 
 ## 실제 로그인 연결 전 확인할 조건
 

@@ -1,10 +1,10 @@
 {
-  "name": "@vintage/ledger-store",
+  "name": "@vintad3e/ledger-store",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": { ".": "./src/index.mjs", "./backup": "./src/backup.mjs", "./recovery": "./src/recovery.mjs", "./authority": "./src/authority.mjs" },
   "scripts": { "test": "node --test test/*.test.mjs" },
-  "dependencies": { "@vintage/ledger-facts": "workspace:*", "@vintage/ledger-access": "workspace:*" },
+  "dependencies": { "@vintad3e/ledger-facts": "workspace:*", "@vintad3e/ledger-access": "workspace:*" },
   "devDependencies": { "jose": "6.2.17" }
 }

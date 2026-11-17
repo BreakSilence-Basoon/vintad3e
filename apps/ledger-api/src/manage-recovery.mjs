@@ -1,15 +1,15 @@
 import { lstatSync } from 'node:fs';
 import { isAbsolute } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { copyLedgerDatabase } from '@vintage/ledger-store/backup';
-import { prepareLedgerRecovery, compareLedgerRecovery, unlockLedgerRecovery } from '@vintage/ledger-store/recovery';
+import { copyLedgerDatabase } from '@vintad3e/ledger-store/backup';
+import { prepareLedgerRecovery, compareLedgerRecovery, unlockLedgerRecovery } from '@vintad3e/ledger-store/recovery';
 
 // Offline trusted operator only. Never print paths, inputs or record contents.
 try {
   if (process.argv.length !== 3) throw new Error('Invalid command');
-  const source = process.env.VINTAGE_LEDGER_DATABASE_FILE;
-  const destination = process.env.VINTAGE_LEDGER_DESTINATION_FILE;
-  const reference = process.env.VINTAGE_LEDGER_REFERENCE_FILE;
+  const source = process.env.VINTAD3E_LEDGER_DATABASE_FILE;
+  const destination = process.env.VINTAD3E_LEDGER_DESTINATION_FILE;
+  const reference = process.env.VINTAD3E_LEDGER_REFERENCE_FILE;
   switch (process.argv[2]) {
     case 'backup':
       await copyLedgerDatabase(source, destination);

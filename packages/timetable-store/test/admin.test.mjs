@@ -10,7 +10,7 @@ import { applyAuthenticatedOperation } from '../src/admin.mjs';
 import { copyTimetableDatabase } from '../src/backup.mjs';
 
 test('only current admin may change own business, with actor-bound atomic audit', async () => {
-  const prefix = join(tmpdir(), 'vintage-admin-');
+  const prefix = join(tmpdir(), 'vintad3e-admin-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -60,7 +60,7 @@ test('only current admin may change own business, with actor-bound atomic audit'
 });
 
 test('version 3 migration preserves version 2 data and backup on schema failure', async () => {
-  const prefix = join(tmpdir(), 'vintage-admin-migration-');
+  const prefix = join(tmpdir(), 'vintad3e-admin-migration-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {

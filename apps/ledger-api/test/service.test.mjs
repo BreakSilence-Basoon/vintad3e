@@ -9,7 +9,7 @@ import { request as httpRequest } from 'node:http';
 import { once } from 'node:events';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { prepareLedgerRecovery } from '@vintage/ledger-store/recovery';
+import { prepareLedgerRecovery } from '@vintad3e/ledger-store/recovery';
 import { initializeNewLedgerDatabase } from '../src/init-db.mjs';
 import { prepareLedgerService } from '../src/main.mjs';
 
@@ -23,9 +23,9 @@ async function signed(overrides = {}, key = keys.privateKey) {
     .setProtectedHeader({ alg: 'RS256', typ: 'at+jwt', kid: 'example-key' }).sign(key);
 }
 function config(path, keyFile, writes = 'false') {
-  return { VINTAGE_LEDGER_DATABASE_FILE: path, VINTAGE_LEDGER_JWKS_FILE: keyFile, VINTAGE_LEDGER_PORT: '3001', VINTAGE_LEDGER_ISSUER: issuer,
-    VINTAGE_LEDGER_AUDIENCE: audience, VINTAGE_LEDGER_CLIENT_ID: 'example-client', VINTAGE_LEDGER_BUSINESS_ID: 'example-shop',
-    VINTAGE_LEDGER_READ_SCOPE: 'ledger:read', VINTAGE_LEDGER_WRITE_SCOPE: 'ledger:write', VINTAGE_LEDGER_ENABLE_WRITES: writes };
+  return { VINTAD3E_LEDGER_DATABASE_FILE: path, VINTAD3E_LEDGER_JWKS_FILE: keyFile, VINTAD3E_LEDGER_PORT: '3001', VINTAD3E_LEDGER_ISSUER: issuer,
+    VINTAD3E_LEDGER_AUDIENCE: audience, VINTAD3E_LEDGER_CLIENT_ID: 'example-client', VINTAD3E_LEDGER_BUSINESS_ID: 'example-shop',
+    VINTAD3E_LEDGER_READ_SCOPE: 'ledger:read', VINTAD3E_LEDGER_WRITE_SCOPE: 'ledger:write', VINTAD3E_LEDGER_ENABLE_WRITES: writes };
 }
 async function call(port, path, body, bearer, extra = {}) {
   const data = Buffer.from(JSON.stringify(body));
@@ -39,11 +39,11 @@ async function call(port, path, body, bearer, extra = {}) {
 }
 
 test('local initialization creates only a new database and does not print identities', () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-init-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-init-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const path = join(temp, 'fixture.sqlite'), cli = fileURLToPath(new URL('../src/init-db.mjs', import.meta.url));
-    const result = spawnSync(process.execPath, [cli], { input: JSON.stringify({ businessId: 'example-shop', grant }), encoding: 'utf8', env: { ...process.env, VINTAGE_LEDGER_DATABASE_FILE: path } });
+    const result = spawnSync(process.execPath, [cli], { input: JSON.stringify({ businessId: 'example-shop', grant }), encoding: 'utf8', env: { ...process.env, VINTAD3E_LEDGER_DATABASE_FILE: path } });
     assert.equal(result.status, 0);
     assert.doesNotMatch(result.stdout + result.stderr, /example-user|example-shop|example-actor/);
     assert.throws(() => initializeNewLedgerDatabase(path, { businessId: 'example-shop', grant }));
@@ -53,13 +53,13 @@ test('local initialization creates only a new database and does not print identi
 });
 
 test('loopback flow requires a signed token and current grant for create, read, correction and retry', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-api-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-api-'), temp = mkdtempSync(prefix);
   let service;
   try {
     const path = join(temp, 'fixture.sqlite'), keyFile = join(temp, 'keys.json');
     initializeNewLedgerDatabase(path, { businessId: 'example-shop', grant });
     writeFileSync(keyFile, JSON.stringify({ keys: [{ ...await exportJWK(keys.publicKey), kid: 'example-key', alg: 'RS256', use: 'sig' }] }));
-    service = prepareLedgerService({ ...config(path, keyFile, 'true'), VINTAGE_LEDGER_HISTORY_SCOPE: 'ledger:history' });
+    service = prepareLedgerService({ ...config(path, keyFile, 'true'), VINTAD3E_LEDGER_HISTORY_SCOPE: 'ledger:history' });
     service.server.listen(0, '127.0.0.1'); await once(service.server, 'listening');
     const port = service.server.address().port, valid = await signed();
     const input = { operationId: 'operation-a', expectedRevision: 0, fact };
@@ -156,7 +156,7 @@ test('loopback flow requires a signed token and current grant for create, read, 
     assert.equal((await call(port, '/v1/facts/read', { id: fact.id }, null)).status, 400);
     const cli = fileURLToPath(new URL('../src/manage-grant.mjs', import.meta.url)), backup = join(temp, 'before-change.sqlite');
     const result = spawnSync(process.execPath, [cli, 'change'], { input: JSON.stringify({ ...grant, active: false }), encoding: 'utf8',
-      env: { ...process.env, VINTAGE_LEDGER_DATABASE_FILE: path, VINTAGE_LEDGER_BACKUP_FILE: backup } });
+      env: { ...process.env, VINTAD3E_LEDGER_DATABASE_FILE: path, VINTAD3E_LEDGER_BACKUP_FILE: backup } });
     assert.equal(result.status, 0);
     assert.doesNotMatch(result.stdout + result.stderr, /example-user|example-shop|example-actor/);
     const snapshot = new DatabaseSync(backup, { readOnly: true });
@@ -174,13 +174,13 @@ test('loopback flow requires a signed token and current grant for create, read, 
 });
 
 test('read-only is the default and pending recovery cannot start', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-readonly-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-readonly-'), temp = mkdtempSync(prefix);
   let service;
   try {
     const path = join(temp, 'fixture.sqlite'), keyFile = join(temp, 'keys.json'), recovery = join(temp, 'recovery.sqlite');
     initializeNewLedgerDatabase(path, { businessId: 'example-shop', grant });
     writeFileSync(keyFile, JSON.stringify({ keys: [{ ...await exportJWK(keys.publicKey), kid: 'example-key' }] }));
-    const env = config(path, keyFile); delete env.VINTAGE_LEDGER_ENABLE_WRITES;
+    const env = config(path, keyFile); delete env.VINTAD3E_LEDGER_ENABLE_WRITES;
     service = prepareLedgerService(env); service.server.listen(0, '127.0.0.1'); await once(service.server, 'listening');
     assert.equal((await call(service.server.address().port, '/v1/facts/history', { id: fact.id }, await signed({ scope: 'ledger:read ledger:history' }))).status, 400);
     assert.equal((await call(service.server.address().port, '/v1/facts/write', { operationId: 'operation-a', expectedRevision: 0, fact }, await signed())).status, 403);
@@ -188,7 +188,7 @@ test('read-only is the default and pending recovery cannot start', async () => {
     service.server.close(); await once(service.server, 'close'); service.db.close(); service = null;
     await prepareLedgerRecovery(path, recovery);
     assert.throws(() => prepareLedgerService(config(recovery, keyFile, 'true')));
-    assert.throws(() => prepareLedgerService({ ...config(path, keyFile), VINTAGE_LEDGER_BUSINESS_ID: 'other-shop' }));
+    assert.throws(() => prepareLedgerService({ ...config(path, keyFile), VINTAD3E_LEDGER_BUSINESS_ID: 'other-shop' }));
     writeFileSync(keyFile, JSON.stringify({ keys: [{ ...await exportJWK(keys.publicKey), kid: 'example-key', d: 'example' }] }));
     assert.throws(() => prepareLedgerService(config(path, keyFile)));
   } finally {

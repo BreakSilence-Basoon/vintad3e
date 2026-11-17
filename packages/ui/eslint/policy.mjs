@@ -83,11 +83,11 @@ export const rules = {
         ImportDeclaration(node) {
           for (const spec of node.specifiers) {
             if (spec.type === 'ImportNamespaceSpecifier') {
-              if (node.source.value === '@vintage/ui/slots') imports.set(`${spec.local.name}.*`, '*');
+              if (node.source.value === '@vintad3e/ui/slots') imports.set(`${spec.local.name}.*`, '*');
               if (UI_IMPORT.test(node.source.value)) primitives.set(`${spec.local.name}.*`, '*');
             }
             if (spec.type !== 'ImportSpecifier') continue;
-            if (node.source.value === '@vintage/ui/slots') imports.set(spec.local.name, spec.imported.name);
+            if (node.source.value === '@vintad3e/ui/slots') imports.set(spec.local.name, spec.imported.name);
             if (UI_IMPORT.test(node.source.value)) primitives.set(spec.local.name, spec.imported.name);
           }
         },
@@ -144,7 +144,7 @@ export const rules = {
   },
   'no-local-primitives': {
     meta: createMeta({
-      duplicate: '공통 {{component}}를 복제하지 말고 @vintage/ui에서 가져오세요.',
+      duplicate: '공통 {{component}}를 복제하지 말고 @vintad3e/ui에서 가져오세요.',
       native: '공통 {{component}} 스타일을 native {{tag}}에 다시 만들지 마세요. 공통 요소와 named variant/slot을 사용하세요.',
     }),
     create(context) {
@@ -270,22 +270,22 @@ export const rules = {
   },
 };
 
-export const policyPlugin = { meta: { name: '@vintage/ui-policy', version: '0.1.0' }, rules };
+export const policyPlugin = { meta: { name: '@vintad3e/ui-policy', version: '0.1.0' }, rules };
 
 // Kept separate from dependency imports so config contracts can be tested without
 // installing ESLint. config.mjs imports the real official plugin; no fallback.
 export function createSharedUiConfig(shadcn, parser, files = ['**/*.{ts,tsx}']) {
   if (!shadcn?.rules?.['no-restyle'] || !parser?.parseForESLint) throw new Error('SHARED_UI_LINT_DEPENDENCY_INVALID');
   return [{
-    name: 'vintage/shared-ui',
+    name: 'vintad3e/shared-ui',
     files,
     languageOptions: { parser, parserOptions: { ecmaFeatures: { jsx: true } } },
     linterOptions: { reportUnusedDisableDirectives: 'error' },
     plugins: { shadcn, 'bs-ui': policyPlugin },
     settings: {
       shadcn: {
-        ui: '@vintage/ui/components',
-        componentImports: ['^@vintage/ui($|/components($|/))'],
+        ui: '@vintad3e/ui/components',
+        componentImports: ['^@vintad3e/ui($|/components($|/))'],
         mergeFunctions: ['joinClasses'],
         variantFunctions: ['cva'],
       },

@@ -13,7 +13,7 @@ const person = { issuer, subject: 'example-viewer', businessId: 'shop-a', staffI
 const history = { businessId: 'shop-a', staffId: 'staff-a', recordId: 'record-a', startsAt: '2026-01-01T09:00:00.000Z', endsAt: null };
 
 test('all migrations preserve a separate verified prior-version backup for every step', async () => {
-  const prefix = join(tmpdir(), 'vintage-all-migrations-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-all-migrations-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const path = join(temp, 'fixture.sqlite'), backups = join(temp, 'backups');
@@ -44,7 +44,7 @@ test('all migrations preserve a separate verified prior-version backup for every
 });
 
 test('a later backup collision stops without overwriting and can resume in a new directory', async () => {
-  const prefix = join(tmpdir(), 'vintage-all-partial-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-all-partial-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const path = join(temp, 'fixture.sqlite'), backups = join(temp, 'backups'), retry = join(temp, 'retry');
@@ -71,7 +71,7 @@ test('a later backup collision stops without overwriting and can resume in a new
 });
 
 test('migration backs up old data before transactional operations and audit', async () => {
-  const prefix = join(tmpdir(), 'vintage-operations-');
+  const prefix = join(tmpdir(), 'vintad3e-operations-');
   const temp = mkdtempSync(prefix);
   let db, snapshot;
   try {
@@ -123,7 +123,7 @@ test('migration backs up old data before transactional operations and audit', as
 });
 
 test('migration keeps the verified backup and rolls back if the schema change fails', async () => {
-  const prefix = join(tmpdir(), 'vintage-migration-failure-');
+  const prefix = join(tmpdir(), 'vintad3e-migration-failure-');
   const temp = mkdtempSync(prefix);
   let db, backupDb;
   try {
@@ -148,7 +148,7 @@ test('migration keeps the verified backup and rolls back if the schema change fa
 });
 
 test('migration does not begin while another writer holds the database', async () => {
-  const prefix = join(tmpdir(), 'vintage-migration-lock-');
+  const prefix = join(tmpdir(), 'vintad3e-migration-lock-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -171,7 +171,7 @@ test('migration does not begin while another writer holds the database', async (
 });
 
 test('migration holds a write lock while making the backup', async () => {
-  const prefix = join(tmpdir(), 'vintage-migration-copy-lock-');
+  const prefix = join(tmpdir(), 'vintad3e-migration-copy-lock-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -191,7 +191,7 @@ test('migration holds a write lock while making the backup', async () => {
 });
 
 test('migration refuses an existing backup and leaves the database untouched', async () => {
-  const prefix = join(tmpdir(), 'vintage-migration-');
+  const prefix = join(tmpdir(), 'vintad3e-migration-');
   const temp = mkdtempSync(prefix);
   let db;
   try {

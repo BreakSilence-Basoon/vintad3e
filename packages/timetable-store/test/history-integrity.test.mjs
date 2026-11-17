@@ -26,7 +26,7 @@ async function setup(path, dir) {
 }
 
 test('retries are idempotent and only non-overlapping intervals are accepted', async () => {
-  const prefix = join(tmpdir(), 'vintage-interval-');
+  const prefix = join(tmpdir(), 'vintad3e-interval-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -53,7 +53,7 @@ test('retries are idempotent and only non-overlapping intervals are accepted', a
 });
 
 test('concurrent overlapping writes cannot both commit', async () => {
-  const prefix = join(tmpdir(), 'vintage-interval-race-');
+  const prefix = join(tmpdir(), 'vintad3e-interval-race-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -85,7 +85,7 @@ test('concurrent overlapping writes cannot both commit', async () => {
 });
 
 test('closing an open record is audited, repeatable, and permits an adjacent record', async () => {
-  const prefix = join(tmpdir(), 'vintage-close-');
+  const prefix = join(tmpdir(), 'vintad3e-close-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {
@@ -120,7 +120,7 @@ test('closing an open record is audited, repeatable, and permits an adjacent rec
 });
 
 test('failed version 4 migration keeps version 3 and its backup', async () => {
-  const prefix = join(tmpdir(), 'vintage-close-migration-');
+  const prefix = join(tmpdir(), 'vintad3e-close-migration-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {

@@ -7,7 +7,7 @@ const binding = 'a'.repeat(43);
 const id = 'b'.repeat(43);
 const oldId = 'c'.repeat(43);
 const token = 'synthetic-access-token';
-const cookie = (name, value) => `__Host-vintage-${name}=${value}`;
+const cookie = (name, value) => `__Host-vintad3e-${name}=${value}`;
 const request = (path, options = {}) => new Request(origin + path, options);
 
 function fixture() {

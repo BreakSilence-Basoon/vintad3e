@@ -10,7 +10,7 @@ importers:
 
   apps/ledger-api:
     dependencies:
-      '@vintage/ledger-store':
+      '@vintad3e/ledger-store':
         specifier: workspace:*
         version: link:../../packages/ledger-store
       jose:
@@ -19,16 +19,16 @@ importers:
 
   apps/timetable-api:
     dependencies:
-      '@vintage/access-token':
+      '@vintad3e/access-token':
         specifier: workspace:*
         version: link:../../packages/access-token
-      '@vintage/oidc-login':
+      '@vintad3e/oidc-login':
         specifier: workspace:*
         version: link:../../packages/oidc-login
-      '@vintage/timetable-read-api':
+      '@vintad3e/timetable-read-api':
         specifier: workspace:*
         version: link:../../packages/timetable-read-api
-      '@vintage/timetable-store':
+      '@vintad3e/timetable-store':
         specifier: workspace:*
         version: link:../../packages/timetable-store
       jose:
@@ -43,7 +43,7 @@ importers:
 
   packages/ledger-access:
     dependencies:
-      '@vintage/access-token':
+      '@vintad3e/access-token':
         specifier: workspace:*
         version: link:../access-token
     devDependencies:
@@ -57,10 +57,10 @@ importers:
 
   packages/ledger-store:
     dependencies:
-      '@vintage/ledger-access':
+      '@vintad3e/ledger-access':
         specifier: workspace:*
         version: link:../ledger-access
-      '@vintage/ledger-facts':
+      '@vintad3e/ledger-facts':
         specifier: workspace:*
         version: link:../ledger-facts
     devDependencies:
@@ -74,7 +74,7 @@ importers:
         specifier: 6.8.9
         version: 6.8.9
     devDependencies:
-      '@vintage/access-token':
+      '@vintad3e/access-token':
         specifier: workspace:*
         version: link:../access-token
       jose:
@@ -85,11 +85,11 @@ importers:
 
   packages/timetable-read-api:
     dependencies:
-      '@vintage/timetable-policy':
+      '@vintad3e/timetable-policy':
         specifier: workspace:*
         version: link:../timetable-policy
     devDependencies:
-      '@vintage/access-token':
+      '@vintad3e/access-token':
         specifier: workspace:*
         version: link:../access-token
       jose:
@@ -98,10 +98,10 @@ importers:
 
   packages/timetable-store:
     devDependencies:
-      '@vintage/access-token':
+      '@vintad3e/access-token':
         specifier: workspace:*
         version: link:../access-token
-      '@vintage/timetable-read-api':
+      '@vintad3e/timetable-read-api':
         specifier: workspace:*
         version: link:../timetable-read-api
       jose:

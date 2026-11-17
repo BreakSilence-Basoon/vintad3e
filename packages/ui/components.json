@@ -12,10 +12,10 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@vintage/ui/components",
-    "ui": "@vintage/ui/components",
-    "utils": "@vintage/ui/lib/classes",
-    "lib": "@vintage/ui/lib",
-    "hooks": "@vintage/ui/hooks"
+    "components": "@vintad3e/ui/components",
+    "ui": "@vintad3e/ui/components",
+    "utils": "@vintad3e/ui/lib/classes",
+    "lib": "@vintad3e/ui/lib",
+    "hooks": "@vintad3e/ui/hooks"
   }
 }

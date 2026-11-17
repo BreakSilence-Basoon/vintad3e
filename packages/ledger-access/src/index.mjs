@@ -1,4 +1,4 @@
-import { createAccessTokenVerifier } from '@vintage/access-token';
+import { createAccessTokenVerifier } from '@vintad3e/access-token';
 
 const validId = (value) => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const validSubject = (value) => typeof value === 'string' && value.length > 0 && value.length <= 512 && value === value.trim();

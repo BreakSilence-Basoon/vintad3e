@@ -1,11 +1,11 @@
-import { applyLocalOperation, migrateWithBackup, migrateAllWithBackups } from '@vintage/timetable-store/operations';
+import { applyLocalOperation, migrateWithBackup, migrateAllWithBackups } from '@vintad3e/timetable-store/operations';
 
 try {
   const operation = process.argv[2];
   if (operation === 'migrate') {
-    await migrateWithBackup(process.env.VINTAGE_DATABASE_FILE, process.env.VINTAGE_BACKUP_FILE);
+    await migrateWithBackup(process.env.VINTAD3E_DATABASE_FILE, process.env.VINTAD3E_BACKUP_FILE);
   } else if (operation === 'migrate-all') {
-    await migrateAllWithBackups(process.env.VINTAGE_DATABASE_FILE, process.env.VINTAGE_BACKUP_DIRECTORY);
+    await migrateAllWithBackups(process.env.VINTAD3E_DATABASE_FILE, process.env.VINTAD3E_BACKUP_DIRECTORY);
   } else if (operation === 'add-viewer' || operation === 'add-history' || operation === 'deactivate-viewer') {
     const chunks = [];
     let size = 0;
@@ -15,7 +15,7 @@ try {
       chunks.push(chunk);
     }
     const input = JSON.parse(Buffer.concat(chunks).toString('utf8').replace(/^\uFEFF/, ''));
-    applyLocalOperation(process.env.VINTAGE_DATABASE_FILE, operation, input);
+    applyLocalOperation(process.env.VINTAD3E_DATABASE_FILE, operation, input);
   } else throw new Error('Unknown operation');
   console.log('Local operation completed.');
 } catch {

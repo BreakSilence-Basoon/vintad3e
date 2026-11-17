@@ -1,5 +1,5 @@
 {
-  "name": "@vintage/timetable-api",
+  "name": "@vintad3e/timetable-api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -11,10 +11,10 @@
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@vintage/access-token": "workspace:*",
-    "@vintage/oidc-login": "workspace:*",
-    "@vintage/timetable-read-api": "workspace:*",
-    "@vintage/timetable-store": "workspace:*",
+    "@vintad3e/access-token": "workspace:*",
+    "@vintad3e/oidc-login": "workspace:*",
+    "@vintad3e/timetable-read-api": "workspace:*",
+    "@vintad3e/timetable-store": "workspace:*",
     "jose": "6.2.17"
   }
 }

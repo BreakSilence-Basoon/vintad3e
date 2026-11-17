@@ -15,11 +15,11 @@
 
 ```sh
 git --version
-git clone https://github.com/BreakSilence-Basoon/vintage.git
-cd vintage
+git clone https://github.com/BreakSilence-Basoon/vintad3e.git
+cd vintad3e
 ```
 
-첫 명령에서 버전 대신 명령을 찾을 수 없다는 오류가 나오면 [Git 설치 안내](https://git-scm.com/install/)를 확인하고 다시 시작하세요. `git clone`은 현재 위치에 `vintage` 폴더를 만듭니다. 같은 이름의 폴더가 이미 있다면 내용을 지우거나 덮어쓰지 말고, 기존 저장소로 이동하거나 다른 빈 위치에서 시작하세요. `cd vintage`는 그 폴더 안으로 이동하는 명령입니다.
+첫 명령에서 버전 대신 명령을 찾을 수 없다는 오류가 나오면 [Git 설치 안내](https://git-scm.com/install/)를 확인하고 다시 시작하세요. `git clone`은 현재 위치에 `vintad3e` 폴더를 만듭니다. 같은 이름의 폴더가 이미 있다면 내용을 지우거나 덮어쓰지 말고, 기존 저장소로 이동하거나 다른 빈 위치에서 시작하세요. `cd vintad3e`는 그 폴더 안으로 이동하는 명령입니다.
 
 이제 같은 터미널에서 다음을 한 줄씩 실행합니다.
 
@@ -35,7 +35,7 @@ corepack pnpm --version
 저장소 루트에서 아래 명령을 실행합니다. 실행 결과에 오류가 나오면 다음 단계로 넘어가지 마세요.
 
 ```sh
-corepack pnpm install --frozen-lockfile --ignore-scripts --filter @vintage/ledger-api... --filter @vintage/timetable-api...
+corepack pnpm install --frozen-lockfile --ignore-scripts --filter @vintad3e/ledger-api... --filter @vintad3e/timetable-api...
 ```
 
 설치할 때는 공개 패키지 저장소에 접속합니다. 저장소에 접근할 수 없거나 설치가 실패하면 오류를 확인하고 다음 단계로 넘어가지 마세요.

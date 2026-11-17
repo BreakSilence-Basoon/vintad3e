@@ -27,7 +27,7 @@ async function setup(path, dir) {
 }
 
 test('offline preparation preserves source while invalidating old access and device challenges', async () => {
-  const prefix = join(tmpdir(), 'vintage-prepare-restore-');
+  const prefix = join(tmpdir(), 'vintad3e-prepare-restore-');
   const temp = mkdtempSync(prefix);
   let source, prepared, repeated;
   try {
@@ -100,7 +100,7 @@ test('offline preparation preserves source while invalidating old access and dev
 });
 
 test('existing targets and failed sanitization never publish an output', async () => {
-  const prefix = join(tmpdir(), 'vintage-prepare-failure-');
+  const prefix = join(tmpdir(), 'vintad3e-prepare-failure-');
   const temp = mkdtempSync(prefix);
   let source;
   try {
@@ -137,7 +137,7 @@ test('existing targets and failed sanitization never publish an output', async (
 });
 
 test('concurrent recovery unlocks enable only one administrator and one audit event', async () => {
-  const prefix = join(tmpdir(), 'vintage-recover-race-');
+  const prefix = join(tmpdir(), 'vintad3e-recover-race-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -172,7 +172,7 @@ test('concurrent recovery unlocks enable only one administrator and one audit ev
 });
 
 test('recovery guard migration failure preserves the version 12 source and backup', async () => {
-  const prefix = join(tmpdir(), 'vintage-recover-schema-');
+  const prefix = join(tmpdir(), 'vintad3e-recover-schema-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {

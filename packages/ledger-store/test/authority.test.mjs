@@ -18,7 +18,7 @@ const fact = { id: 'example-a', type: 'invoice-issued', date: '2026-01-01', curr
 const request = { operationId: 'operation-a', expectedRevision: 0, fact };
 
 test('local grant changes require a verified pre-change backup and hold the writer lock', async () => {
-  const prefix = join(tmpdir(), 'vintage-grant-backup-'), temp = mkdtempSync(prefix), path = join(temp, 'ledger.sqlite');
+  const prefix = join(tmpdir(), 'vintad3e-grant-backup-'), temp = mkdtempSync(prefix), path = join(temp, 'ledger.sqlite');
   let db, copy;
   try {
     db = new DatabaseSync(path); initializeLedgerStore(db); initializeLedgerAuthority(db, 'example-shop'); setLedgerGrant(db, grant);
@@ -98,7 +98,7 @@ test('real signature and current same-database grant are required on every opera
 });
 
 test('revocation before the write transaction prevents the write; a writer holding the lock orders first', async (t) => {
-  const prefix = join(tmpdir(), 'vintage-ledger-grant-race-'), temp = mkdtempSync(prefix), path = join(temp, 'fixture.sqlite');
+  const prefix = join(tmpdir(), 'vintad3e-ledger-grant-race-'), temp = mkdtempSync(prefix), path = join(temp, 'fixture.sqlite');
   let db, revoker;
   try {
     t.mock.timers.enable({ apis: ['Date'] });
@@ -130,7 +130,7 @@ test('revocation before the write transaction prevents the write; a writer holdi
 });
 
 test('prepared recovery disables restored grants and refuses changes until reviewed', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-authority-restore-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-authority-restore-'), temp = mkdtempSync(prefix);
   let source, restored;
   try {
     const path = join(temp, 'source.sqlite'), target = join(temp, 'prepared.sqlite');
@@ -154,7 +154,7 @@ test('prepared recovery disables restored grants and refuses changes until revie
 });
 
 test('a revoked read grant is rechecked in the read transaction', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-read-revoke-'), temp = mkdtempSync(prefix), path = join(temp, 'fixture.sqlite');
+  const prefix = join(tmpdir(), 'vintad3e-ledger-read-revoke-'), temp = mkdtempSync(prefix), path = join(temp, 'fixture.sqlite');
   let db, revoker;
   try {
     db = new DatabaseSync(path); initializeLedgerStore(db); writeLedgerFact(db, { ...request, actorId: grant.actorId });
@@ -175,7 +175,7 @@ test('a revoked read grant is rechecked in the read transaction', async () => {
 });
 
 test('history requires its own scope and rechecks a revoked grant in the read transaction', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-history-revoke-'), temp = mkdtempSync(prefix), path = join(temp, 'fixture.sqlite');
+  const prefix = join(tmpdir(), 'vintad3e-ledger-history-revoke-'), temp = mkdtempSync(prefix), path = join(temp, 'fixture.sqlite');
   let db, revoker;
   try {
     db = new DatabaseSync(path); initializeLedgerStore(db); writeLedgerFact(db, { ...request, actorId: grant.actorId });
@@ -197,7 +197,7 @@ test('history requires its own scope and rechecks a revoked grant in the read tr
 });
 
 test('a revoked grant is rechecked before listing records', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-list-revoke-'), temp = mkdtempSync(prefix), path = join(temp, 'fixture.sqlite');
+  const prefix = join(tmpdir(), 'vintad3e-ledger-list-revoke-'), temp = mkdtempSync(prefix), path = join(temp, 'fixture.sqlite');
   let db, revoker;
   try {
     db = new DatabaseSync(path); initializeLedgerStore(db); writeLedgerFact(db, { ...request, actorId: grant.actorId });

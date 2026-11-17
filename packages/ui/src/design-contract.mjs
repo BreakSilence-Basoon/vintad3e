@@ -201,7 +201,7 @@ export const APPAREL_ROUTE_TITLES = freeze({
   'apps/apparel/src/app/admin/support/page.tsx': '용어집',
 });
 
-export const UI_IMPORT = /^@vintage\/ui(?:$|\/components(?:$|\/))/;
+export const UI_IMPORT = /^@vintad3e\/ui(?:$|\/components(?:$|\/))/;
 export const DECORATIVE_CLASS = /(?:^|[\s_-])(?:eyebrow|kicker|overline)(?=$|[\s_-])/i;
 export const normalizePath = (value) => value.replaceAll('\\', '/');
 export const definitionNameFor = (filename) => {

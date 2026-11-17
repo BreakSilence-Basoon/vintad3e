@@ -4,7 +4,7 @@
 
 빈타제는 자영업자와 작은 사업장을 위한 업무 도구를 함께 만들고 나누는 프로젝트입니다. 직원이 쓰는 앱부터 AI를 활용하는 방법까지, 작은 사업장도 자기에게 필요한 일하는 방식을 만들어 갈 수 있도록 돕고 싶습니다.
 
-여러 앱을 선택해 사용할 수 있도록 저장소 기반을 준비하고 있습니다. [Timetable 화면의 첫 단계](apps/timetable-web/README.md), [Timetable의 실험용 API](apps/timetable-api/README.md)와 [Ledger의 로컬 API 실험](apps/ledger-api/README.md)이 있지만, 완성된 업무 앱이나 실사용을 위한 설치 안내는 아직 없습니다. [작업 공간 안내](docs/workspace.md)의 검사는 선택 실행 방식에 대한 시험입니다.
+여러 앱을 선택해 사용할 수 있도록 저장소 기반을 준비하고 있습니다. [포털 화면의 첫 단계](apps/portal-web/README.md), [Timetable 화면의 첫 단계](apps/timetable-web/README.md), [Timetable의 실험용 API](apps/timetable-api/README.md)와 [Ledger의 로컬 API 실험](apps/ledger-api/README.md)이 있지만, 완성된 업무 앱이나 실사용을 위한 설치 안내는 아직 없습니다. [작업 공간 안내](docs/workspace.md)의 검사는 선택 실행 방식에 대한 시험입니다.
 
 [두 API를 가상 자료로 실행해 보기](docs/local-api-fixture.md)
 

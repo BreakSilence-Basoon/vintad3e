@@ -11,6 +11,8 @@ import { initializeTimetableStore } from '@vintad3e/timetable-store';
 import { migrateWithBackup } from '@vintad3e/timetable-store/operations';
 import { prepareBrowserService } from '../src/main.mjs';
 import { createLoopbackServer } from '../src/server.mjs';
+import { readTimetable } from '../../timetable-web/src/timetable-read.mjs';
+import { handleTimetableRequest } from '../../timetable-web/src/timetable-route.mjs';
 
 const issuer = 'https://identity.example.invalid/';
 const publicOrigin = 'https://app.example.invalid';
@@ -43,6 +45,10 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     writer.prepare('INSERT INTO staff (business_id,id) VALUES (?,?)').run('shop-a', 'staff-a');
     writer.prepare('INSERT INTO memberships (issuer,subject,business_id,staff_id,role,active) VALUES (?,?,?,?,?,?)').run(issuer, 'example-user', 'shop-a', 'staff-a', 'VIEWER', 1);
     writer.prepare('INSERT INTO history (business_id,id,staff_id,starts_at,ends_at) VALUES (?,?,?,?,?)').run('shop-a', 'record-a', 'staff-a', '2026-01-01T09:00:00.000Z', null);
+    writer.prepare('INSERT INTO businesses (id) VALUES (?)').run('shop-b');
+    writer.prepare('INSERT INTO staff (business_id,id) VALUES (?,?)').run('shop-b', 'staff-other');
+    writer.prepare('INSERT INTO memberships (issuer,subject,business_id,staff_id,role,active) VALUES (?,?,?,?,?,?)').run(issuer, 'other-user', 'shop-b', 'staff-other', 'VIEWER', 1);
+    writer.prepare('INSERT INTO history (business_id,id,staff_id,starts_at,ends_at) VALUES (?,?,?,?,?)').run('shop-b', 'other-record', 'staff-other', '2026-01-01T10:00:00.000Z', null);
     writer.close();
     await migrateWithBackup(database, join(temp, 'backup-v1.sqlite'));
     await migrateWithBackup(database, join(temp, 'backup-v2.sqlite'));
@@ -113,6 +119,17 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     assert.equal((await fetch(`${base}/v1/history/record-a`, { headers })).status, 200);
     const own = await (await fetch(`${base}/v1/me/history`, { headers })).json();
     assert.deepEqual(own.records.map((item) => item.id), ['record-a']);
+    const uiSession = session.slice('__Host-vintad3e-session='.length);
+    const uiHistory = await readTimetable({ apiOrigin: base, sessionValue: uiSession, resource: 'history' });
+    assert.equal(uiHistory.kind, 'ready');
+    assert.deepEqual(uiHistory.data.records.map((item) => item.id), ['record-a']);
+    const uiRequest = new Request('https://app.example.invalid/api/timetable/history', { headers: { cookie: session } });
+    const uiResponse = await handleTimetableRequest(uiRequest, 'history', base);
+    assert.equal(uiResponse.status, 200);
+    assert.equal(uiResponse.headers.get('cache-control'), 'private, no-store');
+    assert.deepEqual((await uiResponse.json()).records.map((item) => item.id), ['record-a']);
+    assert.equal((await handleTimetableRequest(new Request(uiRequest.url), 'history', base)).status, 401);
+    assert.equal((await handleTimetableRequest(new Request(uiRequest.url, { headers: { cookie: `${session}; ${session}` } }), 'history', base)).status, 401);
     const adminPost = (cookieValue, origin) => fetch(`${base}/v1/admin/viewers`, { method: 'POST',
       headers: { cookie: cookieValue, origin, 'content-type': 'application/json' },
       body: JSON.stringify({ staffId: 'staff-b', subject: 'example-other' }) });
@@ -150,9 +167,14 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     const writeHeaders = { cookie: writeSession };
     const scheduleQuery = new URLSearchParams({ from: '2026-01-01T00:00:00.000Z', to: '2026-01-02T00:00:00.000Z' });
     assert.deepEqual((await (await fetch(`${base}/v1/me/shifts?${scheduleQuery}`, { headers: writeHeaders })).json()).shifts.map((item) => item.id), ['shift-a']);
+    const uiShifts = await handleTimetableRequest(new Request(`https://app.example.invalid/api/timetable/shifts?${scheduleQuery}`, { headers: writeHeaders }), 'shifts', base);
+    assert.equal(uiShifts.status, 200);
+    assert.deepEqual((await uiShifts.json()).shifts.map((item) => item.id), ['shift-a']);
     assert.equal((await fetch(`${base}/v1/admin/shifts?${scheduleQuery}`, { headers: writeHeaders })).status, 404);
     assert.equal((await fetch(`${base}/auth/logout`, { method: 'POST', headers: { ...writeHeaders, origin: 'https://other.example.invalid' } })).status, 403);
     writer.prepare('UPDATE memberships SET active = 0 WHERE subject = ?').run('example-user');
+    assert.equal((await readTimetable({ apiOrigin: base, sessionValue: writeSession.slice('__Host-vintad3e-session='.length), resource: 'history' })).kind, 'denied');
+    assert.equal((await handleTimetableRequest(new Request(uiRequest.url, { headers: { cookie: writeSession } }), 'history', base)).status, 404);
     assert.equal((await fetch(`${base}/v1/history/record-a`, { headers: writeHeaders })).status, 404);
     assert.equal((await fetch(`${base}/v1/me/history`, { headers: writeHeaders })).status, 404);
     assert.equal((await fetch(`${base}/v1/me/shifts?${scheduleQuery}`, { headers: writeHeaders })).status, 404);

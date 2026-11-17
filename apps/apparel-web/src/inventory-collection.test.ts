@@ -1,0 +1,64 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {
+  belongsToInventoryCollection,
+  buildInventoryHref,
+  emptyInventoryOptionFilters,
+  getInventoryCollection,
+  getInventoryOptionFilters,
+  variantMatchesInventoryOptionFilters,
+} from './inventory-collection.ts';
+
+test('collaboration uses product line, keeping artist graphics in the in-house collection', () => {
+  const products = [
+    { code: 'ITEM-A', name: 'Item A', businessDomain: 'APPAREL', lineCode: 'collab' },
+    { code: 'ITEM-B', name: 'Item B', businessDomain: 'APPAREL', lineCode: 'artist' },
+    { code: 'ITEM-C', name: 'Item C', businessDomain: 'APPAREL', lineCode: 'original' },
+    { code: 'food', name: 'Food', businessDomain: 'FOOD', lineCode: 'collab' },
+  ];
+  assert.deepEqual(products.filter(p => belongsToInventoryCollection(p, 'collab')).map(p => p.code), ['ITEM-A']);
+  assert.deepEqual(products.filter(p => belongsToInventoryCollection(p, 'in-house')).map(p => p.code), ['ITEM-B', 'ITEM-C']);
+});
+
+test('old collaboration links resolve to the new collection and canonical URLs drop FNB', () => {
+  for (const domain of ['FNB', 'FOOD', 'BEVERAGE']) {
+    const collection = getInventoryCollection({ businessDomain: domain });
+    assert.equal(buildInventoryHref({ collection }), '/admin/products?collection=collab');
+  }
+  assert.equal(getInventoryCollection({ collection: 'in-house', businessDomain: 'FNB' }), 'in-house');
+  assert.equal(getInventoryCollection({ collection: 'unknown' }), 'in-house');
+  assert.equal(buildInventoryHref({ collection: getInventoryCollection({}) }), '/admin/products');
+  const query = new URL(buildInventoryHref({ collection: 'collab' }), 'https://example.test').searchParams;
+  assert.equal(query.get('collection'), 'collab');
+  assert.equal(query.has('search'), false);
+  assert.equal(query.has('businessDomain'), false);
+});
+
+test('search and option filters round-trip through the URL', () => {
+  const filters = getInventoryOptionFilters({
+    type: '반팔', color: '블랙', size: 'M', target: 'WOMEN', tracking: 'off',
+  });
+  assert.deepEqual(filters, { apparelType: '반팔', color: '블랙', size: 'M', target: 'WOMEN' });
+  const href = buildInventoryHref({ collection: 'collab', search: ' Item A ', ...filters });
+  const params = new URL(href, 'https://example.test').searchParams;
+  assert.equal(params.get('search'), 'Item A');
+  assert.equal(params.has('tracking'), false);
+  assert.deepEqual(getInventoryOptionFilters(Object.fromEntries(params)), filters);
+  assert.equal(
+    buildInventoryHref({ collection: 'in-house', search: '', ...emptyInventoryOptionFilters }),
+    '/admin/products',
+  );
+});
+
+test('only inventory-tracked options match, and every chosen option must match', () => {
+  const variant = {
+    apparelType: '반팔', color: '블랙', size: 'M', apparelTarget: 'WOMEN', tracksInventory: true,
+  };
+  const pick = (patch: Partial<typeof emptyInventoryOptionFilters>, v = variant) =>
+    variantMatchesInventoryOptionFilters(v, { ...emptyInventoryOptionFilters, ...patch });
+  assert.equal(pick({}), true);
+  assert.equal(pick({ apparelType: '반팔', color: '블랙', size: 'M', target: 'WOMEN' }), true);
+  assert.equal(pick({ color: '화이트' }), false);
+  assert.equal(pick({ target: 'MEN' }), false);
+  assert.equal(pick({}, { ...variant, tracksInventory: false }), false);
+});

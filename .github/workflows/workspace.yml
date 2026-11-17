@@ -29,3 +29,5 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/timetable-read-api test
       - run: corepack pnpm --filter @vintad3e/timetable-store test
       - run: corepack pnpm --filter @vintad3e/timetable-api test
+      - run: corepack pnpm --filter @vintad3e/timetable-web test
+      - run: corepack pnpm --filter @vintad3e/timetable-web build

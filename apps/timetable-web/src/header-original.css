@@ -1,0 +1,4 @@
+.topbar .topbar__inner,
+body:has(.kiosk-screen) .topbar__inner {
+  width: min(600px, calc(100% - (var(--page-gutter) * 2)));
+}

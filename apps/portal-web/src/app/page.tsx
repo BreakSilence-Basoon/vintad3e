@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import { PortalCarousel } from '../portal-carousel';
+import { fixturePortalLinks } from '../fixture-links.mjs';
 
-type Tile = { id: string; name: string; icon: string | null; tone?: 'mono' | 'sns'; accessibleName?: string };
+type Tile = { id: string; name: string; icon: string | null; tone?: 'mono' | 'sns'; accessibleName?: string; href?: string; restIcon?: string };
 const apps: Tile[] = ['Apparel', 'Timetable', 'Supporters', 'Partners', 'Library', 'Floor', 'Ledger', 'Creative', 'Admin', 'Catalog'].map((name) => ({
   id: name.toLowerCase(), name, icon: name === 'Catalog' ? null : `/images/app-icons/${name.toLowerCase()}.png`, tone: 'mono',
 }));
@@ -23,17 +24,23 @@ const shortcuts: Tile[] = [
 ];
 function TileList({ items, labelledBy }: { items: Tile[]; labelledBy: string }) {
   return <ul className="portal-app-grid" aria-labelledby={labelledBy}>{items.map((item) => <li key={item.id} className="portal-app-grid__item">
+    {item.href && item.icon && item.restIcon ? <a className="portal-app" href={item.href} draggable={false}>
+      <span className="portal-app__badge"><span className="portal-app__icon-stack"><Image src={item.restIcon} alt="" width={64} height={64} unoptimized draggable={false} className="portal-app__icon portal-app__icon--rest" /><Image src={item.icon} alt="" width={64} height={64} unoptimized draggable={false} className="portal-app__icon portal-app__icon--color" /></span></span>
+      <span className="portal-app__name">{item.name}</span>
+    </a> :
     <div className={`portal-app${item.tone ? ` portal-app--${item.tone}` : ''}`} aria-label={item.accessibleName ?? item.name}>
       <span className="portal-app__badge">{item.icon ? <Image src={item.icon} alt="" width={64} height={64} unoptimized draggable={false} className="portal-app__icon" /> : null}</span>
       <span className="portal-app__name">{item.name}</span>
-    </div>
+    </div>}
   </li>)}</ul>;
 }
 export default function Page() {
+  const links = fixturePortalLinks({ nodeEnv: process.env.NODE_ENV, enabled: process.env.VINTAD3E_PORTAL_FIXTURE, grants: ['timetable'] });
+  const visibleApps = apps.map((app) => app.id === 'timetable' && links.timetable ? { ...app, href: links.timetable, restIcon: '/images/app-icons/timetable-mono.png' } : app);
   return <main className="portal-home">
     <h1 className="sr-only">빈타제</h1>
     <div className="portal-home__apps"><PortalCarousel pages={[
-      { id: 'staff-apps', label: '업무 앱', content: <><h2 id="staff-apps-title" className="sr-only">업무 앱</h2><TileList items={apps} labelledBy="staff-apps-title" /></> },
+      { id: 'staff-apps', label: '업무 앱', content: <><h2 id="staff-apps-title" className="sr-only">업무 앱</h2><TileList items={visibleApps} labelledBy="staff-apps-title" /></> },
       { id: 'external-links', label: 'SNS·외부 링크', content: <><h2 id="external-links-title" className="sr-only">SNS·외부 링크</h2><TileList items={social} labelledBy="external-links-title" /></> },
       { id: 'admin-shortcuts', label: '관리 바로가기', content: <><h2 id="admin-shortcuts-title" className="sr-only">관리 바로가기</h2><TileList items={shortcuts} labelledBy="admin-shortcuts-title" /></> },
     ]} /></div>

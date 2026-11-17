@@ -24,8 +24,13 @@ python scripts/gitleaks_check.py files
 ```
 
 The staged check examines the Git changes currently staged for commit. The files
-check examines the current directory, which can include untracked files; do not
-run it over a private source tree. Review a failed scan privately before pushing.
+check scans both the complete Git index and the current working-tree contents of
+indexed files. It includes staged new files, tracked files even if ignored, and
+both versions when a file has further unstaged edits. It excludes files absent
+from the Git index, such as ignored build outputs and untracked files. A file is
+not protected by this check until it is staged; stage intended files and run both
+checks again before publishing. Resolve merge conflicts before scanning. Do not
+run either check over a private source tree. Review a failed scan privately before pushing.
 The commands intentionally suppress scanner details in logs; for diagnosis, use
 the CLI locally in a private environment and avoid exposing its output.
 Inline Gitleaks allow comments do not suppress findings in these commands.

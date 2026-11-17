@@ -1,0 +1,13 @@
+/* Existing Timetable tokens and empty-state rules; no production data. */
+:root { --background:#f3efe7; --foreground:#211910; --muted:#685c4c; --border:rgba(54,44,32,.12); --accent:#2b4a40; --content-max:1040px; --page-gutter:clamp(24px,4vw,72px); }
+html, body { min-height:100%; margin:0; }
+body { background:var(--background); color:var(--foreground); font-family:'Pretendard Variable','Pretendard','Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
+.app-shell { width:min(var(--content-max),calc(100% - (var(--page-gutter) * 2))); margin:0 auto; padding:46px 0 80px; flex:1 0 auto; }
+.timetable-home { width:min(600px,calc(100% - (var(--page-gutter) * 2))); }
+.timetable-home .attendance-history-list { width:min(480px,100%); margin:0 auto; }
+.attendance-history-list { display:grid; gap:10px; }
+.schedule-calendar-page { width:min(600px,100%); min-width:0; margin:0 auto; }
+.attendance-history-empty { margin:0; padding:20px 0; border-bottom:1px solid rgba(54,44,32,.1); color:var(--muted); font-size:.9rem; font-weight:720; }
+.empty-state { min-height:190px; padding:40px 20px; display:grid; place-content:center; gap:8px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); text-align:center; }
+.empty-state p { color:var(--muted); }
+@media (max-width:640px) { :root { --page-gutter:12px; } }

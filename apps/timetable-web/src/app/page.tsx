@@ -6,6 +6,12 @@ import { ScheduleEmptyCalendar } from '../schedule-empty-calendar';
 import { AttendanceHistoryFilter } from '../attendance-history-filter';
 import { parseHistoryFilters } from '../history-filters';
 
+export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const { view } = await searchParams;
+  const screen = timetableInitialView(view) === 'schedule' ? '근무시간표' : '출근부';
+  return { title: `침깨 > Timetable > ${screen}` };
+}
+
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const { view, month } = params;

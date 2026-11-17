@@ -25,7 +25,7 @@ export async function copyTimetableDatabase(source, destination) {
     } catch (error) {
       if (error.code !== 'ENOENT') throw error;
     }
-    const staging = mkdtempSync(join(dirname(destination), '.vintage-copy-'));
+    const staging = mkdtempSync(join(dirname(destination), '.vintad3e-copy-'));
     const stagedFile = join(staging, 'snapshot.sqlite');
     const fd = openSync(stagedFile, 'wx', 0o600);
     closeSync(fd);

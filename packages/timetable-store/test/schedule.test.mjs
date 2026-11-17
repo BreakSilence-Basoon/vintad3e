@@ -10,7 +10,7 @@ import { migrateWithBackup } from '../src/operations.mjs';
 import { applyAuthenticatedOperation, AdminAccessError, AdminConflictError, AdminRequestError } from '../src/admin.mjs';
 
 test('schedule creation isolates tenants, rejects conflicts and records the actor atomically', async () => {
-  const prefix = join(tmpdir(), 'vintage-schedule-');
+  const prefix = join(tmpdir(), 'vintad3e-schedule-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {
@@ -119,7 +119,7 @@ test('schedule creation isolates tenants, rejects conflicts and records the acto
 });
 
 test('schedule migration failure preserves the version 5 database and backup', async () => {
-  const prefix = join(tmpdir(), 'vintage-schedule-failure-');
+  const prefix = join(tmpdir(), 'vintad3e-schedule-failure-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {
@@ -147,7 +147,7 @@ test('schedule migration failure preserves the version 5 database and backup', a
 });
 
 test('schedule revision migration failure keeps version 6 and its verified backup', async () => {
-  const prefix = join(tmpdir(), 'vintage-schedule-revision-failure-');
+  const prefix = join(tmpdir(), 'vintad3e-schedule-revision-failure-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {
@@ -175,7 +175,7 @@ test('schedule revision migration failure keeps version 6 and its verified backu
 });
 
 test('schedule list index failure leaves version 7 and its backup intact', async () => {
-  const prefix = join(tmpdir(), 'vintage-schedule-list-failure-');
+  const prefix = join(tmpdir(), 'vintad3e-schedule-list-failure-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {
@@ -203,7 +203,7 @@ test('schedule list index failure leaves version 7 and its backup intact', async
 });
 
 test('copy keeps provenance, rejects stale and overlapping sources, and makes retries safe', async () => {
-  const prefix = join(tmpdir(), 'vintage-schedule-copy-');
+  const prefix = join(tmpdir(), 'vintad3e-schedule-copy-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {
@@ -269,7 +269,7 @@ test('copy keeps provenance, rejects stale and overlapping sources, and makes re
 });
 
 test('copy migration failure keeps version 8 and the verified backup', async () => {
-  const prefix = join(tmpdir(), 'vintage-copy-schema-failure-');
+  const prefix = join(tmpdir(), 'vintad3e-copy-schema-failure-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { validateLedgerFact } from '@vintage/ledger-facts';
-import { createLedgerAccessCheck } from '@vintage/ledger-access';
+import { validateLedgerFact } from '@vintad3e/ledger-facts';
+import { createLedgerAccessCheck } from '@vintad3e/ledger-access';
 import { authorityInstalled, lookupLedgerGrant } from './authority.mjs';
 import { listLedgerFactsInTransaction } from './list-query.mjs';
 

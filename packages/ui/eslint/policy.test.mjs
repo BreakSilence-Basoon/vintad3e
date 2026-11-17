@@ -9,7 +9,7 @@ const attr = (name, value) => ({ type: 'JSXAttribute', name: { type: 'JSXIdentif
 const opening = (name, attrs = []) => ({ type: 'JSXOpeningElement', name: typeof name === 'string' ? { type: 'JSXIdentifier', name } : name, attributes: attrs });
 const variable = (name, init) => ({ type: 'VariableDeclarator', id: identifier(name), init });
 const imported = (component, local = component) => ({
-  type: 'ImportDeclaration', source: literal('@vintage/ui/components'),
+  type: 'ImportDeclaration', source: literal('@vintad3e/ui/components'),
   specifiers: [{ type: 'ImportSpecifier', imported: identifier(component), local: identifier(local) }],
 });
 const heading = (children, tag = 'h1') => ({ type: 'JSXElement', openingElement: opening(tag), children });
@@ -26,7 +26,7 @@ test('ESLint wiring uses real official rule names, discovery and strict CSS comp
   const [config] = createSharedUiConfig(shadcn, parser);
   assert.equal(config.plugins.shadcn, shadcn);
   assert.equal(config.languageOptions.parser, parser);
-  assert.equal(config.settings.shadcn.ui, '@vintage/ui/components');
+  assert.equal(config.settings.shadcn.ui, '@vintad3e/ui/components');
   for (const rule of ['no-raw-colors', 'no-arbitrary-values', 'require-static-classes']) assert.equal(config.rules[`shadcn/${rule}`], 'error');
   assert.equal(config.rules['shadcn/no-restyle'][0], 'error');
   for (const rule of Object.keys(rules)) assert.equal(config.rules[`bs-ui/${rule}`], 'error');
@@ -92,7 +92,7 @@ test('inline primitive style and unreadable dynamic class fail', () => {
 
 test('renamed and namespace imports cannot hide CSS overrides', () => {
   assert.equal(exercise('no-primitive-css-override', [imported('Button', 'Action'), opening('Action', [attr('className', literal('custom'))])]).length, 1);
-  const namespace = { type: 'ImportDeclaration', source: literal('@vintage/ui'), specifiers: [{ type: 'ImportNamespaceSpecifier', local: identifier('UI') }] };
+  const namespace = { type: 'ImportDeclaration', source: literal('@vintad3e/ui'), specifiers: [{ type: 'ImportNamespaceSpecifier', local: identifier('UI') }] };
   const member = { type: 'JSXMemberExpression', object: { type: 'JSXIdentifier', name: 'UI' }, property: { type: 'JSXIdentifier', name: 'Button' } };
   assert.equal(exercise('no-primitive-css-override', [namespace, opening(member, [attr('style', expression({ type: 'ObjectExpression' }))])]).length, 1);
 });
@@ -152,7 +152,7 @@ test('field-group label adoption uses named appearance without altering child sp
   assert.equal(exercise('no-local-primitives', [opening('span', [attr('className', literal('field__label'))])]).length, 0);
 });
 
-const slotImport = (name, local = name) => ({ ...imported(name, local), source: literal('@vintage/ui/slots') });
+const slotImport = (name, local = name) => ({ ...imported(name, local), source: literal('@vintad3e/ui/slots') });
 const slotStyle = (object = 'supportersFeedbackSlots', property = 'snsErrorStyle') => expression({
   type: 'MemberExpression', computed: false, object: identifier(object), property: identifier(property),
 });
@@ -205,12 +205,12 @@ test('original error source is not a blanket inline-style or color exemption', (
 test('namespace imports, computed keys and mixed styles cannot bypass finite slot bounds', () => {
   const namespace = (source, local) => ({ type: 'ImportDeclaration', source: literal(source), specifiers: [{ type: 'ImportNamespaceSpecifier', local: identifier(local) }] });
   const member = { type: 'MemberExpression', computed: false, object: { type: 'MemberExpression', computed: false, object: identifier('slots'), property: identifier('supportersFeedbackSlots') }, property: identifier('snsErrorStyle') };
-  const imports = [namespace('@vintage/ui/slots', 'slots')];
+  const imports = [namespace('@vintad3e/ui/slots', 'slots')];
   assert.equal(exercise('no-inline-slot-misuse', [...imports, opening('span', [attr('style', expression(member))])], feedbackFile).length, 0);
   assert.equal(exercise('no-inline-slot-misuse', [...imports, opening('span', [attr('style', expression({ ...member, computed: true }))])], feedbackFile).length, 1);
   assert.equal(exercise('no-inline-slot-misuse', [...imports, opening('span', [attr('style', expression({ type: 'ObjectExpression', properties: [{ type: 'SpreadElement', argument: member }] }))])], feedbackFile).length, 1);
   const label = { type: 'JSXMemberExpression', object: identifier('UI'), property: identifier('Label') };
-  assert.equal(exercise('no-inline-slot-misuse', [namespace('@vintage/ui', 'UI'), opening(label, [attr('layout', literal('mapping-review')), attr('appearance', literal('group'))])], feedbackFile).length, 1);
+  assert.equal(exercise('no-inline-slot-misuse', [namespace('@vintad3e/ui', 'UI'), opening(label, [attr('layout', literal('mapping-review')), attr('appearance', literal('group'))])], feedbackFile).length, 1);
 });
 
 test('unknown/dynamic domain slot fails while native HTML slot remains caller-owned', () => {

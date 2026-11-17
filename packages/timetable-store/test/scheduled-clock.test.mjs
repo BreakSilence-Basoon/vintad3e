@@ -19,7 +19,7 @@ const identity = (subject) => ({ issuer, subject, issuedAt: Math.floor(Date.now(
 const policy = { earlyWindowMs: 3600000, lateWindowMs: 3600000 };
 
 test('server submission recovers a lost committed result and leaves ambiguous failures unresolved', async (t) => {
-  const prefix = join(tmpdir(), 'vintage-submit-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-submit-'), temp = mkdtempSync(prefix);
   let db, holder;
   try {
     t.mock.timers.enable({ apis: ['Date'] });
@@ -69,7 +69,7 @@ test('server submission recovers a lost committed result and leaves ambiguous fa
 });
 
 test('concurrent retries of the same server submission converge after contention', async () => {
-  const prefix = join(tmpdir(), 'vintage-submit-race-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-submit-race-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const path = join(temp, 'fixture.sqlite'), now = Date.now();
@@ -105,7 +105,7 @@ test('concurrent retries of the same server submission converge after contention
 });
 
 test('lost replies can be recovered by the same authorized staff without creating duplicate attendance', async (t) => {
-  const prefix = join(tmpdir(), 'vintage-receipt-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-receipt-'), temp = mkdtempSync(prefix);
   let db;
   try {
     t.mock.timers.enable({ apis: ['Date'] });
@@ -178,7 +178,7 @@ async function setup(path, dir, startsAt, endsAt) {
 }
 
 test('scheduled clock uses same-device confirmation, current authority and atomic attendance audit', async (t) => {
-  const prefix = join(tmpdir(), 'vintage-clock-');
+  const prefix = join(tmpdir(), 'vintad3e-clock-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -252,7 +252,7 @@ test('scheduled clock uses same-device confirmation, current authority and atomi
 });
 
 test('concurrent confirmed clock-ins cannot create two records', async (t) => {
-  const prefix = join(tmpdir(), 'vintage-clock-race-');
+  const prefix = join(tmpdir(), 'vintad3e-clock-race-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -319,7 +319,7 @@ test('concurrent confirmed clock-ins cannot create two records', async (t) => {
 });
 
 test('default zero-timeout lock failure leaves challenge and attendance unchanged for a later attempt', async () => {
-  const prefix = join(tmpdir(), 'vintage-clock-locked-');
+  const prefix = join(tmpdir(), 'vintad3e-clock-locked-');
   const temp = mkdtempSync(prefix);
   let db, holder, probe;
   try {
@@ -354,7 +354,7 @@ test('default zero-timeout lock failure leaves challenge and attendance unchange
 });
 
 test('a reader blocking COMMIT causes an atomic rollback before a later attempt', async () => {
-  const prefix = join(tmpdir(), 'vintage-clock-commit-lock-');
+  const prefix = join(tmpdir(), 'vintad3e-clock-commit-lock-');
   const temp = mkdtempSync(prefix);
   let db, reader;
   try {
@@ -395,7 +395,7 @@ test('a reader blocking COMMIT causes an atomic rollback before a later attempt'
 });
 
 test('attendance migration failure preserves version 13 and its backup', async () => {
-  const prefix = join(tmpdir(), 'vintage-clock-schema-failure-');
+  const prefix = join(tmpdir(), 'vintad3e-clock-schema-failure-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {

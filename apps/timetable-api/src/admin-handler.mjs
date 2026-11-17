@@ -1,4 +1,4 @@
-import { AdminAccessError, AdminConflictError, AdminRequestError, applyAuthenticatedOperation } from '@vintage/timetable-store/admin';
+import { AdminAccessError, AdminConflictError, AdminRequestError, applyAuthenticatedOperation } from '@vintad3e/timetable-store/admin';
 
 const routes = new Map([
   ['/v1/admin/viewers', 'add-viewer'],

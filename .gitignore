@@ -4,7 +4,8 @@ node_modules/
 .next/
 coverage/
 .data/
-.vintage-copy-*/
+.vint*-copy-*/
+*.tsbuildinfo
 *.sqlite*
 *.db
 *.db-*

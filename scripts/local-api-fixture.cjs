@@ -5,11 +5,11 @@ const {startChild,stopChild,hasExited}=require('./fixture-process.cjs');
 const {probe}=require('./fixture-http.cjs');
 const repo=process.cwd(),args=process.argv.slice(2),check=args.length===1&&args[0]==='--check';
 if(args.length && !check){console.error('Usage: node scripts/local-api-fixture.cjs [--check]');process.exit(1)}
-const fixture=fs.mkdtempSync(path.join(os.tmpdir(),'vintage-api-fixture-')); 
+const fixture=fs.mkdtempSync(path.join(os.tmpdir(),'vintad3e-api-fixture-'));
 const clean={PATH:process.env.PATH||'',HOME:process.env.HOME||fixture,TEMP:process.env.TEMP||fixture,TMP:process.env.TMP||fixture,SystemRoot:process.env.SystemRoot||'',NODE_NO_WARNINGS:'1'};
 const issuer='https://issuer.example.test',business='example-shop',scope='fixture:read',write='fixture:write';
-const ledger={...clean,VINTAGE_LEDGER_DATABASE_FILE:path.join(fixture,'ledger.sqlite'),VINTAGE_LEDGER_JWKS_FILE:path.join(fixture,'public-jwks.json'),VINTAGE_LEDGER_PORT:'43131',VINTAGE_LEDGER_ISSUER:issuer,VINTAGE_LEDGER_AUDIENCE:'fixture-audience',VINTAGE_LEDGER_CLIENT_ID:'fixture-client',VINTAGE_LEDGER_BUSINESS_ID:business,VINTAGE_LEDGER_READ_SCOPE:scope,VINTAGE_LEDGER_WRITE_SCOPE:write};
-const timetable={...clean,VINTAGE_DATABASE_FILE:path.join(fixture,'timetable.sqlite'),VINTAGE_JWKS_FILE:path.join(fixture,'public-jwks.json'),VINTAGE_PORT:'43132',VINTAGE_ISSUER:issuer,VINTAGE_AUDIENCE:'fixture-audience',VINTAGE_CLIENT_ID:'fixture-client',VINTAGE_REQUIRED_SCOPE:scope};
+const ledger={...clean,VINTAD3E_LEDGER_DATABASE_FILE:path.join(fixture,'ledger.sqlite'),VINTAD3E_LEDGER_JWKS_FILE:path.join(fixture,'public-jwks.json'),VINTAD3E_LEDGER_PORT:'43131',VINTAD3E_LEDGER_ISSUER:issuer,VINTAD3E_LEDGER_AUDIENCE:'fixture-audience',VINTAD3E_LEDGER_CLIENT_ID:'fixture-client',VINTAD3E_LEDGER_BUSINESS_ID:business,VINTAD3E_LEDGER_READ_SCOPE:scope,VINTAD3E_LEDGER_WRITE_SCOPE:write};
+const timetable={...clean,VINTAD3E_DATABASE_FILE:path.join(fixture,'timetable.sqlite'),VINTAD3E_JWKS_FILE:path.join(fixture,'public-jwks.json'),VINTAD3E_PORT:'43132',VINTAD3E_ISSUER:issuer,VINTAD3E_AUDIENCE:'fixture-audience',VINTAD3E_CLIENT_ID:'fixture-client',VINTAD3E_REQUIRED_SCOPE:scope};
 const children=[];
 async function stop(){const results=await Promise.all(children.map(child=>stopChild(child)));return results.every(Boolean)}
 function init(entry,env,data){const p=spawnSync(process.execPath,[entry],{cwd:repo,env,input:JSON.stringify(data),encoding:'utf8',timeout:30000,windowsHide:true});if(p.status!==0)throw Error('Fixture database initialization failed')}

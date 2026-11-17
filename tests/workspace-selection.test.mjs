@@ -14,7 +14,7 @@ const run = (filter) => spawnSync(process.execPath, [pnpmCli, '--fail-if-no-matc
 });
 
 test('selected app includes its shared package and excludes the other app', () => {
-  const result = run('@vintage-fixture/first...');
+  const result = run('@vintad3e-fixture/first...');
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /^apps\/first probe: fixture:first\r?$/m);
   assert.match(result.stdout, /^packages\/shared probe: fixture:shared\r?$/m);
@@ -22,22 +22,22 @@ test('selected app includes its shared package and excludes the other app', () =
 });
 
 test('unknown app fails rather than silently succeeding', () => {
-  const result = run('@vintage-fixture/missing...');
+  const result = run('@vintad3e-fixture/missing...');
   assert.notEqual(result.status, 0);
   assert.match(result.stdout + result.stderr, /No projects matched/i);
 });
 
 test('offline filtered install links only the selected app dependency', () => {
-  const prefix = join(tmpdir(), 'vintage-selection-');
+  const prefix = join(tmpdir(), 'vintad3e-selection-');
   const temp = mkdtempSync(prefix);
   try {
     cpSync(cwd, temp, { recursive: true });
-    const result = spawnSync(process.execPath, [pnpmCli, 'install', '--offline', '--ignore-scripts', '--filter', '@vintage-fixture/first...'], {
+    const result = spawnSync(process.execPath, [pnpmCli, 'install', '--offline', '--ignore-scripts', '--filter', '@vintad3e-fixture/first...'], {
       cwd: temp, encoding: 'utf8',
     });
     assert.equal(result.status, 0, result.stdout + result.stderr);
-    assert.ok(existsSync(join(temp, 'apps/first/node_modules/@vintage-fixture/shared')));
-    assert.equal(existsSync(join(temp, 'apps/second/node_modules/@vintage-fixture/shared')), false);
+    assert.ok(existsSync(join(temp, 'apps/first/node_modules/@vintad3e-fixture/shared')));
+    assert.equal(existsSync(join(temp, 'apps/second/node_modules/@vintad3e-fixture/shared')), false);
   } finally {
     if (!resolve(temp).startsWith(resolve(prefix))) throw new Error('Unexpected temporary path');
     rmSync(temp, { recursive: true, force: true });
@@ -46,7 +46,7 @@ test('offline filtered install links only the selected app dependency', () => {
 
 test('the actual Timetable API installs and passes its HTTP tests in a clean selected workspace', () => {
   const source = fileURLToPath(new URL('../', import.meta.url));
-  const prefix = join(tmpdir(), 'vintage-timetable-selection-');
+  const prefix = join(tmpdir(), 'vintad3e-timetable-selection-');
   const temp = mkdtempSync(prefix);
   try {
     for (const name of ['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml']) cpSync(join(source, name), join(temp, name));
@@ -59,14 +59,14 @@ test('the actual Timetable API installs and passes its HTTP tests in a clean sel
       mkdirSync(destination, { recursive: true });
       for (const name of ['package.json', 'src']) cpSync(join(source, 'packages', entry.name, name), join(destination, name), { recursive: true });
     }
-    const install = spawnSync(process.execPath, [pnpmCli, 'install', '--offline', '--frozen-lockfile', '--ignore-scripts', '--filter', '@vintage/timetable-api...'], {
+    const install = spawnSync(process.execPath, [pnpmCli, 'install', '--offline', '--frozen-lockfile', '--ignore-scripts', '--filter', '@vintad3e/timetable-api...'], {
       cwd: temp, encoding: 'utf8', timeout: 120000,
     });
     assert.equal(install.status, 0, install.stdout + install.stderr);
-    assert.ok(existsSync(join(temp, 'apps/timetable-api/node_modules/@vintage/oidc-login')));
+    assert.ok(existsSync(join(temp, 'apps/timetable-api/node_modules/@vintad3e/oidc-login')));
     const testEnv = { ...process.env };
     delete testEnv.NODE_TEST_CONTEXT;
-    const tests = spawnSync(process.execPath, [pnpmCli, '--filter', '@vintage/timetable-api', 'test'], {
+    const tests = spawnSync(process.execPath, [pnpmCli, '--filter', '@vintad3e/timetable-api', 'test'], {
       cwd: temp, env: testEnv, encoding: 'utf8', timeout: 120000,
     });
     assert.equal(tests.status, 0, tests.stdout + tests.stderr);
@@ -79,7 +79,7 @@ test('the actual Timetable API installs and passes its HTTP tests in a clean sel
 
 test('the experimental Ledger API installs and passes its local flow in a clean selected workspace', () => {
   const source = fileURLToPath(new URL('../', import.meta.url));
-  const prefix = join(tmpdir(), 'vintage-ledger-selection-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-selection-'), temp = mkdtempSync(prefix);
   try {
     for (const name of ['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml']) cpSync(join(source, name), join(temp, name));
     const app = join(temp, 'apps/ledger-api'); mkdirSync(app, { recursive: true });
@@ -89,14 +89,14 @@ test('the experimental Ledger API installs and passes its local flow in a clean 
       const destination = join(temp, 'packages', entry.name); mkdirSync(destination, { recursive: true });
       for (const name of ['package.json', 'src']) cpSync(join(source, 'packages', entry.name, name), join(destination, name), { recursive: true });
     }
-    const install = spawnSync(process.execPath, [pnpmCli, 'install', '--offline', '--frozen-lockfile', '--ignore-scripts', '--filter', '@vintage/ledger-api...'], {
+    const install = spawnSync(process.execPath, [pnpmCli, 'install', '--offline', '--frozen-lockfile', '--ignore-scripts', '--filter', '@vintad3e/ledger-api...'], {
       cwd: temp, encoding: 'utf8', timeout: 120000,
     });
     assert.equal(install.status, 0, install.stdout + install.stderr);
-    assert.ok(existsSync(join(temp, 'apps/ledger-api/node_modules/@vintage/ledger-store')));
+    assert.ok(existsSync(join(temp, 'apps/ledger-api/node_modules/@vintad3e/ledger-store')));
     assert.equal(existsSync(join(temp, 'apps/timetable-api')), false);
     const env = { ...process.env }; delete env.NODE_TEST_CONTEXT;
-    const result = spawnSync(process.execPath, [pnpmCli, '--filter', '@vintage/ledger-api', 'test'], { cwd: temp, env, encoding: 'utf8', timeout: 120000 });
+    const result = spawnSync(process.execPath, [pnpmCli, '--filter', '@vintad3e/ledger-api', 'test'], { cwd: temp, env, encoding: 'utf8', timeout: 120000 });
     assert.equal(result.status, 0, result.stdout + result.stderr);
     assert.match(result.stdout, /loopback flow requires a signed token/);
   } finally {

@@ -8,12 +8,12 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { once } from 'node:events';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
-import { initializeTimetableStore } from '@vintage/timetable-store';
-import { migrateWithBackup } from '@vintage/timetable-store/operations';
+import { initializeTimetableStore } from '@vintad3e/timetable-store';
+import { migrateWithBackup } from '@vintad3e/timetable-store/operations';
 import { prepareService } from '../src/main.mjs';
 
 test('restore preparation CLI creates a new protected-state copy without printing identities', async () => {
-  const prefix = join(tmpdir(), 'vintage-restore-cli-');
+  const prefix = join(tmpdir(), 'vintad3e-restore-cli-');
   const temp = mkdtempSync(prefix);
   let db, service;
   try {
@@ -42,7 +42,7 @@ test('restore preparation CLI creates a new protected-state copy without printin
     const oldViewer = await signed('example-viewer');
     const cli = fileURLToPath(new URL('../src/prepare-restore.mjs', import.meta.url));
     const run = () => spawnSync(process.execPath, [cli], { encoding: 'utf8',
-      env: { ...process.env, VINTAGE_BACKUP_FILE: source, VINTAGE_PREPARED_RESTORE_FILE: output } });
+      env: { ...process.env, VINTAD3E_BACKUP_FILE: source, VINTAD3E_PREPARED_RESTORE_FILE: output } });
     const result = run();
     assert.equal(result.status, 0);
     assert.doesNotMatch(result.stdout + result.stderr, /example-user|example-viewer|shop-a|staff-a|staff-b/);
@@ -54,9 +54,9 @@ test('restore preparation CLI creates a new protected-state copy without printin
     assert.ok(cutoff > 0);
     db.close();
     assert.notEqual(run().status, 0);
-    const config = { VINTAGE_ISSUER: 'https://identity.example.invalid', VINTAGE_AUDIENCE: 'example-api',
-      VINTAGE_CLIENT_ID: 'example-client', VINTAGE_REQUIRED_SCOPE: 'timetable:access', VINTAGE_WRITE_SCOPE: 'timetable:write',
-      VINTAGE_ENABLE_WRITES: 'true', VINTAGE_JWKS_FILE: keyFile, VINTAGE_DATABASE_FILE: output, VINTAGE_PORT: '3004' };
+    const config = { VINTAD3E_ISSUER: 'https://identity.example.invalid', VINTAD3E_AUDIENCE: 'example-api',
+      VINTAD3E_CLIENT_ID: 'example-client', VINTAD3E_REQUIRED_SCOPE: 'timetable:access', VINTAD3E_WRITE_SCOPE: 'timetable:write',
+      VINTAD3E_ENABLE_WRITES: 'true', VINTAD3E_JWKS_FILE: keyFile, VINTAD3E_DATABASE_FILE: output, VINTAD3E_PORT: '3004' };
     assert.throws(() => prepareService(config), /Recovery authority review required/);
     db = new DatabaseSync(output);
     db.prepare('UPDATE memberships SET active=1 WHERE subject=?').run('example-user');
@@ -65,7 +65,7 @@ test('restore preparation CLI creates a new protected-state copy without printin
     const unlockCli = fileURLToPath(new URL('../src/recover-admin.mjs', import.meta.url));
     const unlock = (subject) => spawnSync(process.execPath, [unlockCli], { encoding: 'utf8',
       input: JSON.stringify({ issuer: 'https://identity.example.invalid', subject, reason: 'Example verification' }),
-      env: { ...process.env, VINTAGE_PREPARED_RESTORE_FILE: output } });
+      env: { ...process.env, VINTAD3E_PREPARED_RESTORE_FILE: output } });
     assert.notEqual(unlock('example-other').status, 0);
     assert.notEqual(unlock('example-user').status, 0);
     db = new DatabaseSync(output);

@@ -3,16 +3,16 @@ import { isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { createLocalJWKSet } from 'jose';
-import { createAccessTokenVerifier } from '@vintage/access-token';
-import { createHistoryHandler, createOwnHistoryHandler, createOwnScheduleHandler } from '@vintage/timetable-read-api';
-import { createTimetableStore } from '@vintage/timetable-store';
+import { createAccessTokenVerifier } from '@vintad3e/access-token';
+import { createHistoryHandler, createOwnHistoryHandler, createOwnScheduleHandler } from '@vintad3e/timetable-read-api';
+import { createTimetableStore } from '@vintad3e/timetable-store';
 import { createLoopbackServer } from './server.mjs';
 import { createAdminHandler } from './admin-handler.mjs';
 import { createAdminScheduleList } from './admin-schedule-list.mjs';
 import { createAdminStaffList } from './admin-staff-list.mjs';
-import { createLoginFlow } from '@vintage/oidc-login';
-import { createMemorySessionStore } from '@vintage/oidc-login/session';
-import { createBrowserAuth } from '@vintage/oidc-login/browser';
+import { createLoginFlow } from '@vintad3e/oidc-login';
+import { createMemorySessionStore } from '@vintad3e/oidc-login/session';
+import { createBrowserAuth } from '@vintad3e/oidc-login/browser';
 
 function publicKeys(path) {
   if (!isAbsolute(path) || statSync(path).size > 1024 * 1024) throw new Error('Invalid key file');
@@ -33,9 +33,9 @@ function publicKeys(path) {
 }
 
 export function prepareService(env, { browserAuth = null } = {}) {
-  const { VINTAGE_ISSUER: issuer, VINTAGE_AUDIENCE: audience, VINTAGE_CLIENT_ID: client,
-    VINTAGE_REQUIRED_SCOPE: scope, VINTAGE_JWKS_FILE: keyFile, VINTAGE_DATABASE_FILE: databaseFile,
-    VINTAGE_PORT: portText, VINTAGE_ENABLE_WRITES: writesText, VINTAGE_WRITE_SCOPE: writeScope } = env;
+  const { VINTAD3E_ISSUER: issuer, VINTAD3E_AUDIENCE: audience, VINTAD3E_CLIENT_ID: client,
+    VINTAD3E_REQUIRED_SCOPE: scope, VINTAD3E_JWKS_FILE: keyFile, VINTAD3E_DATABASE_FILE: databaseFile,
+    VINTAD3E_PORT: portText, VINTAD3E_ENABLE_WRITES: writesText, VINTAD3E_WRITE_SCOPE: writeScope } = env;
   if (!keyFile || !databaseFile || !isAbsolute(databaseFile) || !/^\d{1,5}$/.test(portText ?? '')) {
     throw new Error('Configuration incomplete');
   }
@@ -86,9 +86,9 @@ export function prepareService(env, { browserAuth = null } = {}) {
 
 // fetchImplementation is a trusted test adapter, never controlled by a request.
 export async function prepareBrowserService(env, { fetchImplementation } = {}) {
-  const { VINTAGE_ISSUER: issuer, VINTAGE_AUDIENCE: audience, VINTAGE_CLIENT_ID: clientId,
-    VINTAGE_REQUIRED_SCOPE: readScope, VINTAGE_WRITE_SCOPE: writeScope, VINTAGE_ENABLE_WRITES: writes,
-    VINTAGE_JWKS_FILE: keyFile, VINTAGE_PUBLIC_ORIGIN: publicOrigin, VINTAGE_CLIENT_SECRET_FILE: secretFile } = env;
+  const { VINTAD3E_ISSUER: issuer, VINTAD3E_AUDIENCE: audience, VINTAD3E_CLIENT_ID: clientId,
+    VINTAD3E_REQUIRED_SCOPE: readScope, VINTAD3E_WRITE_SCOPE: writeScope, VINTAD3E_ENABLE_WRITES: writes,
+    VINTAD3E_JWKS_FILE: keyFile, VINTAD3E_PUBLIC_ORIGIN: publicOrigin, VINTAD3E_CLIENT_SECRET_FILE: secretFile } = env;
   let origin;
   try { origin = new URL(publicOrigin); } catch { throw new Error('Invalid public origin'); }
   if (origin.protocol !== 'https:' || origin.origin !== publicOrigin || origin.username || origin.password || origin.pathname !== '/' || origin.search || origin.hash) {
@@ -111,7 +111,7 @@ export async function prepareBrowserService(env, { fetchImplementation } = {}) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    const enabled = process.env.VINTAGE_ENABLE_BROWSER_LOGIN;
+    const enabled = process.env.VINTAD3E_ENABLE_BROWSER_LOGIN;
     if (enabled !== undefined && enabled !== 'true' && enabled !== 'false') throw new Error('Invalid login setting');
     const { server, db, port } = enabled === 'true' ? await prepareBrowserService(process.env) : prepareService(process.env);
     server.on('error', () => { db.close(); process.exitCode = 1; });

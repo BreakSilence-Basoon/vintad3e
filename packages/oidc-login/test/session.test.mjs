@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
-import { createAccessTokenVerifier } from '@vintage/access-token';
+import { createAccessTokenVerifier } from '@vintad3e/access-token';
 import { createMemorySessionStore } from '../src/session.mjs';
 
 const issuer = 'https://identity.example.invalid/';

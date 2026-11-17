@@ -9,7 +9,7 @@ import { request as httpRequest } from 'node:http';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
-import { initializeTimetableStore } from '@vintage/timetable-store';
+import { initializeTimetableStore } from '@vintad3e/timetable-store';
 import { prepareService } from '../src/main.mjs';
 import { initializeNewDatabase } from '../src/init-db.mjs';
 
@@ -18,7 +18,7 @@ test('fails to start without the required explicit configuration', () => {
 });
 
 test('initial setup creates one administrator and refuses to overwrite it', () => {
-  const prefix = join(tmpdir(), 'vintage-init-');
+  const prefix = join(tmpdir(), 'vintad3e-init-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -38,18 +38,18 @@ test('initial setup creates one administrator and refuses to overwrite it', () =
 });
 
 test('initialization command accepts UTF-8 input without printing identifiers', () => {
-  const prefix = join(tmpdir(), 'vintage-init-cli-');
+  const prefix = join(tmpdir(), 'vintad3e-init-cli-');
   const temp = mkdtempSync(prefix);
   try {
     const path = join(temp, 'new.sqlite');
     const input = { issuer: 'https://identity.example.invalid', subject: 'example-person', businessId: 'shop-a', staffId: 'staff-a' };
     const result = spawnSync(process.execPath, [fileURLToPath(new URL('../src/init-db.mjs', import.meta.url))], {
-      input: '\uFEFF' + JSON.stringify(input), encoding: 'utf8', env: { ...process.env, VINTAGE_DATABASE_FILE: path },
+      input: '\uFEFF' + JSON.stringify(input), encoding: 'utf8', env: { ...process.env, VINTAD3E_DATABASE_FILE: path },
     });
     assert.equal(result.status, 0);
     assert.doesNotMatch(result.stdout + result.stderr, /example-person|shop-a|staff-a/);
     const retry = spawnSync(process.execPath, [fileURLToPath(new URL('../src/init-db.mjs', import.meta.url))], {
-      input: JSON.stringify(input), encoding: 'utf8', env: { ...process.env, VINTAGE_DATABASE_FILE: path },
+      input: JSON.stringify(input), encoding: 'utf8', env: { ...process.env, VINTAD3E_DATABASE_FILE: path },
     });
     assert.notEqual(retry.status, 0);
   } finally {
@@ -59,14 +59,14 @@ test('initialization command accepts UTF-8 input without printing identifiers', 
 });
 
 test('all-migration command creates versioned backups without printing identities', () => {
-  const prefix = join(tmpdir(), 'vintage-migrate-all-cli-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-migrate-all-cli-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const path = join(temp, 'fixture.sqlite'), backups = join(temp, 'backups');
     mkdirSync(backups);
     initializeNewDatabase(path, { issuer: 'https://identity.example.invalid', subject: 'example-person', businessId: 'shop-a', staffId: 'staff-a' });
     const result = spawnSync(process.execPath, [fileURLToPath(new URL('../src/manage-db.mjs', import.meta.url)), 'migrate-all'], {
-      encoding: 'utf8', env: { ...process.env, VINTAGE_DATABASE_FILE: path, VINTAGE_BACKUP_DIRECTORY: backups },
+      encoding: 'utf8', env: { ...process.env, VINTAD3E_DATABASE_FILE: path, VINTAD3E_BACKUP_DIRECTORY: backups },
     });
     assert.equal(result.status, 0);
     assert.doesNotMatch(result.stdout + result.stderr, /example-person|shop-a|staff-a/);
@@ -82,7 +82,7 @@ test('all-migration command creates versioned backups without printing identitie
 });
 
 test('backup and restore commands preserve data without replacing existing files', () => {
-  const prefix = join(tmpdir(), 'vintage-copy-cli-');
+  const prefix = join(tmpdir(), 'vintad3e-copy-cli-');
   const temp = mkdtempSync(prefix);
   let restored;
   try {
@@ -92,7 +92,7 @@ test('backup and restore commands preserve data without replacing existing files
     initializeNewDatabase(original, { issuer: 'https://identity.example.invalid', subject: 'example-person', businessId: 'shop-a', staffId: 'staff-a' });
     const cli = fileURLToPath(new URL('../src/copy-db.mjs', import.meta.url));
     const run = (mode, database) => spawnSync(process.execPath, [cli, mode], { encoding: 'utf8',
-      env: { ...process.env, VINTAGE_DATABASE_FILE: database, VINTAGE_BACKUP_FILE: backupPath } });
+      env: { ...process.env, VINTAD3E_DATABASE_FILE: database, VINTAD3E_BACKUP_FILE: backupPath } });
     const backupResult = run('backup', original);
     assert.equal(backupResult.status, 0);
     assert.doesNotMatch(backupResult.stdout + backupResult.stderr, /example-person|shop-a|staff-a/);
@@ -109,7 +109,7 @@ test('backup and restore commands preserve data without replacing existing files
 });
 
 test('local management command backs up before migration and records changes without printing identities', () => {
-  const prefix = join(tmpdir(), 'vintage-manage-cli-');
+  const prefix = join(tmpdir(), 'vintad3e-manage-cli-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -118,7 +118,7 @@ test('local management command backs up before migration and records changes wit
     initializeNewDatabase(path, { issuer: 'https://identity.example.invalid', subject: 'example-admin', businessId: 'shop-a', staffId: 'admin-a' });
     const cli = fileURLToPath(new URL('../src/manage-db.mjs', import.meta.url));
     const run = (op, input = {}) => spawnSync(process.execPath, [cli, op], { encoding: 'utf8', input: JSON.stringify(input),
-      env: { ...process.env, VINTAGE_DATABASE_FILE: path, VINTAGE_BACKUP_FILE: backupPath } });
+      env: { ...process.env, VINTAD3E_DATABASE_FILE: path, VINTAD3E_BACKUP_FILE: backupPath } });
     assert.equal(run('migrate').status, 0);
     const viewer = { issuer: 'https://identity.example.invalid', subject: 'example-viewer', businessId: 'shop-a', staffId: 'staff-a' };
     const add = run('add-viewer', viewer);
@@ -130,7 +130,7 @@ test('local management command backs up before migration and records changes wit
     assert.equal(run('deactivate-viewer', { businessId: 'shop-a', staffId: 'staff-a' }).status, 0);
     assert.notEqual(run('migrate').status, 0);
     const migrateAgain = spawnSync(process.execPath, [cli, 'migrate'], { encoding: 'utf8', input: '{}',
-      env: { ...process.env, VINTAGE_DATABASE_FILE: path, VINTAGE_BACKUP_FILE: join(temp, 'backup-v2.sqlite') } });
+      env: { ...process.env, VINTAD3E_DATABASE_FILE: path, VINTAD3E_BACKUP_FILE: join(temp, 'backup-v2.sqlite') } });
     assert.equal(migrateAgain.status, 0);
     db = new DatabaseSync(path, { readOnly: true });
     assert.equal(db.prepare('PRAGMA user_version').get().user_version, 3);
@@ -145,7 +145,7 @@ test('local management command backs up before migration and records changes wit
 });
 
 test('loopback HTTP verifies signed token and current stored employee access', async () => {
-  const prefix = join(tmpdir(), 'vintage-api-');
+  const prefix = join(tmpdir(), 'vintad3e-api-');
   const temp = mkdtempSync(prefix);
   let writer, service;
   try {
@@ -171,14 +171,14 @@ test('loopback HTTP verifies signed token and current stored employee access', a
     const keys = await generateKeyPair('RS256', { extractable: true });
     const publicKey = { ...await exportJWK(keys.publicKey), kid: 'fixture-key', alg: 'RS256', use: 'sig' };
     const keyFile = join(temp, 'fixture-public-keys.json');
-    const config = { VINTAGE_ISSUER: 'https://identity.example.invalid', VINTAGE_AUDIENCE: 'example-api',
-      VINTAGE_CLIENT_ID: 'example-client', VINTAGE_REQUIRED_SCOPE: 'timetable:access',
-      VINTAGE_JWKS_FILE: keyFile, VINTAGE_DATABASE_FILE: database, VINTAGE_PORT: '3004' };
+    const config = { VINTAD3E_ISSUER: 'https://identity.example.invalid', VINTAD3E_AUDIENCE: 'example-api',
+      VINTAD3E_CLIENT_ID: 'example-client', VINTAD3E_REQUIRED_SCOPE: 'timetable:access',
+      VINTAD3E_JWKS_FILE: keyFile, VINTAD3E_DATABASE_FILE: database, VINTAD3E_PORT: '3004' };
     writeFileSync(keyFile, JSON.stringify({ keys: [{ ...publicKey, d: 'synthetic-private-field' }] }));
     assert.throws(() => prepareService(config), /Invalid public verification key/);
     writeFileSync(keyFile, JSON.stringify({ keys: [publicKey] }));
     const missing = join(temp, 'missing.sqlite');
-    assert.throws(() => prepareService({ ...config, VINTAGE_DATABASE_FILE: missing }));
+    assert.throws(() => prepareService({ ...config, VINTAD3E_DATABASE_FILE: missing }));
     assert.equal(existsSync(missing), false);
     service = prepareService(config);
     assert.throws(() => service.db.prepare('UPDATE memberships SET active = 0').run());

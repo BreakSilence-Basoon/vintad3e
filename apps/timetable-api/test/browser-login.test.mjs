@@ -7,8 +7,8 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { once } from 'node:events';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
-import { initializeTimetableStore } from '@vintage/timetable-store';
-import { migrateWithBackup } from '@vintage/timetable-store/operations';
+import { initializeTimetableStore } from '@vintad3e/timetable-store';
+import { migrateWithBackup } from '@vintad3e/timetable-store/operations';
 import { prepareBrowserService } from '../src/main.mjs';
 import { createLoopbackServer } from '../src/server.mjs';
 
@@ -32,7 +32,7 @@ test('read-only browser mode permits empty logout without permitting other POST 
 });
 
 test('fake OIDC login reaches HTTP authorization, honors current membership and logs out', async () => {
-  const prefix = join(tmpdir(), 'vintage-browser-test-');
+  const prefix = join(tmpdir(), 'vintad3e-browser-test-');
   const temp = mkdtempSync(prefix);
   let writer, service;
   try {
@@ -87,10 +87,10 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
       }
       throw new Error('Unexpected provider endpoint');
     };
-    const config = { VINTAGE_ISSUER: issuer, VINTAGE_AUDIENCE: audience, VINTAGE_CLIENT_ID: 'example-client',
-      VINTAGE_REQUIRED_SCOPE: 'timetable:access', VINTAGE_JWKS_FILE: keyFile, VINTAGE_DATABASE_FILE: database,
-      VINTAGE_PORT: '3004', VINTAGE_PUBLIC_ORIGIN: publicOrigin, VINTAGE_CLIENT_SECRET_FILE: secretFile,
-      VINTAGE_ENABLE_WRITES: 'true', VINTAGE_WRITE_SCOPE: 'timetable:write' };
+    const config = { VINTAD3E_ISSUER: issuer, VINTAD3E_AUDIENCE: audience, VINTAD3E_CLIENT_ID: 'example-client',
+      VINTAD3E_REQUIRED_SCOPE: 'timetable:access', VINTAD3E_JWKS_FILE: keyFile, VINTAD3E_DATABASE_FILE: database,
+      VINTAD3E_PORT: '3004', VINTAD3E_PUBLIC_ORIGIN: publicOrigin, VINTAD3E_CLIENT_SECRET_FILE: secretFile,
+      VINTAD3E_ENABLE_WRITES: 'true', VINTAD3E_WRITE_SCOPE: 'timetable:write' };
     service = await prepareBrowserService(config, { fetchImplementation: provider });
     service.server.listen(0, '127.0.0.1');
     await once(service.server, 'listening');
@@ -107,7 +107,7 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     assert.equal(callback.status, 200);
     const cookies = callback.headers.getSetCookie();
     assert.equal(cookies.length, 2);
-    const session = cookies.find((value) => value.startsWith('__Host-vintage-session=')).split(';')[0];
+    const session = cookies.find((value) => value.startsWith('__Host-vintad3e-session=')).split(';')[0];
     assert.equal((await fetch(callbackUrl, { headers: { cookie: binding } })).status, 401);
     const headers = { cookie: session };
     assert.equal((await fetch(`${base}/v1/history/record-a`, { headers })).status, 200);
@@ -126,7 +126,7 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     const writeCallback = await fetch(`${base}/auth/callback?code=example-code&state=${encodeURIComponent(writeAuthorization.searchParams.get('state'))}`,
       { headers: { cookie: `${writeBinding}; ${session}` } });
     assert.equal(writeCallback.status, 200);
-    const writeSession = writeCallback.headers.getSetCookie().find((value) => value.startsWith('__Host-vintage-session=')).split(';')[0];
+    const writeSession = writeCallback.headers.getSetCookie().find((value) => value.startsWith('__Host-vintad3e-session=')).split(';')[0];
     assert.equal((await fetch(`${base}/v1/history/record-a`, { headers })).status, 401);
     assert.equal((await adminPost(writeSession, 'https://other.example.invalid')).status, 403);
     assert.equal((await adminPost(writeSession, publicOrigin)).status, 403);

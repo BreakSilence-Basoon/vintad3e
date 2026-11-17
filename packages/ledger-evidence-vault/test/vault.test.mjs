@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path';
 import { createEvidenceVault } from '../src/index.mjs';
 
 test('synthetic bytes get independent names, byte hashes and verified reads', () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-'), temp = mkdtempSync(prefix);
   try {
     const vault = createEvidenceVault({ directory: temp, acknowledgeSyntheticOnly: true });
     const input = Buffer.from('synthetic document');
@@ -21,7 +21,7 @@ test('synthetic bytes get independent names, byte hashes and verified reads', ()
 });
 
 test('tampering, invalid references and unsupported inputs fail without leaking content', () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-invalid-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-invalid-'), temp = mkdtempSync(prefix);
   try {
     assert.throws(() => createEvidenceVault({ directory: temp }));
     assert.throws(() => createEvidenceVault({ directory: join(temp, 'example-private'), acknowledgeSyntheticOnly: true }),
@@ -44,7 +44,7 @@ test('tampering, invalid references and unsupported inputs fail without leaking 
 });
 
 test('replacement of the vault directory is detected', () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-root-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-root-'), temp = mkdtempSync(prefix);
   try {
     const root = join(temp, 'vault'), original = join(temp, 'original'); mkdirSync(root);
     const vault = createEvidenceVault({ directory: root, acknowledgeSyntheticOnly: true });

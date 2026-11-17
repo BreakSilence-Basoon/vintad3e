@@ -12,7 +12,7 @@ const fact = { id: 'example-a', type: 'invoice-issued', date: '2026-01-01', curr
 const request = { operationId: 'operation-a', actorId: 'operator-a', expectedRevision: 0, fact };
 
 test('comparison counts missing and changed records without exposing their contents or unlocking', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-compare-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-compare-'), temp = mkdtempSync(prefix);
   let reference, recovery, empty;
   try {
     const source = join(temp, 'reference.sqlite'), snapshot = join(temp, 'snapshot.sqlite'), prepared = join(temp, 'prepared.sqlite');
@@ -46,7 +46,7 @@ test('comparison counts missing and changed records without exposing their conte
 });
 
 test('comparison rejects missing, identical and not-pending inputs', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-compare-invalid-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-compare-invalid-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const source = join(temp, 'source.sqlite'), prepared = join(temp, 'prepared.sqlite'), alias = join(temp, 'alias.sqlite');
@@ -68,7 +68,7 @@ test('comparison rejects missing, identical and not-pending inputs', async () =>
 });
 
 test('a WAL reference comparison does not include an uncommitted change', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-compare-wal-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-compare-wal-'), temp = mkdtempSync(prefix);
   let reference;
   try {
     const source = join(temp, 'source.sqlite'), prepared = join(temp, 'prepared.sqlite');

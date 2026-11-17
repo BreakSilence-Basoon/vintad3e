@@ -9,7 +9,7 @@ import { initializeTimetableStore } from '../src/index.mjs';
 import { migrateWithBackup } from '../src/operations.mjs';
 
 test('concurrent reactivations create one audit and invalidate earlier tokens', async () => {
-  const prefix = join(tmpdir(), 'vintage-reactivation-');
+  const prefix = join(tmpdir(), 'vintad3e-reactivation-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {
@@ -55,7 +55,7 @@ test('concurrent reactivations create one audit and invalidate earlier tokens', 
 });
 
 test('reactivation migration failure preserves version 9 and its backup', async () => {
-  const prefix = join(tmpdir(), 'vintage-reactivation-failure-');
+  const prefix = join(tmpdir(), 'vintad3e-reactivation-failure-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {

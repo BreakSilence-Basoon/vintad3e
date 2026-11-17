@@ -75,7 +75,7 @@ test('a failed rollback closes the connection instead of leaving a pending write
 });
 
 test('simultaneous corrections cannot both replace the same revision', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-race-'), temp = mkdtempSync(prefix), path = join(temp, 'fixture.sqlite');
+  const prefix = join(tmpdir(), 'vintad3e-ledger-race-'), temp = mkdtempSync(prefix), path = join(temp, 'fixture.sqlite');
   let db;
   try {
     db = new DatabaseSync(path); initializeLedgerStore(db); writeLedgerFact(db, request); db.close();

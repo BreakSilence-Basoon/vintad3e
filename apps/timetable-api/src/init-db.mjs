@@ -2,7 +2,7 @@ import { openSync, closeSync } from 'node:fs';
 import { isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
-import { initializeTimetableStore } from '@vintage/timetable-store';
+import { initializeTimetableStore } from '@vintad3e/timetable-store';
 
 const id = (value) => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const subject = (value) => typeof value === 'string' && value.length > 0 && value.length <= 512 && value.trim() === value;
@@ -39,7 +39,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       if (size > 8192) throw new Error('Input too large');
       chunks.push(chunk);
     }
-    initializeNewDatabase(process.env.VINTAGE_DATABASE_FILE, JSON.parse(Buffer.concat(chunks).toString('utf8').replace(/^\uFEFF/, '')));
+    initializeNewDatabase(process.env.VINTAD3E_DATABASE_FILE, JSON.parse(Buffer.concat(chunks).toString('utf8').replace(/^\uFEFF/, '')));
     console.log('Database initialized.');
   } catch {
     console.error('Initialization failed. Existing files are never overwritten; inspect any new file before retrying.');

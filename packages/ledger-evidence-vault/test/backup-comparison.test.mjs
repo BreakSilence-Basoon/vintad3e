@@ -8,7 +8,7 @@ import { createEvidenceVault } from '../src/index.mjs';
 import { compareEvidenceBackups, initializeEvidenceCatalog, registerEvidenceReference } from '../src/catalog.mjs';
 
 test('compares synthetic catalog and file copies and identifies shared hard-linked content', async () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-backup-pair-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-backup-pair-'), temp = mkdtempSync(prefix);
   let db, copied;
   try {
     const originalDir = join(temp, 'source-files'), copyDir = join(temp, 'backup-files'); mkdirSync(originalDir); mkdirSync(copyDir);
@@ -42,7 +42,7 @@ test('compares synthetic catalog and file copies and identifies shared hard-link
 });
 
 test('rejects the same database or the same vault even through separate handles', async () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-backup-alias-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-backup-alias-'), temp = mkdtempSync(prefix);
   let db, alias, copied, memory;
   try {
     const firstDir = join(temp, 'first'), secondDir = join(temp, 'second'); mkdirSync(firstDir); mkdirSync(secondDir);
@@ -64,7 +64,7 @@ test('rejects the same database or the same vault even through separate handles'
 });
 
 test('separately changed catalog entries are reported without exposing identifiers', () => {
-  const prefix = join(tmpdir(), 'vintage-evidence-backup-changed-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-evidence-backup-changed-'), temp = mkdtempSync(prefix);
   let a, b;
   try {
     const first = join(temp, 'first'), second = join(temp, 'second'); mkdirSync(first); mkdirSync(second);

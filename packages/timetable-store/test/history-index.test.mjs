@@ -8,7 +8,7 @@ import { initializeTimetableStore, createTimetableStore } from '../src/index.mjs
 import { migrateWithBackup } from '../src/operations.mjs';
 
 test('version 5 migration backs up before adding the owner and time index', async () => {
-  const prefix = join(tmpdir(), 'vintage-history-index-');
+  const prefix = join(tmpdir(), 'vintad3e-history-index-');
   const temp = mkdtempSync(prefix);
   let db, snapshot;
   try {
@@ -67,7 +67,7 @@ test('version 5 migration backs up before adding the owner and time index', asyn
 });
 
 test('index migration failure preserves the old database and backup', async () => {
-  const prefix = join(tmpdir(), 'vintage-history-index-failure-');
+  const prefix = join(tmpdir(), 'vintad3e-history-index-failure-');
   const temp = mkdtempSync(prefix);
   let db, snapshot;
   try {

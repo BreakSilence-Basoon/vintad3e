@@ -1,1 +1,1 @@
-{"name":"@vintage-fixture/first","private":true,"version":"1.0.0","scripts":{"probe":"node -e \"console.log('fixture:first')\""},"dependencies":{"@vintage-fixture/shared":"workspace:*"}}
+{"name":"@vintad3e-fixture/first","private":true,"version":"1.0.0","scripts":{"probe":"node -e \"console.log('fixture:first')\""},"dependencies":{"@vintad3e-fixture/shared":"workspace:*"}}

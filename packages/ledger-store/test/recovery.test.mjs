@@ -14,7 +14,7 @@ const request = { operationId: 'operation-a', actorId: 'operator-a', expectedRev
 const review = { operatorId: 'operator-a', reason: 'Example review', reconciled: true };
 
 test('offline recovery preserves originals and blocks writes until explicit review', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-recovery-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-recovery-'), temp = mkdtempSync(prefix);
   let source, restored, pendingCopy, second, raw;
   try {
     const original = join(temp, 'original.sqlite'), backup = join(temp, 'backup.sqlite'), prepared = join(temp, 'prepared.sqlite');
@@ -63,7 +63,7 @@ test('offline recovery preserves originals and blocks writes until explicit revi
 });
 
 test('a missing guard, invalid source or existing target fails closed', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-recovery-invalid-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-recovery-invalid-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const source = join(temp, 'source.sqlite'), prepared = join(temp, 'prepared.sqlite'), existing = join(temp, 'existing.sqlite');
@@ -87,7 +87,7 @@ test('a missing guard, invalid source or existing target fails closed', async ()
 });
 
 test('concurrent review attempts create at most one unlock event', async () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-recovery-race-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-recovery-race-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const source = join(temp, 'source.sqlite'), prepared = join(temp, 'prepared.sqlite');

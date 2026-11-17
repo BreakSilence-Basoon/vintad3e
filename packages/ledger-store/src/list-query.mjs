@@ -1,4 +1,4 @@
-import { validateLedgerFact } from '@vintage/ledger-facts';
+import { validateLedgerFact } from '@vintad3e/ledger-facts';
 
 const id = (value) => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const types = new Set(['invoice-issued', 'payment-made', 'reimbursement-settled']);

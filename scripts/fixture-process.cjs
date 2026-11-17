@@ -1,11 +1,11 @@
 // Private synthetic helper: same module acts as trusted IPC readiness preload in owned children.
-if (module.parent && process.env.VINTAGE_FIXTURE_CHILD === '1') {
+if (module.parent && process.env.VINTAD3E_FIXTURE_CHILD === '1') {
   const net=require('node:net'),original=net.Server.prototype.emit;
   net.Server.prototype.emit=function(event,...args){
     const result=original.call(this,event,...args);
     if(event==='listening' && typeof process.send==='function'){
       const address=this.address();
-      if(address && typeof address==='object') process.send({type:'fixture-listening',pid:process.pid,address:address.address,port:address.port,nonce:process.env.VINTAGE_FIXTURE_NONCE});
+      if(address && typeof address==='object') process.send({type:'fixture-listening',pid:process.pid,address:address.address,port:address.port,nonce:process.env.VINTAD3E_FIXTURE_NONCE});
     }
     return result;
   };
@@ -23,7 +23,7 @@ if (module.parent && process.env.VINTAGE_FIXTURE_CHILD === '1') {
  }
  function startChild(entry,{cwd,env,port,timeoutMs=8000}){
   const nonce=randomBytes(16).toString('hex');
-  const child=spawn(process.execPath,['--require',__filename,entry],{cwd,env:{...env,VINTAGE_FIXTURE_CHILD:'1',VINTAGE_FIXTURE_NONCE:nonce},stdio:['ignore','ignore','ignore','ipc'],windowsHide:true});
+  const child=spawn(process.execPath,['--require',__filename,entry],{cwd,env:{...env,VINTAD3E_FIXTURE_CHILD:'1',VINTAD3E_FIXTURE_NONCE:nonce},stdio:['ignore','ignore','ignore','ipc'],windowsHide:true});
   const ready=new Promise((resolve,reject)=>{let settled=false;const finish=(error)=>{if(settled)return;settled=true;clearTimeout(timer);child.off('message',onMessage);child.off('exit',onExit);child.off('error',onError);error?reject(error):resolve(child)};const onExit=()=>finish(Error('OWNED_CHILD_EXITED'));const onError=()=>finish(Error('OWNED_CHILD_ERROR'));const onMessage=(m)=>{if(!m||m.type!=='fixture-listening'||m.pid!==child.pid||m.nonce!==nonce||m.address!=='127.0.0.1'||m.port!==port||hasExited(child))return;setTimeout(()=>hasExited(child)?finish(Error('OWNED_CHILD_EXITED')):finish(),100)};child.on('message',onMessage);child.once('exit',onExit);child.once('error',onError);const timer=setTimeout(()=>finish(Error('OWNED_CHILD_TIMEOUT')),timeoutMs)});
   return {child,ready};
  }

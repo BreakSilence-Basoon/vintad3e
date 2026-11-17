@@ -16,21 +16,21 @@ function run(command, env, input = '') {
 }
 
 test('offline commands preserve the source, require explicit review and do not print identities', () => {
-  const prefix = join(tmpdir(), 'vintage-ledger-recovery-cli-'), temp = mkdtempSync(prefix);
+  const prefix = join(tmpdir(), 'vintad3e-ledger-recovery-cli-'), temp = mkdtempSync(prefix);
   let db;
   try {
     const source = join(temp, 'source.sqlite'), backup = join(temp, 'backup.sqlite'), recovered = join(temp, 'recovered.sqlite');
     initializeNewLedgerDatabase(source, { businessId: 'example-shop', grant });
-    const env = { VINTAGE_LEDGER_DATABASE_FILE: source, VINTAGE_LEDGER_DESTINATION_FILE: backup };
+    const env = { VINTAD3E_LEDGER_DATABASE_FILE: source, VINTAD3E_LEDGER_DESTINATION_FILE: backup };
     const copied = run('backup', env);
     assert.equal(copied.status, 0);
     assert.equal(run('backup', env).status, 1); // Existing backup is never overwritten.
-    const prepared = run('prepare', { VINTAGE_LEDGER_DATABASE_FILE: backup, VINTAGE_LEDGER_DESTINATION_FILE: recovered });
+    const prepared = run('prepare', { VINTAD3E_LEDGER_DATABASE_FILE: backup, VINTAD3E_LEDGER_DESTINATION_FILE: recovered });
     assert.equal(prepared.status, 0);
-    const compare = run('compare', { VINTAGE_LEDGER_DATABASE_FILE: recovered, VINTAGE_LEDGER_REFERENCE_FILE: source });
+    const compare = run('compare', { VINTAD3E_LEDGER_DATABASE_FILE: recovered, VINTAD3E_LEDGER_REFERENCE_FILE: source });
     assert.equal(compare.status, 0);
     assert.deepEqual(JSON.parse(compare.stdout).facts, { onlyRecovery: 0, onlyReference: 0, changed: 0, equal: 0 });
-    const reviewEnv = { VINTAGE_LEDGER_DATABASE_FILE: recovered };
+    const reviewEnv = { VINTAD3E_LEDGER_DATABASE_FILE: recovered };
     const invalid = run('unlock', reviewEnv, JSON.stringify({ operatorId: 'example-operator', reason: 'Example review', reconciled: false }));
     assert.equal(invalid.status, 1);
     db = new DatabaseSync(recovered, { readOnly: true });
@@ -47,7 +47,7 @@ test('offline commands preserve the source, require explicit review and do not p
     assert.equal(db.prepare('PRAGMA user_version').get().user_version, 1);
     for (const result of [copied, prepared, compare, invalid, unlocked]) assert.doesNotMatch(result.stdout + result.stderr, /example-user|example-shop|example-actor|example-operator/);
     const missing = join(temp, 'missing.sqlite');
-    assert.equal(run('unlock', { VINTAGE_LEDGER_DATABASE_FILE: missing }, '{}').status, 1);
+    assert.equal(run('unlock', { VINTAD3E_LEDGER_DATABASE_FILE: missing }, '{}').status, 1);
     assert.equal(existsSync(missing), false);
   } finally {
     if (db?.isOpen) db.close();

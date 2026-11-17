@@ -1,4 +1,4 @@
-# @vintage/ui
+# @vintad3e/ui
 
 사내 앱의 버튼·입력·라벨·네이티브 선택창과 해당 CSS를 한곳에서 관리한다.
 shadcn/ui의 소스 소유 방식을 적용하되, 기존 Apparel·Timetable·Supporters의
@@ -26,13 +26,13 @@ CSS reset·Tailwind preflight·새 Radix wrapper를 추가하지 않았다. 공�
 
 ## 앱 연결
 
-앱에 `@vintage/ui: workspace:*`, Next `transpilePackages`, 공용 ESLint config,
+앱에 `@vintad3e/ui: workspace:*`, Next `transpilePackages`, 공용 ESLint config,
 `components.json` 경로를 연결한다. 실제 예는 [Apparel layout](../../apps/apparel/src/app/layout.tsx)과
 [lint 설정](../../apps/apparel/eslint.config.mjs)이다.
 
 ```tsx
-import { Button } from '@vintage/ui/components/button';
-import { Input } from '@vintage/ui/components/input';
+import { Button } from '@vintad3e/ui/components/button';
+import { Input } from '@vintad3e/ui/components/input';
 
 <Input name="brand" value={brand} onChange={handleBrandChange} />
 <Button type="submit" variant="primary" disabled={pending}>적용</Button>
@@ -52,10 +52,10 @@ CSS 순서는 shared 기본 → UI profile → 기존 앱 업무 CSS다. 정확 
 ## 검사와 화면 비교
 
 ```text
-corepack pnpm --filter @vintage/ui test
-corepack pnpm --filter @vintage/ui test:lint
-corepack pnpm --filter @vintage/ui test:react
-corepack pnpm --filter @vintage/ui typecheck
+corepack pnpm --filter @vintad3e/ui test
+corepack pnpm --filter @vintad3e/ui test:lint
+corepack pnpm --filter @vintad3e/ui test:react
+corepack pnpm --filter @vintad3e/ui typecheck
 corepack pnpm design:check
 ```
 
@@ -84,8 +84,8 @@ import {
   showStaffToast,
   setStaffStatusToast,
   StaffToastViewport,
-} from '@vintage/ui/toast';
-import '@vintage/ui/styles/toast.css';
+} from '@vintad3e/ui/toast';
+import '@vintad3e/ui/styles/toast.css';
 ```
 
 유지되는 앱 client layout에 `StaffToastViewport`를 한 번 둔다. `showStaffToast(text,

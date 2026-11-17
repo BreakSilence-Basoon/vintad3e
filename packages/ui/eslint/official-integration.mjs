@@ -21,7 +21,7 @@ const configuredIssues = (issues) => {
 const verify = (source, sourceFile = filename) => configuredIssues(
   linter.verify(source, sharedUiConfig, { filename: sourceFile }),
 );
-const prefix = 'import { Button } from "@vintage/ui/components/button";\n';
+const prefix = 'import { Button } from "@vintad3e/ui/components/button";\n';
 
 test('actual Timetable submit wrapper explicitly forwards its approved appearance without a file exemption', async () => {
   const sourceFile = path.join(root, 'apps/timetable/src/components/form-submit-button.tsx');
@@ -79,7 +79,7 @@ test('actual discovery accepts finite secondary/domain slots without className w
 });
 
 test('actual parser enforces exact mapping source and rejects same-file inline override', () => {
-  const source = 'import {Label} from "@vintage/ui/components"; export const Example = () => <Label appearance="group" layout="mapping-review">브랜드</Label>;';
+  const source = 'import {Label} from "@vintad3e/ui/components"; export const Example = () => <Label appearance="group" layout="mapping-review">브랜드</Label>;';
   const file = path.join(root, 'apps/apparel/src/components/admin/cafe24-mapping-review-panel.tsx');
   assert.deepEqual(verify(source, file).filter((issue) => issue.severity === 2), []);
   assert.ok(verify(source).some((issue) => issue.ruleId === 'bs-ui/no-inline-slot-misuse'));
@@ -87,7 +87,7 @@ test('actual parser enforces exact mapping source and rejects same-file inline o
 });
 
 test('actual parser accepts exact error span slot and rejects color/value/source/tag mutations', () => {
-  const source = 'import {supportersFeedbackSlots} from "@vintage/ui/slots"; export const Example = () => <span style={supportersFeedbackSlots.snsErrorStyle}>오류</span>;';
+  const source = 'import {supportersFeedbackSlots} from "@vintad3e/ui/slots"; export const Example = () => <span style={supportersFeedbackSlots.snsErrorStyle}>오류</span>;';
   const file = path.join(root, 'apps/supporters/src/components/sns-sync-button.tsx');
   assert.deepEqual(verify(source, file).filter((issue) => issue.severity === 2), []);
   for (const bad of [source.replace('<span ', '<div ').replace('</span>', '</div>'), source.replace('snsErrorStyle', 'anotherStyle'), source.replace('supportersFeedbackSlots.snsErrorStyle', '{color:"#c0392b",fontSize:"0.72rem"}'), source.replace('supportersFeedbackSlots.snsErrorStyle', '{color:"#000000",fontSize:"1rem"}')]) {
@@ -97,7 +97,7 @@ test('actual parser accepts exact error span slot and rejects color/value/source
 });
 
 test('actual official lint permits only source-bound preserved SVG fill slots', () => {
-  const imported = 'import {svgFillSlots} from "@vintage/ui/slots";';
+  const imported = 'import {svgFillSlots} from "@vintad3e/ui/slots";';
   for (const [name, spec] of Object.entries(SVG_FILL_CONTRACTS)) {
     for (const owned of spec.sources) {
       const original = svgFillAnchorFor(name, owned);

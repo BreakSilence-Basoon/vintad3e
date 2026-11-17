@@ -30,7 +30,7 @@ async function setup(path, dir) {
 }
 
 test('one-use challenge is scoped, atomic and invalid after device revocation', async () => {
-  const prefix = join(tmpdir(), 'vintage-kiosk-');
+  const prefix = join(tmpdir(), 'vintad3e-kiosk-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {
@@ -88,7 +88,7 @@ test('one-use challenge is scoped, atomic and invalid after device revocation', 
 });
 
 test('expired, revoked and concurrently consumed challenges fail closed', async (t) => {
-  const prefix = join(tmpdir(), 'vintage-kiosk-race-');
+  const prefix = join(tmpdir(), 'vintad3e-kiosk-race-');
   const temp = mkdtempSync(prefix);
   let db;
   try {
@@ -134,7 +134,7 @@ test('expired, revoked and concurrently consumed challenges fail closed', async 
 });
 
 test('failed kiosk migration leaves version 10 and its backup intact', async () => {
-  const prefix = join(tmpdir(), 'vintage-kiosk-migration-');
+  const prefix = join(tmpdir(), 'vintad3e-kiosk-migration-');
   const temp = mkdtempSync(prefix);
   let db, backup;
   try {

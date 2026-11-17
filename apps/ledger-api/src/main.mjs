@@ -4,8 +4,8 @@ import { isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { createLocalJWKSet } from 'jose';
-import { createLedgerAuthorizedStore } from '@vintage/ledger-store';
-import { verifyStructure } from '@vintage/ledger-store/backup';
+import { createLedgerAuthorizedStore } from '@vintad3e/ledger-store';
+import { verifyStructure } from '@vintad3e/ledger-store/backup';
 
 function publicKeys(path) {
   if (!isAbsolute(path ?? '') || !lstatSync(path).isFile() || lstatSync(path).size > 1024 * 1024) throw new Error('Invalid keys');
@@ -23,10 +23,10 @@ function publicKeys(path) {
 
 // Experimental loopback-only service; no browser sessions, TLS termination or public deployment.
 export function prepareLedgerService(env) {
-  const { VINTAGE_LEDGER_DATABASE_FILE: path, VINTAGE_LEDGER_JWKS_FILE: keyFile, VINTAGE_LEDGER_PORT: portText,
-    VINTAGE_LEDGER_ISSUER: issuer, VINTAGE_LEDGER_AUDIENCE: audience, VINTAGE_LEDGER_CLIENT_ID: client,
-    VINTAGE_LEDGER_BUSINESS_ID: businessId, VINTAGE_LEDGER_READ_SCOPE: readScope, VINTAGE_LEDGER_WRITE_SCOPE: writeScope,
-    VINTAGE_LEDGER_ENABLE_WRITES: writesText, VINTAGE_LEDGER_HISTORY_SCOPE: historyScope } = env;
+  const { VINTAD3E_LEDGER_DATABASE_FILE: path, VINTAD3E_LEDGER_JWKS_FILE: keyFile, VINTAD3E_LEDGER_PORT: portText,
+    VINTAD3E_LEDGER_ISSUER: issuer, VINTAD3E_LEDGER_AUDIENCE: audience, VINTAD3E_LEDGER_CLIENT_ID: client,
+    VINTAD3E_LEDGER_BUSINESS_ID: businessId, VINTAD3E_LEDGER_READ_SCOPE: readScope, VINTAD3E_LEDGER_WRITE_SCOPE: writeScope,
+    VINTAD3E_LEDGER_ENABLE_WRITES: writesText, VINTAD3E_LEDGER_HISTORY_SCOPE: historyScope } = env;
   if (!isAbsolute(path ?? '') || !lstatSync(path).isFile() || !/^\d{1,5}$/.test(portText ?? '')) throw new Error('Invalid configuration');
   const port = Number(portText);
   if (port < 1 || port > 65535 || (writesText !== undefined && !['true', 'false'].includes(writesText))) throw new Error('Invalid configuration');

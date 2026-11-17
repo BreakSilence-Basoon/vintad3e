@@ -1,5 +1,5 @@
-const loginCookie = '__Host-vintage-login';
-const sessionCookie = '__Host-vintage-session';
+const loginCookie = '__Host-vintad3e-login';
+const sessionCookie = '__Host-vintad3e-session';
 const cookieValue = /^[A-Za-z0-9_-]{43}$/;
 const secureCookie = (name, value, maxAge) => `${name}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
 const reply = (status, body, headers = new Headers()) => {

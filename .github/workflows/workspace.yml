@@ -17,15 +17,15 @@ jobs:
       - run: corepack enable
       - run: corepack pnpm install --frozen-lockfile --ignore-scripts
       - run: corepack pnpm test
-      - run: corepack pnpm --filter @vintage/ui test
-      - run: corepack pnpm --filter @vintage/timetable-policy test
-      - run: corepack pnpm --filter @vintage/ledger-facts test
-      - run: corepack pnpm --filter @vintage/ledger-evidence-vault test
-      - run: corepack pnpm --filter @vintage/ledger-access test
-      - run: corepack pnpm --filter @vintage/ledger-store test
-      - run: corepack pnpm --filter @vintage/ledger-api test
-      - run: corepack pnpm --filter @vintage/access-token test
-      - run: corepack pnpm --filter @vintage/oidc-login test
-      - run: corepack pnpm --filter @vintage/timetable-read-api test
-      - run: corepack pnpm --filter @vintage/timetable-store test
-      - run: corepack pnpm --filter @vintage/timetable-api test
+      - run: corepack pnpm --filter @vintad3e/ui test
+      - run: corepack pnpm --filter @vintad3e/timetable-policy test
+      - run: corepack pnpm --filter @vintad3e/ledger-facts test
+      - run: corepack pnpm --filter @vintad3e/ledger-evidence-vault test
+      - run: corepack pnpm --filter @vintad3e/ledger-access test
+      - run: corepack pnpm --filter @vintad3e/ledger-store test
+      - run: corepack pnpm --filter @vintad3e/ledger-api test
+      - run: corepack pnpm --filter @vintad3e/access-token test
+      - run: corepack pnpm --filter @vintad3e/oidc-login test
+      - run: corepack pnpm --filter @vintad3e/timetable-read-api test
+      - run: corepack pnpm --filter @vintad3e/timetable-store test
+      - run: corepack pnpm --filter @vintad3e/timetable-api test

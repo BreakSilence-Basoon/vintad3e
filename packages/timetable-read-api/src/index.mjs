@@ -1,4 +1,4 @@
-import { mayAccessTimetable } from '@vintage/timetable-policy';
+import { mayAccessTimetable } from '@vintad3e/timetable-policy';
 
 const id = (value) => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const identityPart = (value) => typeof value === 'string' && value.length > 0 && value.length <= 2048 && value === value.trim();

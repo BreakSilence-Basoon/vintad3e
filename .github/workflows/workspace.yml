@@ -32,3 +32,5 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/timetable-web test
       - run: corepack pnpm --filter @vintad3e/timetable-web build
       - run: corepack pnpm --filter @vintad3e/portal-web build
+      - run: corepack pnpm --filter @vintad3e/apparel-web test
+      - run: corepack pnpm --filter @vintad3e/apparel-web build

@@ -8,6 +8,31 @@ importers:
 
   .: {}
 
+  apps/apparel-web:
+    dependencies:
+      '@vintad3e/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      next:
+        specifier: 16.2.9
+        version: 16.2.9(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      react:
+        specifier: 19.2.4
+        version: 19.2.4
+      react-dom:
+        specifier: 19.2.4
+        version: 19.2.4(react@19.2.4)
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.19.43
+      '@types/react':
+        specifier: ^19
+        version: 19.3.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   apps/ledger-api:
     dependencies:
       '@vintad3e/ledger-store':

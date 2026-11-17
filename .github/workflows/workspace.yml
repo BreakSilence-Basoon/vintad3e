@@ -41,3 +41,4 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/floor-web test
       - run: corepack pnpm --filter @vintad3e/floor-web build
       - run: corepack pnpm --filter @vintad3e/creative-web build
+      - run: corepack pnpm --filter @vintad3e/admin-web build

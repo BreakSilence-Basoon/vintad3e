@@ -4,7 +4,7 @@ import { createServer } from 'node:net';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -13,7 +13,7 @@ async function waitFor(fn) {
   throw new Error('Timed out waiting for browser or server');
 }
 
-test('development server renders schedule and paginates attendance', { timeout: 90000 }, async () => {
+test('development server renders schedule and paginates attendance', { timeout: 120000 }, async () => {
   const server = createServer(); server.listen(0, '127.0.0.1'); await once(server, 'listening');
   const port = server.address().port; await new Promise(resolve => server.close(resolve));
   const origin = `http://127.0.0.1:${port}`;
@@ -47,12 +47,21 @@ test('development server renders schedule and paginates attendance', { timeout: 
     assert.equal((third.match(/<article class="attendance-history-card attendance-history-card--checked-out"/g) ?? []).length, 21);
     assert.doesNotMatch(third, /aria-label="출근부 더 불러오기"/);
 
-    const debugServer = createServer(); debugServer.listen(0, '127.0.0.1'); await once(debugServer, 'listening');
-    const debugPort = debugServer.address().port; await new Promise(resolve => debugServer.close(resolve));
-    const debug = `http://127.0.0.1:${debugPort}`;
     profile = await mkdtemp(join(tmpdir(), 'vintad3e-timetable-browser-'));
-    chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debugPort}`,'about:blank'], { stdio:'ignore' });
-    await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
+    let chromeError = '', spawnError;
+    chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,'--remote-debugging-port=0','about:blank'], { stdio:['ignore','ignore','pipe'] });
+    chrome.on('error', error => { spawnError = error; });
+    chrome.stderr.on('data', chunk => { chromeError = (chromeError + chunk.toString()).slice(-4000); });
+    let debug;
+    for (let i = 0; i < 180; i++) {
+      if (spawnError || chrome.exitCode !== null || chrome.signalCode !== null) throw new Error(`Chrome exited before debugging started: ${spawnError?.message ?? chromeError}`);
+      try {
+        const port = Number((await readFile(join(profile, 'DevToolsActivePort'), 'utf8')).split('\n')[0]);
+        if (Number.isInteger(port) && port > 0 && port <= 65535 && (await fetch(`http://127.0.0.1:${port}/json/version`)).ok) { debug = `http://127.0.0.1:${port}`; break; }
+      } catch {}
+      await delay(250);
+    }
+    if (!debug) throw new Error(`Chrome debugging endpoint did not start: ${chromeError}`);
     const target = await (await fetch(`${debug}/json/new?about:blank`, { method:'PUT' })).json();
     socket = new WebSocket(target.webSocketDebuggerUrl);
     await new Promise((resolve,reject) => { socket.addEventListener('open',resolve,{once:true}); socket.addEventListener('error',reject,{once:true}); });

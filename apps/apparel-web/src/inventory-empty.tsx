@@ -2,7 +2,9 @@
 import { useState } from 'react';
 import { buildInventoryHref, belongsToInventoryCollection, variantMatchesInventoryOptionFilters, type InventoryCollection, type InventoryOptionFilters } from './inventory-collection';
 import { filterFixtureInventory, type FixtureProduct } from './inventory-fixture';
-import { InventoryFixtureDetail, type Rows } from './inventory-fixture-detail';
+import { InventoryFixtureDetail } from './inventory-fixture-detail';
+import type { Rows } from './inventory-stock';
+import { AdminToastViewport } from './admin-toast';
 
 type Filters = InventoryOptionFilters & { collection: InventoryCollection; search: string };
 type SortKey = 'skuCode' | 'optionName' | 'apparelType' | 'color' | 'size' | 'apparelTarget' | 'unitOfMeasure';
@@ -36,5 +38,6 @@ export function InventoryEmpty({ initial, products }: { initial: Filters; produc
       </summary><div className="product-card__table"><table className="simple-table"><thead><tr>{headers.map(([key,label]) => { const active = state?.key === key; const direction = active ? state.direction : 'asc'; return <th key={key}><button type="button" className={`sort-toggle-button${active ? ' is-active' : ''} sort-toggle-button--table`} aria-pressed={active} title={`${label} ${direction === 'asc' ? '내림차순' : '오름차순'}으로 변경`} onClick={() => setSort({...sort,[product.id]:{key,direction:active && direction === 'asc' ? 'desc':'asc'}})}><span>{label}</span><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d={direction === 'asc' ? 'M8 3.2 3.8 7.4l1.1 1.1 2.3-2.3v6.6h1.6V6.2l2.3 2.3 1.1-1.1L8 3.2Z' : 'm8 12.8 4.2-4.2-1.1-1.1-2.3 2.3V3.2H7.2v6.6L4.9 7.5 3.8 8.6 8 12.8Z'} /></svg></button></th>; })}</tr></thead><tbody>{rows.map(row => <tr key={row.skuCode}>{headers.map(([key]) => <td key={key}>{key === 'apparelTarget' && row[key] === 'UNISEX' ? '공용' : row[key]}</td>)}</tr>)}</tbody></table></div></details>;
     })}</div>}
     {selected ? <InventoryFixtureDetail product={selected} rows={stockRows} onRows={setStockRows} onClose={() => setSelected(null)} /> : null}
+    <AdminToastViewport />
   </section>;
 }

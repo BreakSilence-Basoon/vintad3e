@@ -1,15 +1,17 @@
 'use client';
-import { useState, useSyncExternalStore, type FormEvent } from 'react';
+import { useCallback, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { Button } from '@vintad3e/ui/components';
 import { formatToastText } from '@vintad3e/ui/toast-text';
 import { libraryDate, type FixtureDocument } from './library-fixture';
+import { addFixtureComment, commentServerSnapshot, commentSnapshot, parseFixtureComments, subscribeComments } from './fixture-comments';
 import { bookmarkServerSnapshot, bookmarkSnapshot, parseFixtureBookmarks, setFixtureBookmark, subscribeBookmarks } from './fixture-bookmarks';
 
 export function FixtureCommunity({ document }: { document: FixtureDocument }) {
   const bookmarkData = useSyncExternalStore(subscribeBookmarks, bookmarkSnapshot, bookmarkServerSnapshot);
   const saved = parseFixtureBookmarks(bookmarkData).includes(document.id);
   const [body, setBody] = useState('');
-  const [comments, setComments] = useState<{ id: string; body: string; createdAt: string }[]>([]);
+  const commentData = useSyncExternalStore(subscribeComments, useCallback(() => commentSnapshot(document.id), [document.id]), commentServerSnapshot);
+  const comments = parseFixtureComments(commentData);
   const [toast, setToast] = useState<{ message: string; error: boolean } | null>(null);
   const [pending, setPending] = useState(false);
   async function copy(kind: 'text' | 'reference') {
@@ -30,8 +32,9 @@ export function FixtureCommunity({ document }: { document: FixtureDocument }) {
   function comment(event: FormEvent) {
     event.preventDefault();
     if (!body.trim()) return;
-    setComments(current => [{ id: crypto.randomUUID(), body: body.trim(), createdAt: new Date().toISOString() }, ...current].slice(0, 200));
-    setBody(''); setToast({ message: '댓글을 작성했습니다.', error: false });
+    if (addFixtureComment(document.id, body)) {
+      setBody(''); setToast({ message: '댓글을 작성했습니다.', error: false });
+    } else setToast({ message: '댓글을 작성하지 못했습니다.', error: true });
   }
   return <>
     <div className="publication-actions"><Button profile="library" type="button" disabled={pending} aria-busy={pending} onClick={() => copy('text')}>내용 복사</Button><Button profile="library" type="button" disabled={pending} aria-busy={pending} onClick={() => copy('reference')}>문서 참조 복사</Button></div>

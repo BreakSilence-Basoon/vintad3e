@@ -62,11 +62,17 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     await run("(()=>{const x=document.querySelector('#publication-comment');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(x,'좋은 안내입니다.');x.dispatchEvent(new Event('input',{bubbles:true}));})()");
     await run("document.querySelector('.publication-community form').requestSubmit()");
     await waitFor(async () => evaluate("document.querySelector('.library-comments')?.textContent.includes('좋은 안내입니다.')"));
+    await send('Page.reload');
+    await waitFor(async () => evaluate("document.querySelector('.library-comments')?.textContent.includes('좋은 안내입니다.')"));
+    await send('Page.navigate',{url:`${origin}/publications/00000000-0000-4000-8000-000000000002`});
+    await waitFor(async () => evaluate("document.querySelector('.publication-community .library-empty')?.textContent.includes('아직 댓글이 없습니다.')"));
+    assert.ok(await evaluate("!document.querySelector('.library-comments')"));
     await send('Page.navigate',{url:`${origin}/bookmarks`});
     await waitFor(async () => evaluate("document.querySelector('.library-feed')?.textContent.includes('매장 운영 안내')"));
     assert.equal(await evaluate("document.querySelectorAll('.library-feed li').length"),1);
     await evaluate("document.querySelector('.library-feed a').click()");
     await waitFor(async () => evaluate("document.querySelector('.publication-community button')?.getAttribute('aria-pressed') === 'true'"));
+    await waitFor(async () => evaluate("document.querySelector('.library-comments')?.textContent.includes('좋은 안내입니다.')"));
     await run("document.querySelector('.publication-community button').click()");
     await waitFor(async () => evaluate("document.querySelector('.publication-community button')?.getAttribute('aria-pressed') === 'false'"));
     await send('Page.navigate',{url:`${origin}/bookmarks`});

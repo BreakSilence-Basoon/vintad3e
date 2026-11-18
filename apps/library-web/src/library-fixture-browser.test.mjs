@@ -26,6 +26,15 @@ test('bookmarks show the original empty state with fixtures disabled', { timeout
     assert.match(await response.text(), /저장한 게시물이 없습니다\./);
     assert.equal((await fetch(`${origin}/publications/00000000-0000-4000-8000-000000000001`)).status, 404);
     assert.equal((await fetch(`${origin}/api/publications/00000000-0000-4000-8000-000000000001/source`)).status, 404);
+    const legacy = await fetch(`${origin}/publications?q=${encodeURIComponent('매장 & 운영')}`, { redirect: 'manual' });
+    assert.equal(legacy.status, 307);
+    const destination = new URL(legacy.headers.get('location'), origin);
+    assert.equal(destination.pathname, '/');
+    assert.equal(destination.searchParams.get('q'), '매장 & 운영');
+    const oversized = await fetch(`${origin}/publications?q=${'a'.repeat(201)}`, { redirect: 'manual' });
+    assert.equal(new URL(oversized.headers.get('location'), origin).searchParams.get('q').length, 200);
+    const duplicate = await fetch(`${origin}/publications?q=one&q=two`, { redirect: 'manual' });
+    assert.equal(new URL(duplicate.headers.get('location'), origin).search, '');
   } finally {
     server.kill('SIGTERM');
     if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000)]);

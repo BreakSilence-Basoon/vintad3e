@@ -17,6 +17,22 @@ async function waitFor(fn) {
   throw new Error('Timed out waiting for browser or server');
 }
 
+test('bookmarks show the original empty state with fixtures disabled', { timeout: 60000 }, async () => {
+  const port = await freePort();
+  const origin = `http://127.0.0.1:${port}`;
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_LIBRARY_FIXTURE:''}, stdio:'ignore' });
+  try {
+    const response = await waitFor(async () => { const result = await fetch(`${origin}/bookmarks`); return result.status === 200 ? result : false; });
+    assert.match(await response.text(), /저장한 게시물이 없습니다\./);
+    assert.equal((await fetch(`${origin}/publications/00000000-0000-4000-8000-000000000001`)).status, 404);
+    assert.equal((await fetch(`${origin}/api/publications/00000000-0000-4000-8000-000000000001/source`)).status, 404);
+  } finally {
+    server.kill('SIGTERM');
+    if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000)]);
+    if (server.exitCode === null && server.signalCode === null) server.kill('SIGKILL');
+  }
+});
+
 test('fixture search, document and community in Chrome', { timeout: 90000 }, async () => {
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;

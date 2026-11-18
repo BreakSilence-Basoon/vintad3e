@@ -7,6 +7,9 @@ test('coupon fixture requires explicit development opt-in', () => {
   assert.deepEqual(getCouponFixtures('development', undefined), []);
   const fixtures = getCouponFixtures('development', '1');
   assert.equal(selectCouponFixture(fixtures, 'supporter-1')?.code, 'VINTAD3E');
+  assert.equal(selectCouponFixture(fixtures, 'supporter-1')?.hasUsage, true);
+  assert.equal(selectCouponFixture(fixtures, 'supporter-2')?.hasUsage, false);
+  assert.equal(selectCouponFixture(fixtures, ['supporter-2', 'supporter-1'])?.id, 'supporter-2');
   assert.equal(selectCouponFixture(fixtures, 'other'), undefined);
   assert.equal(selectCouponFixture(fixtures, undefined), undefined);
 });

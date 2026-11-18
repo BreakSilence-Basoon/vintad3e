@@ -46,6 +46,10 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
     await evaluate("document.querySelector('[aria-label=\"국내 · 자동 링크 복사\"]').click()");
     await waitFor(async () => evaluate("window.copied?.startsWith('https://example.invalid/coupon?')"));
     assert.equal(await evaluate("document.querySelector('[aria-label=\"글로벌 · 자동 링크 사용 불가\"]').disabled"),true);
+    await waitFor(async () => evaluate("(()=>{if(location.search.includes('supporter-2')&&!document.querySelector('.coupon-types'))return true;const s=document.querySelector('#coupon-staff');if(s&&!s.disabled){s.value='supporter-2';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
+    assert.equal(await evaluate("document.querySelector('#coupon-staff').value"), 'supporter-2');
+    assert.ok(await evaluate("!document.querySelector('.coupon-share-field')"));
+    await waitFor(async () => evaluate("(()=>{if(location.search.includes('supporter-1')&&document.querySelector('.coupon-share-field strong')?.textContent==='VINTAD3E')return true;const s=document.querySelector('#coupon-staff');if(s&&!s.disabled){s.value='supporter-1';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

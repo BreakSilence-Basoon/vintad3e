@@ -1,8 +1,11 @@
-export type CouponFixture = { id: string; displayName: string; code: string; referralMonth: number; referralTotal: number; personalMonth: number; personalTotal: number };
+export type CouponFixture = { id: string; displayName: string; hasUsage: boolean; code: string; referralMonth: number; referralTotal: number; personalMonth: number; personalTotal: number };
 
 export function getCouponFixtures(env: string | undefined, enabled: string | undefined): CouponFixture[] {
   if (env !== 'development' || enabled !== '1') return [];
-  return [{ id: 'supporter-1', displayName: '서포터즈', code: 'VINTAD3E', referralMonth: 2, referralTotal: 7, personalMonth: 1, personalTotal: 5 }];
+  return [
+    { id: 'supporter-1', displayName: '서포터즈', hasUsage: true, code: 'VINTAD3E', referralMonth: 2, referralTotal: 7, personalMonth: 1, personalTotal: 5 },
+    { id: 'supporter-2', displayName: '서포터즈 02', hasUsage: false, code: '', referralMonth: 0, referralTotal: 0, personalMonth: 0, personalTotal: 0 },
+  ];
 }
 
 export function selectCouponFixture(fixtures: CouponFixture[], selection: string | string[] | undefined): CouponFixture | undefined {

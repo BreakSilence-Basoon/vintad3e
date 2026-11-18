@@ -31,7 +31,8 @@ export function fixtureSession(cookie, host, env, now = Date.now()) {
 export function handleFixtureSession(request, action, env, now = Date.now()) {
   const origin = fixtureOrigin(env);
   if (!origin || request.method !== 'POST' || !['login', 'logout'].includes(action)) return new Response(null, { status: 404, headers: { 'cache-control': 'no-store' } });
-  if (new URL(request.url).origin !== origin || request.headers.get('host') !== new URL(origin).host || request.headers.get('origin') !== origin) return new Response(null, { status: 403, headers: { 'cache-control': 'no-store' } });
+  // Next can normalize request.url's host; Host and Origin must both match the configured loopback origin.
+  if (request.headers.get('host') !== new URL(origin).host || request.headers.get('origin') !== origin) return new Response(null, { status: 403, headers: { 'cache-control': 'no-store' } });
   prune(now);
   const previous = readToken(request.headers.get('cookie'));
   if (previous) sessions.delete(previous);

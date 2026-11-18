@@ -28,6 +28,8 @@ test('fixture cannot activate in production or accept nonlocal and cross-origin 
   assert.equal(handleFixtureSession(post('login'), 'login', production).status, 404);
   assert.equal(handleFixtureSession(post('login', { origin: 'https://other.invalid' }), 'login', env).status, 403);
   assert.equal(handleFixtureSession(post('login', { host: 'example.invalid' }), 'login', env).status, 403);
+  const normalized = new Request('http://localhost:3825/api/fixture/login', { method: 'POST', headers: { host: '127.0.0.1:3825', origin } });
+  assert.equal(handleFixtureSession(normalized, 'login', env).status, 303);
   assert.equal(fixtureOrigin({ ...env, VINTAD3E_PORTAL_FIXTURE_ORIGIN: 'http://example.invalid:3825' }), null);
   const response = handleFixtureSession(post('login'), 'login', env, 1000);
   assert.equal(fixtureSession(cookie(response), '127.0.0.1:3825', env, 1000 + 30 * 60 * 1000), false);

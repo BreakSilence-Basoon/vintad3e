@@ -8,4 +8,6 @@
 
 같은 설정의 변경 기록 화면에서는 합성 기록의 검색·필터·상세를 볼 수 있습니다. 실제 변경이나 감사 기록은 읽거나 생성하지 않습니다.
 
+같은 설정의 홈은 합성 앱 상태와 방문 기록을 표시합니다. 서비스 상태를 확인하거나 실제 방문 이력을 조회하지 않습니다.
+
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/admin-web dev`를 실행하고 `http://127.0.0.1:3832/members`를 엽니다.

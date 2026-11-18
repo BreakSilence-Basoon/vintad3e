@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3829",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/library-fixture.test.ts src/fixture-bookmarks.test.ts src/fixture-comments.test.ts src/fixture-activity.test.ts",
+    "test": "node --test src/library-fixture.test.ts src/fixture-bookmarks.test.ts src/fixture-comments.test.ts src/fixture-activity.test.ts src/fixture-members.test.ts",
     "test:fixture-browser": "node --test src/library-fixture-browser.test.mjs"
   },
   "dependencies": {

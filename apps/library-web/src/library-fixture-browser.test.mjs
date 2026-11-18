@@ -83,6 +83,14 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     await waitFor(async () => evaluate("document.querySelector('.publication-community button')?.getAttribute('aria-pressed') === 'false'"));
     await send('Page.navigate',{url:`${origin}/bookmarks`});
     await waitFor(async () => evaluate("document.querySelector('.library-empty')?.textContent.includes('저장한 게시물이 없습니다.')"));
+    await send('Page.navigate',{url:`${origin}/members`});
+    await waitFor(async () => evaluate("document.querySelectorAll('.library-member-list li').length === 2"));
+    assert.equal(await evaluate("document.querySelector('#library-search').maxLength"), 100);
+    await evaluate("document.querySelector('#library-search').value='직원';document.querySelector('.library-search').requestSubmit()");
+    await waitFor(async () => evaluate("location.search.includes('q=') && document.querySelectorAll('.library-member-list li').length === 1"));
+    assert.equal(await evaluate("document.querySelector('.library-member-list li').textContent"), '직원');
+    await evaluate("document.querySelector('#library-search').value='찾을 수 없음';document.querySelector('.library-search').requestSubmit()");
+    await waitFor(async () => evaluate("document.querySelector('.library-empty')?.textContent.includes('구성원이 없습니다.')"));
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

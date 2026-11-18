@@ -74,9 +74,7 @@ function buildFilterHref(
     range = "all";
   }
 
-  if (range !== "all") {
-    params.set("range", range);
-  }
+  params.set("range", range);
 
   if (range === "custom") {
     params.set("from", from);

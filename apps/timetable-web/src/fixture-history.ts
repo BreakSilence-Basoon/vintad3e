@@ -8,7 +8,7 @@ const dateDay = (date: string) => Math.floor(Date.parse(`${date}T00:00:00Z`) / d
 export function fixtureHistory(env: string | undefined, enabled: string | undefined, now: number, filters: AttendanceHistoryFilters): Fixture[] {
   if (env !== 'development' || enabled !== '1' || filters.employee !== 'all') return [];
   const today = seoulDay(now);
-  const fixtures = [0, 1].map((offset) => {
+  const fixtures = Array.from({ length: 21 }, (_, offset) => {
     const start = (today - offset) * dayMs; // 09:00 Seoul
     return { id: String(offset), startsAt: new Date(start).toISOString(), endsAt: new Date(start + 8 * 3600000).toISOString() };
   });

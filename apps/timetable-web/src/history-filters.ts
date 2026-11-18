@@ -16,3 +16,16 @@ export function parseHistoryFilters(params: SearchParams): AttendanceHistoryFilt
   return { employee: uuidPattern.test(rawEmployee) ? rawEmployee : 'all', from, range,
     sort: first(params.sort) === 'asc' ? 'asc' : 'desc', to };
 }
+
+export function parseHistoryPage(value: string | string[] | undefined) {
+  const page = Number(first(value));
+  return Number.isFinite(page) && page > 0 ? Math.min(Math.floor(page), 1000) : 1;
+}
+
+export function buildHistoryHref(filters: AttendanceHistoryFilters, historyPage: number) {
+  const params = new URLSearchParams({ view: 'history', range: filters.range });
+  if (filters.range === 'custom') { params.set('from', filters.from); params.set('to', filters.to); }
+  if (filters.sort !== 'desc') params.set('sort', filters.sort);
+  if (historyPage > 1) params.set('historyPage', String(historyPage));
+  return `/?${params.toString()}`;
+}

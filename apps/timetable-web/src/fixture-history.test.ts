@@ -7,7 +7,8 @@ const filters = { employee: 'all', from: '', range: 'last7' as const, sort: 'des
 test('fixture requires explicit development opt-in', () => {
   assert.equal(fixtureHistory('production', '1', now, filters).length, 0);
   assert.equal(fixtureHistory('development', undefined, now, filters).length, 0);
-  assert.equal(fixtureHistory('development', '1', now, filters).length, 2);
+  assert.equal(fixtureHistory('development', '1', now, filters).length, 7);
+  assert.equal(fixtureHistory('development', '1', now, { ...filters, range: 'all' }).length, 21);
 });
 test('fixture filters use Seoul calendar dates and sort order', () => {
   assert.equal(fixtureHistory('development', '1', now, { ...filters, range: 'today' }).length, 1);

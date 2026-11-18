@@ -23,7 +23,7 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-supporters-browser-'));
   const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_SUPPORTERS_FIXTURE:'1'}, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
-  let socket;
+  let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(`${origin}/coupon`)).ok);
     await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
@@ -33,6 +33,7 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
     let sequence = 0; const pending = new Map();
     socket.addEventListener('message', event => { const message = JSON.parse(event.data); if (message.id && pending.has(message.id)) { const {resolve,reject} = pending.get(message.id); pending.delete(message.id); message.error ? reject(new Error(message.error.message)) : resolve(message.result); } });
     const send = (method,params={}) => new Promise((resolve,reject) => { const id = ++sequence; pending.set(id,{resolve,reject}); socket.send(JSON.stringify({id,method,params})); });
+    closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     await send('Page.navigate',{url:`${origin}/coupon`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('#coupon-staff'))"));
@@ -46,9 +47,10 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
     await waitFor(async () => evaluate("window.copied?.startsWith('https://example.invalid/coupon?')"));
     assert.equal(await evaluate("document.querySelector('[aria-label=\"글로벌 · 자동 링크 사용 불가\"]').disabled"),true);
   } finally {
+    if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();
     for (const process of [chrome,server]) process.kill('SIGTERM');
     await Promise.all([chrome,server].map(async process => { if (process.exitCode === null && process.signalCode === null) await Promise.race([once(process,'exit'),delay(5000)]); if (process.exitCode === null && process.signalCode === null) process.kill('SIGKILL'); }));
-    await rm(profile,{recursive:true,force:true});
+    await rm(profile,{recursive:true,force:true,maxRetries:8,retryDelay:250});
   }
 });

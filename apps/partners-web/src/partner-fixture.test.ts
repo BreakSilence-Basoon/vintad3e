@@ -17,5 +17,7 @@ test('fixture requires explicit development opt-in and connects calendar to rent
   assert.equal(monthEvents(result.schedule.events, '2026-11', 'rental').length, 1);
   assert.equal(monthEvents(result.schedule.events, '2026-11', 'dj').length, 0);
   assert.equal(filterLedger(result.ledger.rows, { from: '', to: '', query: '대관', status: 'COMPLETED' }).length, 1);
-  assert.equal(filterLedger(result.ledger.rows, { from: '', to: '', query: '', status: 'PENDING' }).length, 0);
+  assert.equal(filterLedger(result.ledger.rows, { from: '', to: '', query: '', status: 'PENDING' }).length, 1);
+  assert.equal(filterLedger(result.ledger.rows, { from: '', to: '', query: '02', status: 'PENDING' })[0].counterparty, '대관처 02');
+  assert.equal(filterLedger(result.ledger.rows, { from: '', to: '', query: '02', status: 'COMPLETED' }).length, 0);
 });

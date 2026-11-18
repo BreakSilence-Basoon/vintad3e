@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { handleTimetableAuth } from './timetable-auth.mjs';
+import { handleTimetableAuth, handleTimetableLogout } from './timetable-auth.mjs';
 
 const base = 'http://127.0.0.1:3825';
 const binding = 'A'.repeat(43);
@@ -45,4 +45,26 @@ test('unsafe upstream redirects and cookies fail closed', async (t) => {
   assert.equal((await handleTimetableAuth(new Request('https://app.example.invalid/auth/start'), base, 'start')).status, 503);
   mock.mock.mockImplementation(async () => new Response(null, { status: 302, headers: { location: 'https://identity.example.invalid/', 'set-cookie': 'other=value; Path=/' } }));
   assert.equal((await handleTimetableAuth(new Request('https://app.example.invalid/auth/start'), base, 'start')).status, 503);
+});
+
+test('logout forwards only authentication cookies and requires an Origin and an empty POST', async (t) => {
+  const clearedSession = '__Host-vintad3e-session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
+  const fetch = t.mock.method(globalThis, 'fetch', async () => new Response('{}', { status: 200, headers: { 'set-cookie': clearedSession } }));
+  const origin = 'https://app.example.invalid';
+  const url = `${origin}/auth/logout`;
+  assert.equal((await handleTimetableLogout(new Request(url), base)).status, 404);
+  assert.equal((await handleTimetableLogout(new Request(url, { method: 'POST' }), base)).status, 403);
+  assert.equal((await handleTimetableLogout(new Request(url, { method: 'POST', headers: { origin }, body: 'x' }), base)).status, 400);
+  assert.equal((await handleTimetableLogout(new Request(url, { method: 'POST', headers: { origin, 'content-length': '0' }, body: 'x' }), base)).status, 400);
+  const duplicate = `__Host-vintad3e-session=${session}; __Host-vintad3e-session=${session}`;
+  assert.equal((await handleTimetableLogout(new Request(url, { method: 'POST', headers: { origin, cookie: duplicate } }), base)).status, 400);
+  assert.equal(fetch.mock.callCount(), 0);
+  const response = await handleTimetableLogout(new Request(url, { method: 'POST', headers: { origin, cookie: `unrelated=omit; __Host-vintad3e-session=${session}` } }), base);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(response.headers.getSetCookie(), [clearedSession]);
+  assert.equal(fetch.mock.calls[0].arguments[1].headers.cookie, `__Host-vintad3e-session=${session}`);
+  assert.equal(fetch.mock.calls[0].arguments[1].headers.origin, origin);
+  fetch.mock.mockImplementation(async () => new Response('{}', { status: 200 }));
+  assert.equal((await handleTimetableLogout(new Request(url, { method: 'POST', headers: { origin } }), base)).status, 503);
 });

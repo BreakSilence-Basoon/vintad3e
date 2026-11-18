@@ -58,3 +58,33 @@ export async function handleTimetableAuth(request, apiOrigin, action) {
     return fail(503, 'unavailable');
   } catch { return fail(503, 'unavailable'); }
 }
+
+// Logout stays a POST; the authentication service checks the public Origin.
+export async function handleTimetableLogout(request, apiOrigin) {
+  if (request.method !== 'POST') return fail(404, 'not_found');
+  const origin = loopbackOrigin(apiOrigin);
+  if (!origin) return fail(503, 'unavailable');
+  const url = new URL(request.url);
+  if (url.search || request.headers.has('transfer-encoding')) return fail(400, 'invalid_request');
+  if (request.body !== null) {
+    if (request.headers.get('content-length') !== '0') return fail(400, 'invalid_request');
+    const reader = request.body.getReader();
+    try { if (!(await reader.read()).done) return fail(400, 'invalid_request'); }
+    catch { return fail(400, 'invalid_request'); }
+    finally { reader.releaseLock(); }
+  }
+  const callerOrigin = request.headers.get('origin');
+  if (!callerOrigin) return fail(403, 'forbidden');
+  const cookie = selectedCookies(request.headers.get('cookie'));
+  if (cookie === null) return fail(400, 'invalid_request');
+  try {
+    const upstream = await fetch(`${origin}/auth/logout`, { method: 'POST', headers: { origin: callerOrigin, ...(cookie ? { cookie } : {}) }, redirect: 'manual', cache: 'no-store', signal: AbortSignal.timeout(5000) });
+    if (upstream.status === 403) return fail(403, 'forbidden');
+    if (upstream.status === 400) return fail(400, 'invalid_request');
+    const cookies = upstream.headers.getSetCookie();
+    if (upstream.status !== 200 || cookies.length !== 1 || !validResponseCookie(cookies[0]) || !cookies[0].startsWith(`${sessionName}=;`)) return fail(503, 'unavailable');
+    const output = new Headers(headers);
+    output.append('set-cookie', cookies[0]);
+    return Response.json({ ok: true }, { status: 200, headers: output });
+  } catch { return fail(503, 'unavailable'); }
+}

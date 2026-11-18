@@ -21,4 +21,8 @@ test('attendance pagination preserves the selected range and sort', () => {
   assert.equal(params.get('sort'), 'asc');
   assert.equal(params.get('historyPage'), '2');
   assert.equal(parseHistoryFilters(Object.fromEntries(params)).range, 'all');
+  const staffId = '00000000-0000-4000-8000-000000000001';
+  const staff = parseHistoryFilters({ employee: staffId });
+  assert.equal(new URL(buildHistoryHref(staff, 1, true), 'http://localhost').searchParams.get('employee'), staffId);
+  assert.equal(new URL(buildHistoryHref(staff, 1), 'http://localhost').searchParams.has('employee'), false);
 });

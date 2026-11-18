@@ -22,9 +22,10 @@ export function parseHistoryPage(value: string | string[] | undefined) {
   return Number.isFinite(page) && page > 0 ? Math.min(Math.floor(page), 1000) : 1;
 }
 
-export function buildHistoryHref(filters: AttendanceHistoryFilters, historyPage: number) {
+export function buildHistoryHref(filters: AttendanceHistoryFilters, historyPage: number, includeEmployee = false) {
   const params = new URLSearchParams({ view: 'history', range: filters.range });
   if (filters.range === 'custom') { params.set('from', filters.from); params.set('to', filters.to); }
+  if (includeEmployee && filters.employee !== 'all') params.set('employee', filters.employee);
   if (filters.sort !== 'desc') params.set('sort', filters.sort);
   if (historyPage > 1) params.set('historyPage', String(historyPage));
   return `/?${params.toString()}`;

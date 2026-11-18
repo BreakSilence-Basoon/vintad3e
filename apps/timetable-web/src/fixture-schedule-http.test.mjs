@@ -33,6 +33,24 @@ test('development server renders schedule and paginates attendance', { timeout: 
     assert.match(html, /data-schedule-date="2026-02-08"/);
     assert.match(html, /schedule-calendar__shift--draft/);
     assert.match(html, /근무 상세 보기/);
+    const historyRedirect = await fetch(`${origin}/history?range=custom&from=2026-02-01&to=2026-02-28&sort=asc&historyPage=2&employee=00000000-0000-4000-8000-000000000001`, { redirect: 'manual' });
+    assert.equal(historyRedirect.status, 307);
+    const historyLocation = new URL(historyRedirect.headers.get('location'), origin);
+    assert.equal(historyLocation.pathname, '/');
+    assert.equal(historyLocation.searchParams.get('view'), 'history');
+    assert.equal(historyLocation.searchParams.get('range'), 'custom');
+    assert.equal(historyLocation.searchParams.get('from'), '2026-02-01');
+    assert.equal(historyLocation.searchParams.get('to'), '2026-02-28');
+    assert.equal(historyLocation.searchParams.get('sort'), 'asc');
+    assert.equal(historyLocation.searchParams.get('historyPage'), '2');
+    assert.equal(historyLocation.searchParams.get('employee'), '00000000-0000-4000-8000-000000000001');
+    const scheduleRedirect = await fetch(`${origin}/schedule?month=2026-02&month=2026-03`, { redirect: 'manual' });
+    assert.equal(scheduleRedirect.status, 307);
+    const scheduleLocation = new URL(scheduleRedirect.headers.get('location'), origin);
+    assert.equal(scheduleLocation.searchParams.get('view'), 'schedule');
+    assert.equal(scheduleLocation.searchParams.get('month'), '2026-02');
+    const invalidMonth = await fetch(`${origin}/schedule?month=2026-13`, { redirect: 'manual' });
+    assert.match(new URL(invalidMonth.headers.get('location'), origin).searchParams.get('month'), /^\d{4}-(0[1-9]|1[0-2])$/);
     const historyPage = async page => {
       const result = await fetch(`${origin}/?view=history&range=all&historyPage=${page}`);
       assert.equal(result.status, 200);

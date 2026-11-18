@@ -8,7 +8,9 @@ test('audit records exist only as explicitly enabled development fixtures', () =
   assert.deepEqual(getAuditFixtures('development', undefined, now), []);
   assert.deepEqual(getAuditFixtures('development', '1', new Date('invalid')), []);
   const rows = getAuditFixtures('development', '1', now);
-  assert.equal(rows.length, 2);
+  assert.equal(rows.length, 21);
   assert.equal(rows[0].operation, 'admin.app-grant.set');
   assert.equal(rows[1].when, '2026-11-17T00:00:00.000Z');
+  assert.equal(new Set(rows.map(row => row.id)).size, 21);
+  assert.equal(rows.filter(row => row.actor === '직원 02').length, 19);
 });

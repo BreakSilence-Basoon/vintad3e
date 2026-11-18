@@ -67,6 +67,12 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     await send('Page.navigate',{url:`${origin}/publications/00000000-0000-4000-8000-000000000002`});
     await waitFor(async () => evaluate("document.querySelector('.publication-community .library-empty')?.textContent.includes('아직 댓글이 없습니다.')"));
     assert.ok(await evaluate("!document.querySelector('.library-comments')"));
+    await send('Page.navigate',{url:`${origin}/mypage`});
+    await waitFor(async () => evaluate("document.querySelector('.library-comments')?.textContent.includes('좋은 안내입니다.')"));
+    assert.equal(await evaluate("document.querySelectorAll('.library-feed li').length"),2);
+    assert.equal(await evaluate("document.querySelector('.library-comments a').getAttribute('href')"), '/publications/00000000-0000-4000-8000-000000000001#comments');
+    await evaluate("document.querySelector('.library-comments a').click()");
+    await waitFor(async () => evaluate("location.hash === '#comments' && document.querySelector('.publication-community .library-comments')?.textContent.includes('좋은 안내입니다.')"));
     await send('Page.navigate',{url:`${origin}/bookmarks`});
     await waitFor(async () => evaluate("document.querySelector('.library-feed')?.textContent.includes('매장 운영 안내')"));
     assert.equal(await evaluate("document.querySelectorAll('.library-feed li').length"),1);

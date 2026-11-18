@@ -9,6 +9,10 @@ test('fixture requires explicit development opt-in', () => {
   assert.equal(fixtureHistory('development', undefined, now, filters).length, 0);
   assert.equal(fixtureHistory('development', '1', now, filters).length, 7);
   assert.equal(fixtureHistory('development', '1', now, { ...filters, range: 'all' }).length, 21);
+  const records = fixtureHistory('development', '1', now, filters);
+  assert.equal(records.filter((record) => record.endsAt === null).length, 1);
+  assert.equal(records[0].endsAt, null);
+  assert.ok(Date.parse(records[0].startsAt) <= now);
 });
 test('fixture filters use Seoul calendar dates and sort order', () => {
   assert.equal(fixtureHistory('development', '1', now, { ...filters, range: 'today' }).length, 1);

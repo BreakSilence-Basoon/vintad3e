@@ -35,6 +35,15 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
     const send = (method,params={}) => new Promise((resolve,reject) => { const id = ++sequence; pending.set(id,{resolve,reject}); socket.send(JSON.stringify({id,method,params})); });
     closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
+    await send('Page.navigate',{url:origin});
+    await waitFor(async () => evaluate("document.querySelector('.floor-summary__value')?.textContent.includes('12,000원')"));
+    assert.ok(await evaluate("document.querySelector('#floor-menus-title')?.textContent.includes('메뉴별 판매')"));
+    assert.ok(await evaluate("document.querySelector('.floor-table--menus')?.textContent.includes('드립 커피')"));
+    await evaluate("[...document.querySelectorAll('.floor-chip')].find(a => a.textContent === '최근 7일').click()");
+    await waitFor(async () => evaluate("location.search.includes('preset=7d') && document.querySelector('.floor-chip.is-active')?.textContent === '최근 7일'"));
+    assert.ok(await evaluate("document.querySelector('[aria-labelledby=revenue-trend-title]').textContent.includes('32,000원')"));
+    await evaluate("document.querySelector('[aria-label=\"전날 영업일\"]').click()");
+    await waitFor(async () => evaluate("document.querySelector('.floor-section--empty')?.textContent.includes('이 영업일에는 반영된 F&B 판매가 없습니다.')"));
     await send('Page.navigate',{url:`${origin}/sales`});
     await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 18"));
     assert.ok(await evaluate("document.querySelectorAll('.sales-audit-card')[0].textContent.includes('드립 커피')"));

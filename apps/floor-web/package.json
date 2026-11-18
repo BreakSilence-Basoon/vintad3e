@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3830",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/sales-filters.test.ts src/sales-fixture.test.ts",
+    "test": "node --test src/sales-filters.test.ts src/sales-fixture.test.ts src/floor-fixture-daily.test.ts",
     "test:fixture-browser": "node --test src/sales-fixture-browser.test.mjs"
   },
   "dependencies": {

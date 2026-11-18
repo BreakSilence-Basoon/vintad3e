@@ -66,6 +66,20 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     assert.ok(await evaluate("document.querySelector('.staff-console').textContent.includes('게스트')"));
     await send('Page.navigate',{url:`${origin}/members?type=employee&type=partner`});
     await waitFor(async () => evaluate("document.querySelector('[role=alert]')?.textContent.includes('이 목록을 이어서 볼 수 없습니다.')"));
+    await send('Page.navigate',{url:`${origin}/members`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('[href=\"/audit\"]'))"));
+    await evaluate("document.querySelector('[href=\"/audit\"]').click()");
+    await waitFor(async () => evaluate("document.querySelectorAll('.audit-card').length === 2"));
+    await evaluate("document.querySelector('.audit-card details summary').click()");
+    assert.equal(await evaluate("document.querySelector('.audit-card details').open"),true);
+    assert.ok(await evaluate("document.querySelector('.audit-card details').textContent.includes('admin.app-grant.set')"));
+    await waitFor(async () => {
+      if (await evaluate("document.querySelectorAll('.audit-card').length === 1 && document.querySelector('.audit-card').textContent.includes('외부 구성원 01')")) return true;
+      await evaluate("(()=>{const x=document.querySelector('.audit-filter-bar input[type=search]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,'외부');x.dispatchEvent(new Event('input',{bubbles:true}));})()");
+      await delay(200);
+      await evaluate("document.querySelector('.audit-filter-bar').requestSubmit()");
+      return false;
+    });
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

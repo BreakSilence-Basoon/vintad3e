@@ -6,4 +6,6 @@
 
 같은 설정으로 `/permissions/apps`에서 앱별 합성 접근 구성원과 메뉴 권한 표를 볼 수 있습니다. 메뉴 권한 값은 모두 합성 값이며 실제 권한 판정이나 권한 부여 기능이 아닙니다.
 
+같은 설정의 변경 기록 화면에서는 합성 기록의 검색·필터·상세를 볼 수 있습니다. 실제 변경이나 감사 기록은 읽거나 생성하지 않습니다.
+
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/admin-web dev`를 실행하고 `http://127.0.0.1:3832/members`를 엽니다.

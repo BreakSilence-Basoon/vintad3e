@@ -23,13 +23,13 @@ test('history page renders only the current session and shows the original error
   const probe = createPortProbe(); probe.listen(0, '127.0.0.1'); await once(probe, 'listening');
   const port = probe.address().port; await new Promise(resolve => probe.close(resolve));
   const origin = `http://127.0.0.1:${port}`;
-  const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
-    cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '', VINTAD3E_TIMETABLE_API_ORIGIN: apiOrigin }, stdio: 'ignore',
+  const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
+    cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'production', VINTAD3E_TIMETABLE_FIXTURE: '', VINTAD3E_TIMETABLE_API_ORIGIN: apiOrigin }, stdio: 'ignore',
   });
   try {
     let ready = false;
     for (let i = 0; i < 100; i++) {
-      if (child.exitCode !== null) throw new Error('Development server exited');
+      if (child.exitCode !== null) throw new Error('Production server exited');
       try { if ((await fetch(`${origin}/?view=history&range=all`)).ok) { ready = true; break; } } catch {}
       await delay(300);
     }
@@ -51,7 +51,8 @@ test('history page renders only the current session and shows the original error
     const duplicate = await (await fetch(`${origin}/?view=history&range=all`, { headers: { cookie: `__Host-vintad3e-session=${a}; __Host-vintad3e-session=${b}` } })).text();
     assert.match(duplicate, /출근부를 불러오지 못했습니다\./);
     assert.equal(calls, beforeDuplicate);
-    assert.match(firstResponse.headers.get('cache-control'), /no-store|private/);
+    assert.match(firstResponse.headers.get('cache-control'), /no-store/);
+    assert.match(firstResponse.headers.get('cache-control'), /private/);
   } finally {
     child.kill('SIGTERM');
     if (child.exitCode === null && child.signalCode === null) await Promise.race([once(child, 'exit'), delay(5000)]);

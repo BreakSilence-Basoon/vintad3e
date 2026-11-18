@@ -43,8 +43,8 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/timetable-api exec node --test integration/browser-web.test.mjs
       - run: corepack pnpm --filter @vintad3e/timetable-web test
       - run: corepack pnpm --filter @vintad3e/timetable-web test:fixture-http
-      - run: corepack pnpm --filter @vintad3e/timetable-web exec node --test src/history-view-http.test.mjs
       - run: corepack pnpm --filter @vintad3e/timetable-web build
+      - run: corepack pnpm --filter @vintad3e/timetable-web exec node --test src/history-view-http.test.mjs
       - run: corepack pnpm --filter @vintad3e/portal-web test
       - run: corepack pnpm --filter @vintad3e/portal-web test:fixture-http
       - run: corepack pnpm --filter @vintad3e/portal-web build

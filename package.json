@@ -1,5 +1,6 @@
 {
   "name": "vintad3e-workspace",
+  "license": "Elastic-2.0",
   "private": true,
   "packageManager": "pnpm@10.11.0",
   "engines": {

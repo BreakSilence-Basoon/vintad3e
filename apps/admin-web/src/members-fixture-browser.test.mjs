@@ -36,6 +36,11 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     const send = (method,params={}) => new Promise((resolve,reject) => { const id = ++sequence; pending.set(id,{resolve,reject}); socket.send(JSON.stringify({id,method,params})); });
     closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
+    await send('Page.navigate',{url:origin});
+    await waitFor(async () => evaluate("document.querySelectorAll('.home-matrix tbody tr').length === 11"));
+    assert.ok(await evaluate("document.querySelector('.home-matrix tbody').textContent.includes('직원 01')"));
+    assert.ok(await evaluate("document.querySelector('.home-matrix tbody').textContent.includes('정상')"));
+    assert.equal(await evaluate("document.querySelectorAll('.home-matrix a').length"),0);
     await send('Page.navigate',{url:`${origin}/members`});
     await waitFor(async () => evaluate("document.querySelector('.staff-table tbody')?.textContent.includes('staff01@example.invalid')"));
     assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody tr').length"),1);

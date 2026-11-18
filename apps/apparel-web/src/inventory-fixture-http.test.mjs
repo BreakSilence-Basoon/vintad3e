@@ -20,6 +20,9 @@ test('development inventory renders fixture products in the selected collection'
       await delay(300);
     }
     assert.equal(response?.status, 200);
+    const adminEntry = await fetch(`${origin}/admin`, { redirect: 'manual' });
+    assert.equal(adminEntry.status, 307);
+    assert.equal(new URL(adminEntry.headers.get('location'), origin).pathname, '/admin/products');
     const html = await response.text();
     assert.match(html, /product-card__summary/);
     assert.match(html, /반팔 티셔츠/);

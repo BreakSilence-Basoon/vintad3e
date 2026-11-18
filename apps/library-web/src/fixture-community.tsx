@@ -41,7 +41,8 @@ export function FixtureCommunity({ document }: { document: FixtureDocument }) {
     <section id="comments" className="publication-community" aria-labelledby="comments-title">
       <Button profile="library" type="button" aria-pressed={saved} onClick={() => { const ok = setFixtureBookmark(document.id, !saved); setToast(ok ? { message: saved ? '보관함에서 해제했습니다.' : '보관함에 저장했습니다.', error: false } : { message: '저장하지 못했습니다.', error: true }); }}>{saved ? '저장 해제' : '보관함 저장'}</Button>
       <h2 id="comments-title">댓글</h2><form onSubmit={comment}><fieldset><label htmlFor="publication-comment">댓글</label><textarea id="publication-comment" name="comment" value={body} onChange={event => setBody(event.target.value)} maxLength={2000} rows={3} required /><Button profile="library" type="submit" disabled={!body.trim()}>댓글 작성</Button></fieldset></form>
-      {comments.length ? <ol className="library-comments">{comments.map(item => <li key={item.id}><p className="library-document-meta"><span>직원 · 나</span><time dateTime={item.createdAt}>{libraryDate(item.createdAt)}</time></p><p>{item.body}</p></li>)}</ol> : <p className="library-empty">아직 댓글이 없습니다.</p>}
+      {comments.length ? <ol className="library-comments">{comments.slice(0, 200).map(item => <li key={item.id}><p className="library-document-meta"><span>직원 · 나</span><time dateTime={item.createdAt}>{libraryDate(item.createdAt)}</time></p><p>{item.body}</p></li>)}</ol> : <p className="library-empty">아직 댓글이 없습니다.</p>}
+      {comments.length > 200 ? <p className="library-document-meta">최근 댓글 200개를 표시합니다.</p> : null}
     </section>
     {toast ? <div className={`publication-toast${toast.error ? ' publication-toast--error' : ''}`} role={toast.error ? 'alert' : 'status'}><span>{formatToastText(toast.message)}</span><Button variant="ghost" size="small" profile="library" onClick={() => setToast(null)} aria-label="알림 닫기">×</Button></div> : null}
   </>;

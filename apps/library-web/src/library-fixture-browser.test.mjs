@@ -107,6 +107,17 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     assert.equal(await evaluate("document.querySelector('.library-member-list li').textContent"), '직원');
     await evaluate("document.querySelector('#library-search').value='찾을 수 없음';document.querySelector('.library-search').requestSubmit()");
     await waitFor(async () => evaluate("document.querySelector('.library-empty')?.textContent.includes('구성원이 없습니다.')"));
+    await evaluate("(()=>{const comments=Array.from({length:200},(_,i)=>({id:`00000000-0000-4000-8000-${String(i).padStart(12,'0')}`,body:'안내',createdAt:'2026-11-18T00:00:00.000Z'}));sessionStorage.setItem('vintad3e-library-fixture-comments:00000000-0000-4000-8000-000000000001',JSON.stringify(comments));})()");
+    await send('Page.navigate',{url:`${origin}/publications/00000000-0000-4000-8000-000000000001`});
+    await waitFor(async () => evaluate("document.querySelectorAll('.library-comments li').length===200"));
+    await run("(()=>{const x=document.querySelector('#publication-comment');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(x,'새 댓글');x.dispatchEvent(new Event('input',{bubbles:true}));})()");
+    await run("document.querySelector('.publication-community form').requestSubmit()");
+    await waitFor(async () => evaluate("document.querySelector('.publication-community')?.textContent.includes('최근 댓글 200개를 표시합니다.')"));
+    assert.equal(await evaluate("document.querySelectorAll('.library-comments li').length"),200);
+    assert.ok(await evaluate("document.querySelector('.library-comments li').textContent.includes('새 댓글')"));
+    await send('Page.navigate',{url:`${origin}/mypage`});
+    await waitFor(async () => evaluate("document.querySelector('#my-comments-title')?.parentElement.textContent.includes('최근 댓글 200개를 표시합니다.')"));
+    assert.equal(await evaluate("document.querySelectorAll('.library-comments li').length"),200);
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

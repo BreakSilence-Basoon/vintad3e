@@ -30,3 +30,18 @@ test('rejects invalid query, identity and stored data without exposing errors', 
   const inactive = createOwnScheduleHandler({ verifyAuthorization: async () => identity, findOwnShifts: async () => null });
   assert.equal((await inactive(new Request(url))).status, 404);
 });
+
+test('linked attendance is opt-in, projected narrowly, and fails closed on inconsistent links', async () => {
+  let row = { ...shift, attendanceRecordId: 'record-a', attendanceStartsAt: '2026-01-01T09:05:00.000Z', attendanceEndsAt: null, privateExtra: 'omit' };
+  const handler = createOwnScheduleHandler({ verifyAuthorization: async () => identity, findOwnShifts: async (...args) => { assert.equal(args[7], true); return [row]; } });
+  const requested = `${url}&include=attendance`;
+  const response = await handler(new Request(requested));
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).shifts[0].attendance, { startsAt: '2026-01-01T09:05:00.000Z', endsAt: null });
+  row = { ...row, attendanceRecordId: null, attendanceStartsAt: null, attendanceEndsAt: null };
+  assert.equal((await (await handler(new Request(requested))).json()).shifts[0].attendance, null);
+  row = { ...row, attendanceRecordId: 'record-a' };
+  assert.equal((await handler(new Request(requested))).status, 503);
+  assert.equal((await handler(new Request(`${url}&include=other`))).status, 400);
+  assert.equal((await handler(new Request(`${requested}&include=attendance`))).status, 400);
+});

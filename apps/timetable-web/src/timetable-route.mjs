@@ -12,10 +12,10 @@ function sessionCookie(header) {
 export async function handleTimetableRequest(request, resource, apiOrigin) {
   if (request.method !== 'GET' || !['history', 'shifts'].includes(resource)) return reply(404, { error: 'not_found' });
   const url = new URL(request.url);
-  const allowed = resource === 'shifts' ? ['from', 'to', 'cursor'] : ['cursor'];
-  if ([...url.searchParams.keys()].some((key) => !allowed.includes(key)) || allowed.some((key) => url.searchParams.getAll(key).length > 1)) return reply(400, { error: 'invalid_request' });
+  const allowed = resource === 'shifts' ? ['from', 'to', 'cursor', 'include'] : ['cursor'];
+  if ([...url.searchParams.keys()].some((key) => !allowed.includes(key)) || allowed.some((key) => url.searchParams.getAll(key).length > 1) || url.searchParams.has('include') && url.searchParams.get('include') !== 'attendance') return reply(400, { error: 'invalid_request' });
   const result = await readTimetable({ apiOrigin, sessionValue: sessionCookie(request.headers.get('cookie')), resource,
-    from: url.searchParams.get('from'), to: url.searchParams.get('to'), nextCursor: url.searchParams.get('cursor') ?? undefined });
+    from: url.searchParams.get('from'), to: url.searchParams.get('to'), nextCursor: url.searchParams.get('cursor') ?? undefined, includeAttendance: url.searchParams.get('include') === 'attendance' });
   if (result.kind === 'signed-out') return reply(401, { error: 'unauthorized' });
   if (result.kind === 'denied') return reply(404, { error: 'not_found' });
   if (result.kind !== 'ready') return reply(503, { error: 'unavailable' });

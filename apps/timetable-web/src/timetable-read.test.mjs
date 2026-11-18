@@ -50,6 +50,34 @@ test('history view loads all pages, filters Seoul dates, and never presents part
   } finally { server.closeAllConnections(); await new Promise((resolve) => server.close(resolve)); }
 });
 
+test('schedule attendance requires explicit opt-in and rejects missing or malformed attendance', async () => {
+  let attendance = { startsAt: '2026-01-01T09:05:00.000Z', endsAt: null, privateField: 'omit' };
+  const server = createServer((req, res) => {
+    assert.equal(req.headers.cookie, cookie);
+    assert.equal(new URL(req.url, 'http://127.0.0.1').searchParams.get('include'), 'attendance');
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ shifts: [{ id: 's1', location: { id: 'l1', label: '장소' }, startsAt: '2026-01-01T09:00:00.000Z', endsAt: '2026-01-01T17:00:00.000Z', graceMinutes: 0, attendance }], nextCursor: null }));
+  });
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  const apiOrigin = `http://127.0.0.1:${server.address().port}`;
+  const from = '2026-01-01T00:00:00.000Z', to = '2026-01-02T00:00:00.000Z';
+  try {
+    const options = { apiOrigin, sessionValue, resource: 'shifts', from, to, includeAttendance: true };
+    const result = await readTimetable(options);
+    assert.equal(result.kind, 'ready');
+    assert.deepEqual(result.data.shifts[0].attendance, { startsAt: attendance.startsAt, endsAt: null });
+    const params = new URLSearchParams({ from, to, include: 'attendance' });
+    const response = await handleTimetableRequest(new Request(`https://example.invalid/api/timetable/shifts?${params}`, { headers: { cookie } }), 'shifts', apiOrigin);
+    assert.equal(response.status, 200);
+    assert.deepEqual((await response.json()).shifts[0].attendance, { startsAt: attendance.startsAt, endsAt: null });
+    attendance = undefined;
+    assert.equal((await readTimetable(options)).kind, 'unavailable');
+    attendance = { startsAt: 'invalid', endsAt: null };
+    assert.equal((await readTimetable(options)).kind, 'unavailable');
+    assert.equal((await handleTimetableRequest(new Request('https://example.invalid/api/timetable/shifts?include=unknown', { headers: { cookie } }), 'shifts', apiOrigin)).status, 400);
+  } finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
+});
+
 test('only valid, bounded response fields reach the caller and redirects are not followed', async () => {
   let seen = 0;
   const server = createServer((req, res) => {

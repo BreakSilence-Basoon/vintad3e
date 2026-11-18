@@ -16,8 +16,8 @@ function cursor(value) { return value === null || typeof value === 'string' && c
 function history(value) {
   return value && Array.isArray(value.records) && value.records.length <= 100 && cursor(value.nextCursor) && value.records.every((row) => row && id(row.id) && instant(row.startsAt) && (row.endsAt === null || instant(row.endsAt) && row.endsAt >= row.startsAt));
 }
-function shifts(value) {
-  return value && Array.isArray(value.shifts) && value.shifts.length <= 100 && cursor(value.nextCursor) && value.shifts.every((row) => row && id(row.id) && row.location && id(row.location.id) && typeof row.location.label === 'string' && row.location.label === row.location.label.trim() && row.location.label.length > 0 && row.location.label.length <= 100 && !/[\p{Cc}]/u.test(row.location.label) && instant(row.startsAt) && instant(row.endsAt) && row.endsAt > row.startsAt && Number.isInteger(row.graceMinutes) && row.graceMinutes >= 0 && row.graceMinutes <= 180);
+function shifts(value, includeAttendance) {
+  return value && Array.isArray(value.shifts) && value.shifts.length <= 100 && cursor(value.nextCursor) && value.shifts.every((row) => row && id(row.id) && row.location && id(row.location.id) && typeof row.location.label === 'string' && row.location.label === row.location.label.trim() && row.location.label.length > 0 && row.location.label.length <= 100 && !/[\p{Cc}]/u.test(row.location.label) && instant(row.startsAt) && instant(row.endsAt) && row.endsAt > row.startsAt && Number.isInteger(row.graceMinutes) && row.graceMinutes >= 0 && row.graceMinutes <= 180 && (!includeAttendance || row.attendance === null || row.attendance && instant(row.attendance.startsAt) && (row.attendance.endsAt === null || instant(row.attendance.endsAt) && row.attendance.endsAt >= row.attendance.startsAt)));
 }
 
 async function readBoundedJson(response) {
@@ -39,11 +39,12 @@ async function readBoundedJson(response) {
 }
 
 // Call only on the server with configuration and the one session cookie, never with a user-supplied URL.
-export async function readTimetable({ apiOrigin, sessionValue, resource, from, to, nextCursor }) {
+export async function readTimetable({ apiOrigin, sessionValue, resource, from, to, nextCursor, includeAttendance = false }) {
   const base = origin(apiOrigin);
   if (sessionValue === undefined || sessionValue === null || sessionValue === '') return { kind: 'signed-out' };
   if (typeof sessionValue !== 'string' || !sessionPattern.test(sessionValue)) return { kind: 'signed-out' };
   if (!base || !['history', 'shifts'].includes(resource)) return { kind: 'unavailable' };
+  if (typeof includeAttendance !== 'boolean' || includeAttendance && resource !== 'shifts') return { kind: 'unavailable' };
   if (nextCursor !== undefined && (typeof nextCursor !== 'string' || !cursorPattern.test(nextCursor))) return { kind: 'unavailable' };
   const url = new URL(resource === 'history' ? '/v1/me/history' : '/v1/me/shifts', base);
   url.searchParams.set('limit', '100');
@@ -51,6 +52,7 @@ export async function readTimetable({ apiOrigin, sessionValue, resource, from, t
   if (resource === 'shifts') {
     if (!instant(from) || !instant(to) || from >= to || Date.parse(to) - Date.parse(from) > 62 * 86400000) return { kind: 'unavailable' };
     url.searchParams.set('from', from); url.searchParams.set('to', to);
+    if (includeAttendance) url.searchParams.set('include', 'attendance');
   }
   try {
     const response = await fetch(url, { method: 'GET', headers: { cookie: `${COOKIE}=${sessionValue}` }, redirect: 'manual', cache: 'no-store', signal: AbortSignal.timeout(5000) });
@@ -60,10 +62,10 @@ export async function readTimetable({ apiOrigin, sessionValue, resource, from, t
     const length = response.headers.get('content-length');
     if (length !== null && (!/^\d+$/.test(length) || Number(length) > 262144)) return { kind: 'unavailable' };
     const data = await readBoundedJson(response);
-    if (!(resource === 'history' ? history(data) : shifts(data))) return { kind: 'unavailable' };
+    if (!(resource === 'history' ? history(data) : shifts(data, includeAttendance))) return { kind: 'unavailable' };
     const projected = resource === 'history'
       ? { records: data.records.map(({ id, startsAt, endsAt }) => ({ id, startsAt, endsAt })), nextCursor: data.nextCursor }
-      : { shifts: data.shifts.map(({ id, location, startsAt, endsAt, graceMinutes }) => ({ id, location: { id: location.id, label: location.label }, startsAt, endsAt, graceMinutes })), nextCursor: data.nextCursor };
+      : { shifts: data.shifts.map(({ id, location, startsAt, endsAt, graceMinutes, attendance }) => ({ id, location: { id: location.id, label: location.label }, startsAt, endsAt, graceMinutes, ...(includeAttendance ? { attendance: attendance === null ? null : { startsAt: attendance.startsAt, endsAt: attendance.endsAt } } : {}) })), nextCursor: data.nextCursor };
     return { kind: 'ready', data: projected };
   } catch { return { kind: 'unavailable' }; }
 }

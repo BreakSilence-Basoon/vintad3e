@@ -13,7 +13,7 @@ import { prepareBrowserService } from '../src/main.mjs';
 import { createLoopbackServer } from '../src/server.mjs';
 import { readTimetable } from '../../timetable-web/src/timetable-read.mjs';
 import { handleTimetableRequest } from '../../timetable-web/src/timetable-route.mjs';
-import { handleTimetableAuth } from '../../timetable-web/src/timetable-auth.mjs';
+import { handleTimetableAuth, handleTimetableLogout } from '../../timetable-web/src/timetable-auth.mjs';
 
 const issuer = 'https://identity.example.invalid/';
 const publicOrigin = 'https://app.example.invalid';
@@ -159,7 +159,7 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     assert.equal(uiShifts.status, 200);
     assert.deepEqual((await uiShifts.json()).shifts.map((item) => item.id), ['shift-a']);
     assert.equal((await fetch(`${base}/v1/admin/shifts?${scheduleQuery}`, { headers: writeHeaders })).status, 404);
-    assert.equal((await fetch(`${base}/auth/logout`, { method: 'POST', headers: { ...writeHeaders, origin: 'https://other.example.invalid' } })).status, 403);
+    assert.equal((await handleTimetableLogout(new Request(`${publicOrigin}/auth/logout`, { method: 'POST', headers: { ...writeHeaders, origin: 'https://other.example.invalid' } }), base)).status, 403);
     writer.prepare('UPDATE memberships SET active = 0 WHERE subject = ?').run('example-user');
     assert.equal((await readTimetable({ apiOrigin: base, sessionValue: writeSession.slice('__Host-vintad3e-session='.length), resource: 'history' })).kind, 'denied');
     assert.equal((await handleTimetableRequest(new Request(uiRequest.url, { headers: { cookie: writeSession } }), 'history', base)).status, 404);
@@ -169,8 +169,9 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     writer.prepare('UPDATE memberships SET active = 1, token_valid_after = ? WHERE subject = ?')
       .run(Math.floor(Date.now() / 1000) + 1, 'example-user');
     assert.equal((await fetch(`${base}/v1/me/history`, { headers: writeHeaders })).status, 404);
-    const logout = await fetch(`${base}/auth/logout`, { method: 'POST', headers: { ...writeHeaders, origin: publicOrigin } });
+    const logout = await handleTimetableLogout(new Request(`${publicOrigin}/auth/logout`, { method: 'POST', headers: { ...writeHeaders, origin: publicOrigin } }), base);
     assert.equal(logout.status, 200);
+    assert.match(logout.headers.getSetCookie()[0], /^__Host-vintad3e-session=; .*Max-Age=0$/);
     assert.equal((await fetch(`${base}/v1/history/record-a`, { headers: writeHeaders })).status, 401);
   } finally {
     if (service?.server.listening) await new Promise((done) => service.server.close(done));

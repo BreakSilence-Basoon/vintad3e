@@ -21,6 +21,8 @@ test('development server renders schedule and paginates attendance', { timeout: 
       response.writeHead(302, { location: 'https://identity.example.invalid/authorize', 'set-cookie': `__Host-vintad3e-login=${binding}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=300` });
     } else if (request.url === '/auth/callback?code=example&state=example' && request.headers.cookie === `__Host-vintad3e-login=${binding}`) {
       response.writeHead(200, { 'set-cookie': ['__Host-vintad3e-login=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0', `__Host-vintad3e-session=${session}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=900`] });
+    } else if (request.url === '/auth/logout' && request.method === 'POST' && request.headers.cookie === `__Host-vintad3e-session=${session}` && request.headers.origin === 'https://app.example.invalid') {
+      response.writeHead(200, { 'set-cookie': '__Host-vintad3e-session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0' });
     } else response.writeHead(400);
     response.end();
   });
@@ -52,6 +54,9 @@ test('development server renders schedule and paginates attendance', { timeout: 
     assert.equal(authCallback.status, 303);
     assert.equal(authCallback.headers.get('location'), '/');
     assert.ok(authCallback.headers.getSetCookie().some((cookie) => cookie.startsWith(`__Host-vintad3e-session=${session};`)));
+    const authLogout = await fetch(`${origin}/auth/logout`, { method: 'POST', headers: { origin: 'https://app.example.invalid', cookie: `__Host-vintad3e-session=${session}` } });
+    assert.equal(authLogout.status, 200);
+    assert.match(authLogout.headers.getSetCookie()[0], /^__Host-vintad3e-session=; .*Max-Age=0$/);
     const historyRedirect = await fetch(`${origin}/history?range=custom&from=2026-02-01&to=2026-02-28&sort=asc&historyPage=2&employee=00000000-0000-4000-8000-000000000001`, { redirect: 'manual' });
     assert.equal(historyRedirect.status, 307);
     const historyLocation = new URL(historyRedirect.headers.get('location'), origin);

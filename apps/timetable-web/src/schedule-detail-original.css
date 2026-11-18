@@ -1,0 +1,422 @@
+/* Timetable source styles for schedule cards and the read-only detail dialog. */
+.attendance-history-editor__form label,
+.attendance-history-editor__date-time-field > span:first-child {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 780;
+}
+.attendance-history-editor__date-time-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+.attendance-history-editor__date-time-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.attendance-history-editor__date-time-control {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.attendance-history-editor__date-time-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(54, 44, 32, 0.16);
+  border-radius: 9px;
+  background: rgba(255, 253, 248, 0.72);
+  color: var(--foreground);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 720;
+  text-align: left;
+  white-space: nowrap;
+}
+.attendance-history-editor__date-time-trigger:focus-visible {
+  border-color: rgba(42, 87, 70, 0.48);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(42, 87, 70, 0.12);
+}
+.attendance-history-editor__date-time-control:focus-within
+  .attendance-history-editor__date-time-trigger {
+  border-color: rgba(42, 87, 70, 0.48);
+  box-shadow: 0 0 0 3px rgba(42, 87, 70, 0.12);
+}
+.attendance-history-editor__date-time-trigger .is-placeholder {
+  color: rgba(54, 44, 32, 0.54);
+}
+.attendance-history-editor__date-time-control input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0 !important;
+  padding: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
+.attendance-history-editor__form
+  .attendance-history-editor__delete-confirmation
+  .attendance-history-editor__message,
+.schedule-dialog__form
+  .attendance-history-editor__delete-confirmation
+  .attendance-history-editor__message {
+  margin: 0;
+  text-align: center;
+}
+.schedule-calendar__shifts {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.schedule-calendar__shifts li {
+  min-width: 0;
+}
+.schedule-calendar__shift {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: 5px 8px;
+  border: 1px solid rgba(43, 74, 64, 0.14);
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--foreground);
+  font: inherit;
+  text-align: left;
+}
+.schedule-calendar__shift strong,
+.schedule-calendar__shift span,
+.schedule-calendar__shift small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.schedule-calendar__shift strong {
+  width: 100%;
+  overflow: hidden;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  overflow-wrap: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.schedule-calendar__shift span {
+  color: var(--accent-strong);
+  font-size: 0.72rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+.schedule-calendar__shift small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+.schedule-calendar__shift--interactive {
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+.schedule-calendar__shift--interactive:hover {
+  border-color: rgba(43, 74, 64, 0.36);
+  background: rgba(43, 74, 64, 0.12);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
+}
+.schedule-calendar__shift--interactive:focus-visible {
+  outline: 3px solid rgba(43, 74, 64, 0.24);
+  outline-offset: 2px;
+}
+.schedule-calendar__shift--copy-source {
+  border-color: rgba(43, 74, 64, 0.52);
+  opacity: 0.48;
+  transform: scale(0.98);
+}
+.schedule-calendar[data-copy-mode="targeting"]
+  .schedule-calendar__shift--copy-source {
+  border-color: rgba(43, 74, 64, 0.62);
+  box-shadow: 0 0 0 2px rgba(43, 74, 64, 0.16);
+  opacity: 1;
+  transform: none;
+}
+@media (any-pointer: coarse) {.schedule-calendar__shift--copy-enabled {
+    -webkit-touch-callout: none;
+    touch-action: none;
+    user-select: none;
+  }}
+@media (prefers-reduced-motion: reduce) {.schedule-calendar__day,
+  .schedule-calendar__shift--interactive,
+  .schedule-calendar__shift--copy-source,
+  .schedule-calendar__copy-ghost {
+    transition: none;
+  }}
+.schedule-dialog__form--secondary {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.schedule-calendar__shift--draft {
+  border-style: dotted;
+  border-width: 2px;
+  background-color: rgba(255, 253, 248, 0.72);
+  box-shadow: none;
+  filter: saturate(0.9);
+  opacity: 0.86;
+}
+.schedule-calendar__shift--checked-in {
+  border-color: rgba(35, 112, 70, 0.36);
+  background: rgba(67, 145, 94, 0.18);
+}
+.schedule-calendar__shift--checked-out {
+  border-color: rgba(170, 126, 44, 0.2);
+  background: #fbf4e6;
+}
+.schedule-dialog {
+  width: min(660px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100svh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  color: var(--foreground);
+  box-shadow: 0 28px 80px rgba(32, 21, 9, 0.2);
+}
+.schedule-dialog::backdrop {
+  background: rgba(28, 23, 18, 0.44);
+  backdrop-filter: blur(2px);
+}
+.schedule-dialog__panel {
+  max-height: calc(100svh - 32px);
+  overflow-y: auto;
+  background: var(--surface-strong);
+}
+.schedule-dialog__tabs {
+  width: fit-content;
+  min-height: 44px;
+  display: inline-flex;
+  gap: 5px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-muted, rgba(0, 0, 0, 0.04));
+}
+.schedule-dialog__tabs button {
+  min-height: 32px;
+  padding: 0 15px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.schedule-dialog__tabs button.is-active {
+  border-color: var(--foreground);
+  background: var(--foreground);
+  color: var(--background);
+}
+.schedule-dialog__tabs button:focus-visible {
+  outline: 3px solid rgba(43, 74, 64, 0.24);
+  outline-offset: 3px;
+}
+.schedule-dialog__header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-strong);
+}
+.schedule-dialog__header h2 {
+  min-width: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.35rem;
+  overflow-wrap: anywhere;
+}
+.schedule-dialog__close {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--foreground);
+  color: var(--surface-strong);
+  cursor: pointer;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+.schedule-dialog__close:focus-visible {
+  outline: 3px solid rgba(43, 74, 64, 0.28);
+  outline-offset: 3px;
+}
+.schedule-dialog__form,
+.schedule-employee-manager__list-view {
+  display: grid;
+  gap: 20px;
+  padding: 22px;
+}
+.schedule-dialog__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.schedule-dialog__fields label,
+.schedule-dialog__fields .attendance-history-editor__date-time-field {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.schedule-shift-editor
+  .schedule-dialog__fields
+  .schedule-shift-editor__field-label {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.schedule-dialog__fields input:not([type="hidden"]),
+.schedule-dialog__fields select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid rgba(54, 44, 32, 0.18);
+  border-radius: 12px;
+  background: var(--surface-strong);
+  color: var(--foreground);
+  font: inherit;
+}
+.schedule-dialog__fields input:focus,
+.schedule-dialog__fields select:focus {
+  border-color: rgba(43, 74, 64, 0.52);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(43, 74, 64, 0.1);
+}
+.schedule-dialog__fields :disabled,
+.schedule-dialog__fields [readonly] {
+  background: rgba(91, 81, 69, 0.06);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.schedule-dialog__field--wide {
+  grid-column: 1 / -1;
+}
+.schedule-dialog__notice,
+.schedule-dialog__confirmation {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(170, 126, 44, 0.22);
+  border-radius: 12px;
+  background: var(--warning-soft);
+  color: var(--muted);
+  line-height: 1.55;
+}
+.schedule-dialog__message {
+  margin: 0;
+  text-align: center;
+}
+.schedule-dialog__message--success {
+  color: var(--accent);
+}
+.schedule-dialog__message--error {
+  color: #81271d;
+}
+.schedule-dialog__actions,
+.schedule-dialog__confirmation-actions,
+.schedule-employee-manager__list-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.schedule-shift-editor .schedule-dialog__actions {
+  justify-content: flex-end;
+}
+.schedule-dialog__confirmation {
+  display: grid;
+  gap: 14px;
+  color: var(--foreground);
+  font-weight: 750;
+  text-align: center;
+}
+.schedule-dialog__confirmation label {
+  display: grid;
+  gap: 7px;
+  text-align: left;
+}
+.schedule-dialog__confirmation input[type="date"] {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid rgba(54, 44, 32, 0.18);
+  border-radius: 10px;
+  background: var(--surface-strong);
+  color: var(--foreground);
+  font: inherit;
+}
+.schedule-dialog__secondary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+@media (max-width: 640px) {.schedule-calendar__shifts {
+    gap: 3px;
+  }
+.schedule-calendar__shift {
+    min-height: 30px;
+    padding: 1px;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+.schedule-calendar__shift strong {
+    font-size: 0.6rem;
+    line-height: 1.1;
+  }
+.schedule-dialog,
+  .schedule-employee-manager {
+    width: min(100%, calc(100vw - 20px));
+    max-height: calc(100svh - 20px);
+  }
+.schedule-dialog__panel {
+    max-height: calc(100svh - 20px);
+  }
+.schedule-dialog__header,
+  .schedule-dialog__form,
+  .schedule-employee-manager__list-view {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+.schedule-dialog__fields {
+    grid-template-columns: 1fr;
+  }
+.schedule-dialog__field--wide {
+    grid-column: auto;
+  }}

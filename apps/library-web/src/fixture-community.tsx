@@ -1,11 +1,13 @@
 'use client';
-import { useState, type FormEvent } from 'react';
+import { useState, useSyncExternalStore, type FormEvent } from 'react';
 import { Button } from '@vintad3e/ui/components';
 import { formatToastText } from '@vintad3e/ui/toast-text';
 import { libraryDate, type FixtureDocument } from './library-fixture';
+import { bookmarkServerSnapshot, bookmarkSnapshot, parseFixtureBookmarks, setFixtureBookmark, subscribeBookmarks } from './fixture-bookmarks';
 
 export function FixtureCommunity({ document }: { document: FixtureDocument }) {
-  const [saved, setSaved] = useState(false);
+  const bookmarkData = useSyncExternalStore(subscribeBookmarks, bookmarkSnapshot, bookmarkServerSnapshot);
+  const saved = parseFixtureBookmarks(bookmarkData).includes(document.id);
   const [body, setBody] = useState('');
   const [comments, setComments] = useState<{ id: string; body: string; createdAt: string }[]>([]);
   const [toast, setToast] = useState<{ message: string; error: boolean } | null>(null);
@@ -34,7 +36,7 @@ export function FixtureCommunity({ document }: { document: FixtureDocument }) {
   return <>
     <div className="publication-actions"><Button profile="library" type="button" disabled={pending} aria-busy={pending} onClick={() => copy('text')}>내용 복사</Button><Button profile="library" type="button" disabled={pending} aria-busy={pending} onClick={() => copy('reference')}>문서 참조 복사</Button></div>
     <section id="comments" className="publication-community" aria-labelledby="comments-title">
-      <Button profile="library" type="button" aria-pressed={saved} onClick={() => { setSaved(!saved); setToast({ message: saved ? '보관함에서 해제했습니다.' : '보관함에 저장했습니다.', error: false }); }}>{saved ? '저장 해제' : '보관함 저장'}</Button>
+      <Button profile="library" type="button" aria-pressed={saved} onClick={() => { const ok = setFixtureBookmark(document.id, !saved); setToast(ok ? { message: saved ? '보관함에서 해제했습니다.' : '보관함에 저장했습니다.', error: false } : { message: '저장하지 못했습니다.', error: true }); }}>{saved ? '저장 해제' : '보관함 저장'}</Button>
       <h2 id="comments-title">댓글</h2><form onSubmit={comment}><fieldset><label htmlFor="publication-comment">댓글</label><textarea id="publication-comment" name="comment" value={body} onChange={event => setBody(event.target.value)} maxLength={2000} rows={3} required /><Button profile="library" type="submit" disabled={!body.trim()}>댓글 작성</Button></fieldset></form>
       {comments.length ? <ol className="library-comments">{comments.map(item => <li key={item.id}><p className="library-document-meta"><span>직원 · 나</span><time dateTime={item.createdAt}>{libraryDate(item.createdAt)}</time></p><p>{item.body}</p></li>)}</ol> : <p className="library-empty">아직 댓글이 없습니다.</p>}
     </section>

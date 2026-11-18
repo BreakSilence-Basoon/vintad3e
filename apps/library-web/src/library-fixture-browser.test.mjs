@@ -44,6 +44,14 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     await evaluate("document.querySelector('.library-feed a').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('.publication-content'))"));
     assert.ok(await evaluate("document.querySelector('.publication-content').textContent.includes('업무를 시작하기')"));
+    const sourcePath = await evaluate("document.querySelector('.publication-actions a').getAttribute('href')");
+    assert.equal(sourcePath, '/api/publications/00000000-0000-4000-8000-000000000001/source');
+    const download = await fetch(`${origin}${sourcePath}`);
+    assert.equal(download.status, 200);
+    assert.match(download.headers.get('content-disposition'), /^attachment;/);
+    assert.equal(download.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(await download.text(), '업무를 시작하기 전에 필요한 사항을 확인합니다.');
+    assert.equal((await fetch(`${origin}/api/publications/unknown/source`)).status, 404);
     await waitFor(async () => evaluate("(()=>{const b=document.querySelector('.publication-community button');if(b?.getAttribute('aria-pressed')==='true')return true;b?.click();return false;})()"));
     assert.equal(await evaluate("document.querySelector('.publication-community button').textContent"),'저장 해제');
     await evaluate("Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copied=text;}}})");

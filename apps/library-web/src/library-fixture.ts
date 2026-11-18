@@ -14,3 +14,8 @@ export function searchLibraryFixtures(documents: FixtureDocument[], query: strin
 }
 
 export const libraryDate = (value: string) => new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Seoul' }).format(new Date(value));
+
+export function getFixtureSource(env: string | undefined, enabled: string | undefined, id: string): { filename: string; body: string } | null {
+  const document = getLibraryFixtures(env, enabled).find(item => item.id === id);
+  return document ? { filename: `${document.title}.md`, body: document.body } : null;
+}

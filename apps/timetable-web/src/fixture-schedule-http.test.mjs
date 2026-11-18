@@ -69,6 +69,19 @@ test('development server renders schedule and paginates attendance', { timeout: 
     assert.ok(await evaluate("location.search.includes('range=all')"));
     await waitFor(async () => evaluate("(()=>{const b=document.querySelector('.attendance-history-pager button');if(location.search.includes('historyPage=3')&&document.querySelectorAll('article.attendance-history-card').length===21)return true;b?.click();return false;})()"));
     assert.ok(await evaluate("!document.querySelector('.attendance-history-pager')"));
+    await send('Page.navigate',{url:`${origin}/?view=schedule&month=2026-02`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('[aria-label=\"직원별 일정\"]:not(:disabled)'))"));
+    assert.equal(await evaluate("document.querySelectorAll('.schedule-calendar__shift').length"), 1);
+    assert.ok(await evaluate("document.querySelector('.schedule-calendar__shift').textContent.includes('직원 01')"));
+    await evaluate("(()=>{const s=document.querySelector('[aria-label=\"직원별 일정\"]');s.value='employee-2';s.dispatchEvent(new Event('change',{bubbles:true}));})()");
+    await waitFor(async () => evaluate("document.querySelectorAll('.schedule-calendar__shift').length===0"));
+    await evaluate("(()=>{const s=document.querySelector('[aria-label=\"장소별 일정\"]');s.value='location-2';s.dispatchEvent(new Event('change',{bubbles:true}));})()");
+    await waitFor(async () => evaluate("document.querySelector('.schedule-calendar__shift')?.textContent.includes('직원 02')"));
+    await evaluate("document.querySelector('.schedule-calendar__shift').click()");
+    await waitFor(async () => evaluate("document.querySelector('dialog[open] #schedule-shift-editor-title')?.textContent.includes('직원 02 장소 02 근무')"));
+    assert.ok(await evaluate("document.querySelector('dialog[open] input[aria-label=\"예정 시작\"]').value.startsWith('2026-02-18')"));
+    await evaluate("document.querySelector('dialog[open] [aria-label=\"일정 입력 창 닫기\"]').click()");
+    await waitFor(async () => evaluate("!document.querySelector('dialog[open]')"));
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

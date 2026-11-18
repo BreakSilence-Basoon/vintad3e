@@ -5,27 +5,38 @@ import { ScheduleMonthPicker } from './schedule-month-picker';
 import { emptyCalendarCells } from './calendar-cells';
 import { filterFixtureSchedule, fixtureEmployees, fixtureLocations, fixtureSchedule } from './fixture-schedule';
 import { FixtureScheduleDetail } from './fixture-schedule-detail';
+import { toSeoulDateTimeInput } from './date-time';
+
+export type SessionScheduleShift = { id: string; location: { id: string; label: string }; startsAt: string; endsAt: string; graceMinutes: number; attendance: { startsAt: string; endsAt: string | null } | null };
+type ScheduleEntry = { id: string; date: string; employee: { id: string; displayName: string }; location: { id: string; label: string }; startInput: string; endInput: string; attendance: { startsAt: string; endsAt: string | null } | null };
 
 const weekdays = ['일', '월', '화', '수', '목', '금', '토'] as const;
 const navigationParams = { view: 'schedule' };
 
 /** The empty-data rendering from Timetable's schedule calendar. */
-export function ScheduleEmptyCalendar({ month, fixtureEnabled = false }: { month: string; fixtureEnabled?: boolean }) {
+export function ScheduleEmptyCalendar({ month, fixtureEnabled = false, sessionShifts }: { month: string; fixtureEnabled?: boolean; sessionShifts?: SessionScheduleShift[] }) {
   const [displayMonth, setDisplayMonth] = useState(month);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const [employee, setEmployee] = useState('');
-  const [location, setLocation] = useState(fixtureEnabled ? fixtureLocations[0].id : '');
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [location, setLocation] = useState(fixtureEnabled ? fixtureLocations[0].id : sessionShifts?.[0]?.location.id ?? '');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   useEffect(() => { setDisplayMonth(month); }, [month]);
+  useEffect(() => {
+    if (!fixtureEnabled && sessionShifts) setLocation(current => sessionShifts.some(item => item.location.id === current) ? current : sessionShifts[0]?.location.id ?? '');
+  }, [fixtureEnabled, sessionShifts]);
 
   const cells = emptyCalendarCells(displayMonth);
-  const fixtures = fixtureSchedule(fixtureEnabled ? 'development' : undefined, fixtureEnabled ? '1' : undefined, displayMonth);
-  const visibleFixtures = filterFixtureSchedule(fixtures, employee, location);
-  const selected = fixtures.find(item => item.date === selectedDate);
+  const fixtures = fixtureSchedule(fixtureEnabled ? 'development' : undefined, fixtureEnabled ? '1' : undefined, displayMonth).map(item => ({ ...item, id: `${item.date}-${item.employee.id}`, startInput: `${item.date}T09:00`, endInput: `${item.date}T18:00`, attendance: null }));
+  const fromSession = (sessionShifts ?? []).map(item => ({ ...item, date: toSeoulDateTimeInput(item.startsAt).slice(0, 10), employee: { id: 'self', displayName: '직원' }, startInput: toSeoulDateTimeInput(item.startsAt), endInput: toSeoulDateTimeInput(item.endsAt) }));
+  const shifts: ScheduleEntry[] = fixtureEnabled ? fixtures : fromSession;
+  const locations = fixtureEnabled ? fixtureLocations : [...new Map(fromSession.map(item => [item.location.id, item.location])).values()];
+  const employees = fixtureEnabled ? fixtureEmployees : [];
+  const visibleShifts = filterFixtureSchedule(shifts, employee, location);
+  const selected = shifts.find(item => item.id === selectedId);
   return <section className="schedule-calendar-page" aria-label="근무시간표">
     <header className="schedule-calendar-page__toolbar" aria-label="근무시간표 도구">
       <div className="schedule-calendar-page__month">
-        <ScheduleMonthPicker onMonthChange={setDisplayMonth} employeeOptions={fixtureEnabled ? fixtureEmployees : []} locationOptions={fixtureEnabled ? fixtureLocations : []}
+        <ScheduleMonthPicker onMonthChange={setDisplayMonth} employeeOptions={employees} locationOptions={locations}
           month={displayMonth} pathname="/" persistentParams={navigationParams} onOpenChange={setIsMonthPickerOpen}
           onSelectedEmployeeIdChange={setEmployee} onSelectedLocationIdChange={setLocation}
           selectedEmployeeId={employee} selectedLocationId={location} />
@@ -42,10 +53,14 @@ export function ScheduleEmptyCalendar({ month, fixtureEnabled = false }: { month
       <ol className="schedule-calendar__days">{cells.map(({ dateKey, cellMonth, day, weekday, outside }) => {
         return <li className={`schedule-calendar__day${outside ? ' schedule-calendar__day--outside' : ''}`} data-schedule-date={dateKey} key={dateKey}>
           <time dateTime={dateKey}><span className="schedule-calendar__day-number">{day}</span><span className="schedule-calendar__day-label">{cellMonth}월 {day}일 {weekday}요일</span></time>
-          <ul className="schedule-calendar__shifts">{visibleFixtures.filter(item => item.date === dateKey).map(item => <li key={item.date}><button type="button" className="schedule-calendar__shift schedule-calendar__shift--interactive schedule-calendar__shift--draft" aria-label={`${item.employee.displayName}, ${dateKey.slice(0, 4)}년 ${cellMonth}월 ${day}일 09:00부터 ${dateKey.slice(0, 4)}년 ${cellMonth}월 ${day}일 18:00까지, ${item.location.label}, 근무 상세 보기`} onClick={() => setSelectedDate(dateKey)}><strong>{item.employee.displayName}</strong></button></li>)}</ul>
+          <ul className="schedule-calendar__shifts">{visibleShifts.filter(item => item.date === dateKey).map(item => {
+            const [endYear, endMonth, endDay] = item.endInput.slice(0, 10).split('-');
+            const state = item.attendance?.endsAt ? 'checked-out' : item.attendance?.startsAt ? 'checked-in' : 'draft';
+            return <li key={item.id}><button type="button" className={`schedule-calendar__shift schedule-calendar__shift--interactive schedule-calendar__shift--${state}`} aria-label={`${item.employee.displayName}, ${dateKey.slice(0, 4)}년 ${cellMonth}월 ${day}일 ${item.startInput.slice(11, 16)}부터 ${endYear}년 ${Number(endMonth)}월 ${Number(endDay)}일 ${item.endInput.slice(11, 16)}까지, ${item.location.label}, 근무 상세 보기`} onClick={() => setSelectedId(item.id)}><strong>{item.employee.displayName}</strong></button></li>;
+          })}</ul>
         </li>;
       })}</ol>
     </div>
-    {selected ? <FixtureScheduleDetail date={selected.date} employee={selected.employee.displayName} location={selected.location.label} onClose={() => setSelectedDate(null)} /> : null}
+    {selected ? <FixtureScheduleDetail date={selected.date} employee={selected.employee.displayName} location={selected.location.label} startInput={selected.startInput} endInput={selected.endInput} attendance={selected.attendance} onClose={() => setSelectedId(null)} /> : null}
   </section>;
 }

@@ -6,6 +6,6 @@ export function fixtureSchedule(env: string | undefined, enabled: string | undef
   return [8, 18].map((day, index) => ({ date: `${month}-${String(day).padStart(2, '0')}`, employee: fixtureEmployees[index], location: fixtureLocations[index] }));
 }
 
-export function filterFixtureSchedule(shifts: ReturnType<typeof fixtureSchedule>, employee: string, location: string) {
+export function filterFixtureSchedule<T extends ReturnType<typeof fixtureSchedule>[number]>(shifts: T[], employee: string, location: string): T[] {
   return shifts.filter(shift => (!employee || shift.employee.id === employee) && (!location || shift.location.id === location));
 }

@@ -26,7 +26,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
     <Suspense fallback={null}>
       <TimetableSlideSwitcher key={initialView} initialSlide={initialView} ariaLabel="출근부와 근무시간표" slides={[
         { key: 'history', label: '출근부', content: <section className="attendance-history-list" aria-label="출근부"><AttendanceHistoryFilter key={filterKey} employees={[]} filters={filters} isAdmin={false} pathname="/" persistentParams={{ view: 'history' }} /><FixtureHistoryList records={records} /></section> },
-        { key: 'schedule', label: '근무시간표', content: <ScheduleEmptyCalendar month={selectedMonth} /> },
+        { key: 'schedule', label: '근무시간표', content: <ScheduleEmptyCalendar month={selectedMonth} fixtureEnabled={process.env.NODE_ENV === 'development' && process.env.VINTAD3E_TIMETABLE_FIXTURE === '1'} /> },
       ]} />
     </Suspense>
   </main>;

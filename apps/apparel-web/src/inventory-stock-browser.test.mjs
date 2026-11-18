@@ -47,6 +47,10 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     assert.ok(await evaluate("document.querySelector('.admin-toast--error')?.textContent.includes('목표재고보다 클 수 없습니다')"));
     await setNumber(2,'7'); await run("document.querySelector('.shortage-save-button').click()");
     assert.ok(await evaluate("document.querySelector('.admin-toast--success')?.textContent.includes('저장했습니다')"));
+    await send('Page.reload');
+    await waitFor(async () => evaluate("(()=>{if(document.querySelector('.shortage-table__row'))return true;document.querySelector('.product-card__view-button')?.click();return false;})()"));
+    assert.equal(await evaluate("document.querySelectorAll('.shortage-table__row')[0].querySelectorAll('input[type=number]')[0].value"),'3');
+    assert.equal(await evaluate("document.querySelectorAll('.shortage-table__row')[0].querySelectorAll('input[type=number]')[1].value"),'10');
     await setNumber(0,'4');
     await run("window.confirm = message => { window.lastConfirm = message; return false; }; document.querySelectorAll('.graphic-tabs button')[1].click()");
     assert.ok(await evaluate("window.lastConfirm.includes('탭을 바꿀까요?')"));
@@ -68,6 +72,11 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     assert.ok(await evaluate("[...document.querySelectorAll('.admin-toast--success')].some(toast => toast.textContent.includes('OFF으로 저장되었습니다'))"));
     await run("document.querySelector('.shortage-table__row input[role=switch]').click()");
     assert.equal(await evaluate("document.querySelector('.shortage-table__row input[role=switch]').checked"),true);
+    await setNumber(0,'9');
+    await run("window.savedSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(){throw new Error('storage unavailable')};document.querySelector('.shortage-save-button').click()");
+    assert.ok(await evaluate("document.querySelector('.admin-toast--error')?.textContent.includes('부족 재고를 저장하지 못했습니다.')"));
+    assert.equal(await evaluate("document.querySelectorAll('.shortage-table__row')[0].querySelectorAll('input[type=number]')[0].value"),'9');
+    await evaluate("Storage.prototype.setItem=window.savedSetItem");
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

@@ -4,7 +4,7 @@ import type { FixtureProduct } from './inventory-fixture';
 import { defaultRow, editDraft, isDirty, toDraft, validateDraft, type Draft, type Row, type Rows } from './inventory-stock';
 import { showAdminToast } from './admin-toast';
 
-export function InventoryFixtureDetail({ product, rows, onRows, onClose }: { product: FixtureProduct; rows: Rows; onRows: (rows: Rows) => void; onClose: () => void }) {
+export function InventoryFixtureDetail({ product, rows, onRows, onClose }: { product: FixtureProduct; rows: Rows; onRows: (rows: Rows) => boolean; onClose: () => void }) {
   const [tab, setTab] = useState<'seongsu'|'hanam'|'all'>('seongsu');
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [sort, setSort] = useState<{ key: string; desc: boolean } | null>(null);
@@ -37,14 +37,14 @@ export function InventoryFixtureDetail({ product, rows, onRows, onClose }: { pro
   function save(key: string) {
     const result = validateDraft(getRow(key), getDraft(key));
     if ('error' in result) { showAdminToast(result.error, 'error'); return; }
-    onRows({ ...rows, [key]: result.row });
+    if (!onRows({ ...rows, [key]: result.row })) { showAdminToast('부족 재고를 저장하지 못했습니다.', 'error'); return; }
     setDrafts(current => { const next = { ...current }; delete next[key]; return next; });
     showAdminToast('저장했습니다.', 'success');
   }
   function toggleTracking(key: string, tracking: boolean) {
     const previous = getRow(key);
     const next = { ...previous, tracking, target: tracking ? previous.target : 0, shortage: tracking ? previous.shortage : 0 };
-    onRows({ ...rows, [key]: next });
+    if (!onRows({ ...rows, [key]: next })) { showAdminToast('재고추적 설정을 저장하지 못했습니다.', 'error'); return; }
     setDrafts(current => {
       if (!current[key]) return current;
       return { ...current, [key]: { ...current[key], target: tracking ? current[key].target : '0', shortage: tracking ? current[key].shortage : '0' } };

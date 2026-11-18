@@ -1,10 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { buildInventoryHref, belongsToInventoryCollection, variantMatchesInventoryOptionFilters, type InventoryCollection, type InventoryOptionFilters } from './inventory-collection';
 import { filterFixtureInventory, type FixtureProduct } from './inventory-fixture';
 import { InventoryFixtureDetail } from './inventory-fixture-detail';
 import type { Rows } from './inventory-stock';
 import { AdminToastViewport } from './admin-toast';
+import { readFixtureStock, writeFixtureStock } from './inventory-fixture-session';
 
 type Filters = InventoryOptionFilters & { collection: InventoryCollection; search: string };
 type SortKey = 'skuCode' | 'optionName' | 'apparelType' | 'color' | 'size' | 'apparelTarget' | 'unitOfMeasure';
@@ -13,6 +14,12 @@ export function InventoryEmpty({ initial, products }: { initial: Filters; produc
   const [filters, setFilters] = useState(initial);
   const [selected, setSelected] = useState<FixtureProduct | null>(null);
   const [stockRows, setStockRows] = useState<Rows>({});
+  useEffect(() => { if (products.length) setStockRows(readFixtureStock()); }, [products]);
+  function saveStockRows(rows: Rows): boolean {
+    if (!products.length || !writeFixtureStock(rows)) return false;
+    setStockRows(rows);
+    return true;
+  }
   const [sort, setSort] = useState<Record<string, {key: SortKey; direction: 'asc' | 'desc'}>>({});
   function update(next: Filters) { setFilters(next); window.history.replaceState(null, '', buildInventoryHref(next)); }
   const visible = filterFixtureInventory(products, filters);
@@ -37,7 +44,7 @@ export function InventoryEmpty({ initial, products }: { initial: Filters; produc
         <button type="button" className="graphic-card__view-button product-card__view-button" onClick={event => { event.preventDefault(); event.stopPropagation(); setSelected(product); }} aria-label={`${product.nameKo} 재고 수정 창 열기`} title="재고 수정"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5.1 3.6c-.7-.3-1.4.4-1.1 1.1l5.1 15.1c.3.8 1.4.9 1.8.1l2.1-4.2 4.5 4.5c.5.5 1.3.5 1.8 0l.9-.9c.5-.5.5-1.3 0-1.8L15.7 13l4.2-2.1c.8-.4.7-1.5-.1-1.8L5.1 3.6Z" /></svg></button>
       </summary><div className="product-card__table"><table className="simple-table"><thead><tr>{headers.map(([key,label]) => { const active = state?.key === key; const direction = active ? state.direction : 'asc'; return <th key={key}><button type="button" className={`sort-toggle-button${active ? ' is-active' : ''} sort-toggle-button--table`} aria-pressed={active} title={`${label} ${direction === 'asc' ? '내림차순' : '오름차순'}으로 변경`} onClick={() => setSort({...sort,[product.id]:{key,direction:active && direction === 'asc' ? 'desc':'asc'}})}><span>{label}</span><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d={direction === 'asc' ? 'M8 3.2 3.8 7.4l1.1 1.1 2.3-2.3v6.6h1.6V6.2l2.3 2.3 1.1-1.1L8 3.2Z' : 'm8 12.8 4.2-4.2-1.1-1.1-2.3 2.3V3.2H7.2v6.6L4.9 7.5 3.8 8.6 8 12.8Z'} /></svg></button></th>; })}</tr></thead><tbody>{rows.map(row => <tr key={row.skuCode}>{headers.map(([key]) => <td key={key}>{key === 'apparelTarget' && row[key] === 'UNISEX' ? '공용' : row[key]}</td>)}</tr>)}</tbody></table></div></details>;
     })}</div>}
-    {selected ? <InventoryFixtureDetail product={selected} rows={stockRows} onRows={setStockRows} onClose={() => setSelected(null)} /> : null}
+    {selected ? <InventoryFixtureDetail product={selected} rows={stockRows} onRows={saveStockRows} onClose={() => setSelected(null)} /> : null}
     <AdminToastViewport />
   </section>;
 }

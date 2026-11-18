@@ -10,6 +10,9 @@ import { fixtureHistory } from '../fixture-history';
 import { FixtureHistoryList } from '../fixture-history-list';
 import { AttendanceHistoryPager } from '../attendance-history-pager';
 import { historySessionCookie, loadTimetableHistory } from '../timetable-history-view.mjs';
+import { loadTimetableSchedule, scheduleCalendarRange } from '../timetable-schedule-view.mjs';
+import { emptyCalendarCells } from '../calendar-cells';
+import type { SessionScheduleShift } from '../schedule-empty-calendar';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +32,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const fixtureEnabled = process.env.NODE_ENV === 'development' && process.env.VINTAD3E_TIMETABLE_FIXTURE === '1';
   let records = fixtureHistory(process.env.NODE_ENV, process.env.VINTAD3E_TIMETABLE_FIXTURE, now, filters);
   let failed = false;
+  let scheduleFailed = false;
+  let scheduleShifts: SessionScheduleShift[] | undefined;
   if (!fixtureEnabled && process.env.VINTAD3E_TIMETABLE_API_ORIGIN && initialView === 'history') {
     const sessionValue = historySessionCookie((await headers()).get('cookie'));
     if (sessionValue === null) failed = true;
@@ -38,6 +43,19 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
       else failed = true;
     }
   }
+  if (!fixtureEnabled && process.env.VINTAD3E_TIMETABLE_API_ORIGIN && initialView === 'schedule') {
+    const sessionValue = historySessionCookie((await headers()).get('cookie'));
+    if (sessionValue === null) scheduleFailed = true;
+    else if (sessionValue !== undefined) {
+      try {
+        const cells = emptyCalendarCells(selectedMonth);
+        const range = scheduleCalendarRange(cells[0].dateKey, cells[cells.length - 1].dateKey);
+        const result = await loadTimetableSchedule({ apiOrigin: process.env.VINTAD3E_TIMETABLE_API_ORIGIN, sessionValue, ...range });
+        if (result.kind === 'ready' && result.shifts) scheduleShifts = result.shifts;
+        else scheduleFailed = true;
+      } catch { scheduleFailed = true; }
+    }
+  }
   const historyPage = parseHistoryPage(params.historyPage);
   const visibleRecords = records.slice(0, historyPage * 10);
   const filterKey = [filters.range, filters.from, filters.to, filters.employee, filters.sort].join(':');
@@ -45,7 +63,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
     <Suspense fallback={null}>
       <TimetableSlideSwitcher key={initialView} initialSlide={initialView} ariaLabel="출근부와 근무시간표" slides={[
         { key: 'history', label: '출근부', content: <section className="attendance-history-list" aria-label="출근부">{failed ? <div className="state-panel" role="alert"><strong>출근부를 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해주세요.</p></div> : <><AttendanceHistoryFilter key={filterKey} employees={[]} filters={filters} isAdmin={false} pathname="/" persistentParams={{ view: 'history' }} /><FixtureHistoryList records={visibleRecords} /><AttendanceHistoryPager href={buildHistoryHref(filters, historyPage + 1)} totalCount={records.length} visibleCount={visibleRecords.length} /></>}</section> },
-        { key: 'schedule', label: '근무시간표', content: <ScheduleEmptyCalendar month={selectedMonth} fixtureEnabled={fixtureEnabled} /> },
+        { key: 'schedule', label: '근무시간표', content: scheduleFailed ? <section className="schedule-calendar-page" aria-label="근무시간표"><div className="state-panel" role="alert"><strong>근무시간표를 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해주세요.</p></div></section> : <ScheduleEmptyCalendar month={selectedMonth} fixtureEnabled={fixtureEnabled} sessionShifts={scheduleShifts} /> },
       ]} />
     </Suspense>
   </main>;

@@ -1,6 +1,6 @@
 import type { AttendanceHistoryFilters } from './attendance-history-filter';
 
-type Fixture = { id: string; startsAt: string; endsAt: string };
+type Fixture = { id: string; startsAt: string; endsAt: string | null };
 const dayMs = 86400000;
 const seoulDay = (time: number) => Math.floor((time + 9 * 3600000) / dayMs);
 const dateDay = (date: string) => Math.floor(Date.parse(`${date}T00:00:00Z`) / dayMs);
@@ -9,8 +9,9 @@ export function fixtureHistory(env: string | undefined, enabled: string | undefi
   if (env !== 'development' || enabled !== '1' || filters.employee !== 'all') return [];
   const today = seoulDay(now);
   const fixtures = Array.from({ length: 21 }, (_, offset) => {
-    const start = (today - offset) * dayMs; // 09:00 Seoul
-    return { id: String(offset), startsAt: new Date(start).toISOString(), endsAt: new Date(start + 8 * 3600000).toISOString() };
+    const scheduledStart = (today - offset) * dayMs; // 09:00 Seoul
+    const start = offset === 0 ? Math.min(scheduledStart, now) : scheduledStart;
+    return { id: String(offset), startsAt: new Date(start).toISOString(), endsAt: offset === 0 ? null : new Date(start + 8 * 3600000).toISOString() };
   });
   return fixtures.filter((item) => {
     const day = seoulDay(Date.parse(item.startsAt));

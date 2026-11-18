@@ -39,12 +39,14 @@ test('development server renders schedule and paginates attendance', { timeout: 
       return result.text();
     };
     const first = await historyPage(1);
-    assert.equal((first.match(/<article class="attendance-history-card attendance-history-card--checked-out"/g) ?? []).length, 10);
+    assert.equal((first.match(/<article class="attendance-history-card attendance-history-card--checked-out"/g) ?? []).length, 9);
+    assert.match(first, /attendance-history-card--checked-in/);
+    assert.match(first, /출근 중/);
     assert.match(first, /출근부 더 불러오기/);
     const second = await historyPage(2);
-    assert.equal((second.match(/<article class="attendance-history-card attendance-history-card--checked-out"/g) ?? []).length, 20);
+    assert.equal((second.match(/<article class="attendance-history-card attendance-history-card--checked-out"/g) ?? []).length, 19);
     const third = await historyPage(3);
-    assert.equal((third.match(/<article class="attendance-history-card attendance-history-card--checked-out"/g) ?? []).length, 21);
+    assert.equal((third.match(/<article class="attendance-history-card attendance-history-card--checked-out"/g) ?? []).length, 20);
     assert.doesNotMatch(third, /aria-label="출근부 더 불러오기"/);
 
     profile = await mkdtemp(join(tmpdir(), 'vintad3e-timetable-browser-'));

@@ -1,6 +1,9 @@
 import Image from 'next/image';
 import { PortalCarousel } from '../portal-carousel';
 import { fixturePortalLinks } from '../fixture-links.mjs';
+import { fixtureOrigin, fixtureSession } from '../fixture-session.mjs';
+import { headers } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
 
 type Tile = { id: string; name: string; icon: string | null; tone?: 'mono' | 'sns'; accessibleName?: string; href?: string; restIcon?: string };
 const apps: Tile[] = ['Apparel', 'Timetable', 'Supporters', 'Partners', 'Library', 'Floor', 'Ledger', 'Creative', 'Admin', 'Catalog'].map((name) => ({
@@ -34,8 +37,15 @@ function TileList({ items, labelledBy }: { items: Tile[]; labelledBy: string }) 
     </div>}
   </li>)}</ul>;
 }
-export default function Page() {
-  const links = fixturePortalLinks({ nodeEnv: process.env.NODE_ENV, enabled: process.env.VINTAD3E_PORTAL_FIXTURE, grants: ['timetable'] });
+export default async function Page() {
+  const origin = fixtureOrigin(process.env);
+  if (origin) {
+    const requestHeaders = await headers();
+    const host = requestHeaders.get('host');
+    if (host !== new URL(origin).host) notFound();
+    if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect('/sign-in');
+  }
+  const links = fixturePortalLinks({ nodeEnv: process.env.NODE_ENV, enabled: process.env.VINTAD3E_PORTAL_FIXTURE, grants: origin ? ['timetable'] : [] });
   const visibleApps = apps.map((app) => app.id === 'timetable' && links.timetable ? { ...app, href: links.timetable, restIcon: '/images/app-icons/timetable-mono.png' } : app);
   return <main className="portal-home">
     <h1 className="sr-only">빈타제</h1>
@@ -46,7 +56,7 @@ export default function Page() {
     ]} /></div>
     <div className="portal-home__art"><div className="portal-home__art-frame">
       <Image src="/images/login-background.png" alt="" width={1830} height={1220} unoptimized priority className="portal-home__art-image" />
-      <form className="portal-home__signout"><button className="staff-signin-button" type="button"><span className="form-submit-button__content"><span className="form-submit-button__measure" aria-hidden="true">로그아웃</span><span className="form-submit-button__measure" aria-hidden="true">로그아웃 중…</span><span className="form-submit-button__visible">로그아웃</span></span></button></form>
+      <form className="portal-home__signout" action={origin ? '/api/fixture/logout' : undefined} method={origin ? 'post' : undefined}><button className="staff-signin-button" type={origin ? 'submit' : 'button'}><span className="form-submit-button__content"><span className="form-submit-button__measure" aria-hidden="true">로그아웃</span><span className="form-submit-button__measure" aria-hidden="true">로그아웃 중…</span><span className="form-submit-button__visible">로그아웃</span></span></button></form>
     </div></div>
   </main>;
 }

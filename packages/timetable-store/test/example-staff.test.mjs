@@ -6,7 +6,7 @@ import { initializeTimetableStore } from '../src/index.mjs';
 import { toTimetableRows } from '../../../examples/timetable/timetable-projection.mjs';
 
 const fixture = JSON.parse(await readFile(new URL('../../../examples/timetable/staff.json', import.meta.url), 'utf8'));
-const expectedNames = ['구기곤', '조명재', '김성균', '이주호', '이재환', '정준영', '정태순', '임태권', '김태훈', '박하빈'];
+const expectedNames = ['구기곤', '조명재', '예시 구성원 03', '이주호', '이재환', '정준영', '정태순', '임태권', '김태훈', '박하빈'];
 
 test('the example contains the requested pseudonyms and unique synthetic IDs', () => {
   assert.equal(fixture.synthetic, true);

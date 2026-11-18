@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1 --port 3832",
     "build": "next build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test src/members-fixture.test.ts",
+    "test:fixture-browser": "node --test src/members-fixture-browser.test.mjs"
   },
   "dependencies": {
     "@vintad3e/ui": "workspace:*",

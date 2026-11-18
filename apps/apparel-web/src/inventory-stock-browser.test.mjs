@@ -47,8 +47,11 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     assert.ok(await evaluate("document.querySelector('.admin-toast--error')?.textContent.includes('목표재고보다 클 수 없습니다')"));
     await setNumber(2,'7'); await run("document.querySelector('.shortage-save-button').click()");
     assert.ok(await evaluate("document.querySelector('.admin-toast--success')?.textContent.includes('저장했습니다')"));
+    await evaluate('window.__beforeInventoryReload = true');
     await send('Page.reload');
+    await waitFor(async () => evaluate("window.__beforeInventoryReload !== true && Boolean(document.querySelector('.product-card__view-button'))"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.shortage-table__row'))return true;document.querySelector('.product-card__view-button')?.click();return false;})()"));
+    await waitFor(async () => evaluate("document.querySelectorAll('.shortage-table__row')[0]?.querySelectorAll('input[type=number]')[0]?.value === '3'"));
     assert.equal(await evaluate("document.querySelectorAll('.shortage-table__row')[0].querySelectorAll('input[type=number]')[0].value"),'3');
     assert.equal(await evaluate("document.querySelectorAll('.shortage-table__row')[0].querySelectorAll('input[type=number]')[1].value"),'10');
     await setNumber(0,'4');

@@ -37,8 +37,8 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     const run = async expression => { await evaluate(expression); await delay(150); };
     await send('Page.navigate',{url:`${origin}/admin/products`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.product-card__view-button'))"));
-    await run("document.querySelector('.product-card__view-button').click()");
-    await waitFor(async () => evaluate("Boolean(document.querySelector('.shortage-table__row'))"));
+    // The server-rendered button can appear before React attaches its handler.
+    await waitFor(async () => evaluate("(()=>{if(document.querySelector('.shortage-table__row')) return true; document.querySelector('.product-card__view-button')?.click(); return false;})()"));
     const setNumber = async (index,value) => run(`(()=>{const x=document.querySelectorAll('.shortage-table__row')[0].querySelectorAll('input[type=number]')[${index}];Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,${JSON.stringify(value)});x.dispatchEvent(new Event('input',{bubbles:true}));x.dispatchEvent(new Event('change',{bubbles:true}));})()`);
     await setNumber(1,'10'); await setNumber(0,'3');
     assert.equal(await evaluate("document.querySelectorAll('.shortage-table__row')[0].querySelectorAll('input[type=number]')[2].value"),'7');

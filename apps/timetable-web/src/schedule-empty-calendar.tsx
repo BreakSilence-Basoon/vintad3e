@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ScheduleMonthPicker } from './schedule-month-picker';
 import { emptyCalendarCells } from './calendar-cells';
-import { fixtureSchedule } from './fixture-schedule';
+import { filterFixtureSchedule, fixtureEmployees, fixtureLocations, fixtureSchedule } from './fixture-schedule';
 import { FixtureScheduleDetail } from './fixture-schedule-detail';
 
 const weekdays = ['일', '월', '화', '수', '목', '금', '토'] as const;
@@ -14,16 +14,18 @@ export function ScheduleEmptyCalendar({ month, fixtureEnabled = false }: { month
   const [displayMonth, setDisplayMonth] = useState(month);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const [employee, setEmployee] = useState('');
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState(fixtureEnabled ? fixtureLocations[0].id : '');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   useEffect(() => { setDisplayMonth(month); }, [month]);
 
   const cells = emptyCalendarCells(displayMonth);
   const fixtures = fixtureSchedule(fixtureEnabled ? 'development' : undefined, fixtureEnabled ? '1' : undefined, displayMonth);
+  const visibleFixtures = filterFixtureSchedule(fixtures, employee, location);
+  const selected = fixtures.find(item => item.date === selectedDate);
   return <section className="schedule-calendar-page" aria-label="근무시간표">
     <header className="schedule-calendar-page__toolbar" aria-label="근무시간표 도구">
       <div className="schedule-calendar-page__month">
-        <ScheduleMonthPicker onMonthChange={setDisplayMonth} employeeOptions={[]} locationOptions={[]}
+        <ScheduleMonthPicker onMonthChange={setDisplayMonth} employeeOptions={fixtureEnabled ? fixtureEmployees : []} locationOptions={fixtureEnabled ? fixtureLocations : []}
           month={displayMonth} pathname="/" persistentParams={navigationParams} onOpenChange={setIsMonthPickerOpen}
           onSelectedEmployeeIdChange={setEmployee} onSelectedLocationIdChange={setLocation}
           selectedEmployeeId={employee} selectedLocationId={location} />
@@ -40,10 +42,10 @@ export function ScheduleEmptyCalendar({ month, fixtureEnabled = false }: { month
       <ol className="schedule-calendar__days">{cells.map(({ dateKey, cellMonth, day, weekday, outside }) => {
         return <li className={`schedule-calendar__day${outside ? ' schedule-calendar__day--outside' : ''}`} data-schedule-date={dateKey} key={dateKey}>
           <time dateTime={dateKey}><span className="schedule-calendar__day-number">{day}</span><span className="schedule-calendar__day-label">{cellMonth}월 {day}일 {weekday}요일</span></time>
-          {fixtures.some((item) => item.date === dateKey) ? <ul className="schedule-calendar__shifts"><li><button type="button" className="schedule-calendar__shift schedule-calendar__shift--interactive schedule-calendar__shift--draft" aria-label={`직원, ${dateKey.slice(0, 4)}년 ${cellMonth}월 ${day}일 09:00부터 ${dateKey.slice(0, 4)}년 ${cellMonth}월 ${day}일 18:00까지, 장소, 근무 상세 보기`} onClick={() => setSelectedDate(dateKey)}><strong>직원</strong></button></li></ul> : <ul className="schedule-calendar__shifts" />}
+          <ul className="schedule-calendar__shifts">{visibleFixtures.filter(item => item.date === dateKey).map(item => <li key={item.date}><button type="button" className="schedule-calendar__shift schedule-calendar__shift--interactive schedule-calendar__shift--draft" aria-label={`${item.employee.displayName}, ${dateKey.slice(0, 4)}년 ${cellMonth}월 ${day}일 09:00부터 ${dateKey.slice(0, 4)}년 ${cellMonth}월 ${day}일 18:00까지, ${item.location.label}, 근무 상세 보기`} onClick={() => setSelectedDate(dateKey)}><strong>{item.employee.displayName}</strong></button></li>)}</ul>
         </li>;
       })}</ol>
     </div>
-    {selectedDate ? <FixtureScheduleDetail date={selectedDate} onClose={() => setSelectedDate(null)} /> : null}
+    {selected ? <FixtureScheduleDetail date={selected.date} employee={selected.employee.displayName} location={selected.location.label} onClose={() => setSelectedDate(null)} /> : null}
   </section>;
 }

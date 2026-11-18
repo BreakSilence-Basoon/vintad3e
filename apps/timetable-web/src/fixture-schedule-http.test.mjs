@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:net';
+import { createServer as createHttpServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -14,11 +15,22 @@ async function waitFor(fn) {
 }
 
 test('development server renders schedule and paginates attendance', { timeout: 120000 }, async () => {
+  const binding = 'A'.repeat(43), session = 'B'.repeat(43);
+  const auth = createHttpServer((request, response) => {
+    if (request.url === '/auth/start') {
+      response.writeHead(302, { location: 'https://identity.example.invalid/authorize', 'set-cookie': `__Host-vintad3e-login=${binding}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=300` });
+    } else if (request.url === '/auth/callback?code=example&state=example' && request.headers.cookie === `__Host-vintad3e-login=${binding}`) {
+      response.writeHead(200, { 'set-cookie': ['__Host-vintad3e-login=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0', `__Host-vintad3e-session=${session}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=900`] });
+    } else response.writeHead(400);
+    response.end();
+  });
+  auth.listen(0, '127.0.0.1'); await once(auth, 'listening');
+  const authOrigin = `http://127.0.0.1:${auth.address().port}`;
   const server = createServer(); server.listen(0, '127.0.0.1'); await once(server, 'listening');
   const port = server.address().port; await new Promise(resolve => server.close(resolve));
   const origin = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
-    cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '1' }, stdio: 'ignore',
+    cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '1', VINTAD3E_TIMETABLE_API_ORIGIN: authOrigin }, stdio: 'ignore',
   });
   let chrome, profile, socket, closeBrowser;
   try {
@@ -33,6 +45,13 @@ test('development server renders schedule and paginates attendance', { timeout: 
     assert.match(html, /data-schedule-date="2026-02-08"/);
     assert.match(html, /schedule-calendar__shift--draft/);
     assert.match(html, /근무 상세 보기/);
+    const authStart = await fetch(`${origin}/auth/start`, { redirect: 'manual' });
+    assert.equal(authStart.status, 302);
+    assert.equal(authStart.headers.get('location'), 'https://identity.example.invalid/authorize');
+    const authCallback = await fetch(`${origin}/auth/callback?code=example&state=example`, { redirect: 'manual', headers: { cookie: `__Host-vintad3e-login=${binding}` } });
+    assert.equal(authCallback.status, 303);
+    assert.equal(authCallback.headers.get('location'), '/');
+    assert.ok(authCallback.headers.getSetCookie().some((cookie) => cookie.startsWith(`__Host-vintad3e-session=${session};`)));
     const historyRedirect = await fetch(`${origin}/history?range=custom&from=2026-02-01&to=2026-02-28&sort=asc&historyPage=2&employee=00000000-0000-4000-8000-000000000001`, { redirect: 'manual' });
     assert.equal(historyRedirect.status, 307);
     const historyLocation = new URL(historyRedirect.headers.get('location'), origin);
@@ -112,6 +131,8 @@ test('development server renders schedule and paginates attendance', { timeout: 
     await evaluate("document.querySelector('dialog[open] [aria-label=\"일정 입력 창 닫기\"]').click()");
     await waitFor(async () => evaluate("!document.querySelector('dialog[open]')"));
   } finally {
+    auth.closeAllConnections();
+    await new Promise(resolve => auth.close(resolve));
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();
     if (chrome) { chrome.kill('SIGTERM'); if (chrome.exitCode === null && chrome.signalCode === null) await Promise.race([once(chrome, 'exit'), delay(5000)]); if (chrome.exitCode === null && chrome.signalCode === null) chrome.kill('SIGKILL'); }

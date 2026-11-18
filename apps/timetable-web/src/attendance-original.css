@@ -151,3 +151,24 @@
     grid-template-columns: 1fr;
   }
 }
+.state-panel {
+  width: min(580px, 100%);
+  padding: 36px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(255, 253, 248, 0.92);
+  box-shadow: var(--shadow);
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.state-panel p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+@media (max-width: 640px) {
+  .state-panel { padding: 26px 20px; }
+}

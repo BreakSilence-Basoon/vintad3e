@@ -26,6 +26,7 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
   let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(`${origin}/members`)).ok);
+    assert.equal((await fetch(`${origin}/members/unknown`)).status, 404);
     await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
     const target = await (await fetch(`${debug}/json/new?about:blank`, {method:'PUT'})).json();
     socket = new WebSocket(target.webSocketDebuggerUrl);
@@ -38,11 +39,25 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     await send('Page.navigate',{url:`${origin}/members`});
     await waitFor(async () => evaluate("document.querySelector('.staff-table tbody')?.textContent.includes('staff01@example.invalid')"));
     assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody tr').length"),1);
-    assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody a').length"),0);
+    assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody a').length"),1);
+    await evaluate("document.querySelector('.staff-table tbody a').click()");
+    await waitFor(async () => evaluate("document.querySelector('.staff-console')?.textContent.includes('staff01@example.invalid') && document.querySelector('.staff-console')?.textContent.includes('Portal')"));
+    assert.ok(await evaluate("document.querySelector('.staff-console').textContent.includes('크루')"));
+    await evaluate("document.querySelector('.admin-actions a').click()");
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.permissions-matrix'))"));
+    await waitFor(async () => evaluate("(()=>{if(document.querySelector('.permissions-matrix tbody')?.textContent.includes('직원 01'))return true;const s=document.querySelector('select');if(s&&!s.disabled){s.value='crew';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
+    assert.ok(await evaluate("document.querySelector('.permissions-matrix tbody').textContent.includes('크루')"));
+    await waitFor(async () => evaluate("(()=>{if(document.querySelector('.permissions-matrix tbody')?.textContent.includes('외부 구성원 01'))return true;const s=document.querySelector('select');if(s&&!s.disabled){s.value='guest';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
+    assert.ok(await evaluate("document.querySelector('.permissions-matrix tbody').textContent.includes('게스트')"));
+    await send('Page.navigate',{url:`${origin}/members`});
+    await waitFor(async () => evaluate("document.querySelector('.staff-table tbody')?.textContent.includes('staff01@example.invalid')"));
     await evaluate("document.querySelector('[href=\"/members?type=partner\"]').click()");
     await waitFor(async () => evaluate("document.querySelector('.staff-table tbody')?.textContent.includes('partner01@example.invalid')"));
     assert.equal(await evaluate("document.querySelector('[href=\"/members?type=partner\"]').getAttribute('aria-current')"),'page');
     assert.equal(await evaluate("document.querySelector('.staff-table tbody').textContent.includes('staff01@example.invalid')"),false);
+    await evaluate("document.querySelector('.staff-table tbody a').click()");
+    await waitFor(async () => evaluate("document.querySelector('.staff-console')?.textContent.includes('partner01@example.invalid') && document.querySelector('.staff-console')?.textContent.includes('Partners')"));
+    assert.ok(await evaluate("document.querySelector('.staff-console').textContent.includes('게스트')"));
     await send('Page.navigate',{url:`${origin}/members?type=employee&type=partner`});
     await waitFor(async () => evaluate("document.querySelector('[role=alert]')?.textContent.includes('이 목록을 이어서 볼 수 없습니다.')"));
   } finally {

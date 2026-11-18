@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { buildInventoryHref, belongsToInventoryCollection, variantMatchesInventoryOptionFilters, type InventoryCollection, type InventoryOptionFilters } from './inventory-collection';
-import { filterFixtureInventory, type FixtureProduct } from './inventory-fixture';
+import { filterFixtureInventory, filterFixtureVariants, type FixtureProduct } from './inventory-fixture';
 import { InventoryFixtureDetail } from './inventory-fixture-detail';
 import type { Rows } from './inventory-stock';
 import { AdminToastViewport } from './admin-toast';
@@ -26,10 +26,9 @@ export function InventoryEmpty({ initial, products }: { initial: Filters; produc
     </div></div>{visible.length === 0 ? <p className="console-empty">표시할 옵션 품목이 없습니다.</p> : <div className="product-catalog">{visible.map(product => {
       const tracked = product.variants.filter(v => v.tracksInventory);
       const selectedVariants = tracked.filter(v => variantMatchesInventoryOptionFilters(v, filters));
-      const terms = filters.search.trim().toLocaleLowerCase('ko-KR').split(/\s+/u).filter(Boolean);
-      const matched = selectedVariants.filter(v => terms.every(term => Object.values(v).join(' ').toLocaleLowerCase('ko-KR').includes(term)));
+      const matched = filterFixtureVariants(product, selectedVariants, filters.search);
       const state = sort[product.id];
-      const rows = [...(matched.length ? matched : selectedVariants)].sort((a,b) => state ? a[state.key].localeCompare(b[state.key], 'ko-KR', { numeric: true }) * (state.direction === 'asc' ? 1 : -1) : 0);
+      const rows = [...matched].sort((a,b) => state ? a[state.key].localeCompare(b[state.key], 'ko-KR', { numeric: true }) * (state.direction === 'asc' ? 1 : -1) : 0);
       const unique = (key: 'apparelType'|'color'|'size') => [...new Set(tracked.map(v => v[key]))].join('/');
       return <details key={product.id} className="product-card"><summary className="product-card__summary">
         <div className="product-card__identity"><h3>{product.nameKo}</h3><div className="product-card__subline"><span>{product.code}</span><span>의류</span><span>{product.lineNameKo ?? '라인 미지정'}</span></div></div>

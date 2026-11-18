@@ -61,6 +61,7 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/library-web test:fixture-browser
       - run: corepack pnpm --filter @vintad3e/library-web build
       - run: corepack pnpm --filter @vintad3e/floor-web test
+      - run: corepack pnpm --filter @vintad3e/floor-web test:fixture-browser
       - run: corepack pnpm --filter @vintad3e/floor-web build
       - run: corepack pnpm --filter @vintad3e/creative-web build
       - run: corepack pnpm --filter @vintad3e/admin-web build

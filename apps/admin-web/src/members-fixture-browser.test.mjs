@@ -49,6 +49,12 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     assert.ok(await evaluate("document.querySelector('.permissions-matrix tbody').textContent.includes('크루')"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.permissions-matrix tbody')?.textContent.includes('외부 구성원 01'))return true;const s=document.querySelector('select');if(s&&!s.disabled){s.value='guest';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
     assert.ok(await evaluate("document.querySelector('.permissions-matrix tbody').textContent.includes('게스트')"));
+    await send('Page.navigate',{url:`${origin}/permissions/apps?app=partners`});
+    await waitFor(async () => evaluate("document.querySelectorAll('.staff-table')[1]?.textContent.includes('외부 구성원 01')"));
+    assert.ok(await evaluate("document.querySelectorAll('.staff-table')[1].textContent.includes('게스트')"));
+    assert.ok(await evaluate("document.querySelector('.preview-menu-permissions').textContent.includes('대관')"));
+    await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.staff-table')[1]?.textContent.includes('직원 01'))return true;const s=document.querySelector('select');if(s&&!s.disabled){s.value='portal';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
+    assert.ok(await evaluate("document.querySelectorAll('.staff-table')[1].textContent.includes('크루')"));
     await send('Page.navigate',{url:`${origin}/members`});
     await waitFor(async () => evaluate("document.querySelector('.staff-table tbody')?.textContent.includes('staff01@example.invalid')"));
     await evaluate("document.querySelector('[href=\"/members?type=partner\"]').click()");

@@ -11,9 +11,20 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
+      - name: Protect founder note and guard
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && git cat-file -e "${{ github.event.pull_request.base.sha }}:scripts/check-founder-note.mjs" 2>/dev/null; then
+            git show "${{ github.event.pull_request.base.sha }}:scripts/check-founder-note.mjs" > "$RUNNER_TEMP/founder-note-guard.mjs"
+            node "$RUNNER_TEMP/founder-note-guard.mjs"
+          else
+            node scripts/check-founder-note.mjs
+          fi
       - run: corepack enable
       - run: corepack pnpm install --frozen-lockfile --ignore-scripts
       - run: corepack pnpm test

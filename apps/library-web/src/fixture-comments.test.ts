@@ -9,7 +9,7 @@ test('only valid comments are read and duplicate IDs are removed', () => {
   assert.deepEqual(parseFixtureComments('{}'), []);
   assert.deepEqual(parseFixtureComments('x'.repeat(3_000_001)), []);
 });
-test('the latest 200 valid comments are shown', () => {
-  const comments = Array.from({ length: 201 }, (_, index) => ({ ...valid, id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}` }));
-  assert.deepEqual(parseFixtureComments(JSON.stringify(comments)), comments.slice(0, 200));
+test('one extra valid comment is retained to indicate there are more than 200', () => {
+  const comments = Array.from({ length: 202 }, (_, index) => ({ ...valid, id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}` }));
+  assert.deepEqual(parseFixtureComments(JSON.stringify(comments)), comments.slice(0, 201));
 });

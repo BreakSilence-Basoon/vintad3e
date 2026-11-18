@@ -19,4 +19,7 @@ test('activity reports when the combined comments exceed 200', () => {
   const activity = fixtureActivity(docs, [JSON.stringify(records), JSON.stringify(records)]);
   assert.equal(activity.comments.length, 200);
   assert.equal(activity.hasMoreComments, true);
+  const oneDocument = fixtureActivity([docs[0]], [JSON.stringify([...records, ...records.slice(0, 100).map((item, index) => ({ ...item, id: `10000000-0000-4000-8000-${String(index).padStart(12, '0')}` }))])]);
+  assert.equal(oneDocument.comments.length, 200);
+  assert.equal(oneDocument.hasMoreComments, true);
 });

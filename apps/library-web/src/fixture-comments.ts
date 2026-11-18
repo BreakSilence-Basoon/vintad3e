@@ -15,7 +15,7 @@ export function parseFixtureComments(raw: string): FixtureComment[] {
       if (!item || typeof item !== 'object' || typeof item.id !== 'string' || !/^[0-9a-f-]{36}$/.test(item.id) || seen.has(item.id) || typeof item.body !== 'string' || !item.body.trim() || item.body.length > 2000 || typeof item.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(item.createdAt) || !Number.isFinite(Date.parse(item.createdAt))) return false;
       seen.add(item.id);
       return true;
-    }).slice(0, 200).map(({ id, body, createdAt }) => ({ id, body, createdAt }));
+    }).slice(0, 201).map(({ id, body, createdAt }) => ({ id, body, createdAt }));
   } catch { return []; }
 }
 
@@ -36,7 +36,7 @@ export function addFixtureComment(id: string, body: string): boolean {
     const key = prefix + id;
     const current = parseFixtureComments(window.sessionStorage.getItem(key) ?? '[]');
     const comment = { id: crypto.randomUUID(), body: text, createdAt: new Date().toISOString() };
-    window.sessionStorage.setItem(key, JSON.stringify([comment, ...current].slice(0, 200)));
+    window.sessionStorage.setItem(key, JSON.stringify([comment, ...current].slice(0, 201)));
     window.dispatchEvent(new Event(changedEvent));
     return true;
   } catch { return false; }

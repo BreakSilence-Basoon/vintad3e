@@ -64,7 +64,7 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     await run("document.querySelector('.shortage-table__row input[role=switch]').click()");
     assert.equal(await evaluate("document.querySelector('.shortage-table__row input[role=switch]').checked"),false);
     assert.equal(await evaluate("document.querySelectorAll('.shortage-table__row')[0].querySelectorAll('input[type=number]')[1].disabled"),true);
-    assert.ok(await evaluate("document.querySelector('.admin-toast--success')?.textContent.includes('OFF으로 저장되었습니다')"));
+    assert.ok(await evaluate("[...document.querySelectorAll('.admin-toast--success')].some(toast => toast.textContent.includes('OFF으로 저장되었습니다'))"));
     await run("document.querySelector('.shortage-table__row input[role=switch]').click()");
     assert.equal(await evaluate("document.querySelector('.shortage-table__row input[role=switch]').checked"),true);
   } finally {

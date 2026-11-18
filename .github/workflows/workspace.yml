@@ -37,6 +37,7 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/portal-web test:fixture-http
       - run: corepack pnpm --filter @vintad3e/portal-web build
       - run: corepack pnpm --filter @vintad3e/apparel-web test
+      - run: corepack pnpm --filter @vintad3e/apparel-web test:fixture-http
       - run: corepack pnpm --filter @vintad3e/apparel-web build
       - run: corepack pnpm --filter @vintad3e/supporters-web build
       - run: corepack pnpm --filter @vintad3e/partners-web test

@@ -1,0 +1,53 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createServer } from 'node:net';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
+
+async function freePort() {
+  const server = createServer(); server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  const port = server.address().port; await new Promise(resolve => server.close(resolve)); return port;
+}
+async function waitFor(fn) {
+  for (let i = 0; i < 120; i++) { try { const result = await fn(); if (result) return result; } catch {} await delay(250); }
+  throw new Error('Timed out waiting for browser or server');
+}
+
+test('fixture sales list, search and sort in Chrome', { timeout: 90000 }, async () => {
+  const port = await freePort(), debuggerPort = await freePort();
+  const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
+  const profile = await mkdtemp(join(tmpdir(), 'vintad3e-floor-browser-'));
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_FLOOR_FIXTURE:'1'}, stdio:'ignore' });
+  const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
+  let socket, closeBrowser;
+  try {
+    await waitFor(async () => (await fetch(`${origin}/sales`)).ok);
+    await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
+    const target = await (await fetch(`${debug}/json/new?about:blank`, {method:'PUT'})).json();
+    socket = new WebSocket(target.webSocketDebuggerUrl);
+    await new Promise((resolve,reject) => { socket.addEventListener('open',resolve,{once:true}); socket.addEventListener('error',reject,{once:true}); });
+    let sequence = 0; const pending = new Map();
+    socket.addEventListener('message', event => { const message = JSON.parse(event.data); if (message.id && pending.has(message.id)) { const {resolve,reject} = pending.get(message.id); pending.delete(message.id); message.error ? reject(new Error(message.error.message)) : resolve(message.result); } });
+    const send = (method,params={}) => new Promise((resolve,reject) => { const id = ++sequence; pending.set(id,{resolve,reject}); socket.send(JSON.stringify({id,method,params})); });
+    closeBrowser = () => send('Browser.close');
+    const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
+    await send('Page.navigate',{url:`${origin}/sales`});
+    await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 3"));
+    assert.ok(await evaluate("document.querySelectorAll('.sales-audit-card')[0].textContent.includes('드립 커피')"));
+    assert.ok(await evaluate("document.querySelectorAll('.sales-audit-card')[2].querySelector('strong').textContent === '-'"));
+    await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.sales-audit-card').length===1&&document.querySelector('.sales-audit-card').textContent.includes('쿠키'))return true;const f=document.querySelector('.audit-filter-bar');f.querySelector('[name=keyword]').value='쿠키';f.requestSubmit();return false;})()"));
+    assert.ok(await evaluate("document.querySelector('.sales-audit-card').textContent.includes('4,000 KRW')"));
+    await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.sales-audit-card').length===3&&document.querySelector('.sales-audit-card').textContent.includes('차'))return true;const f=document.querySelector('.audit-filter-bar');f.querySelector('[name=keyword]').value='';f.querySelector('[name=sort]').value='asc';f.requestSubmit();return false;})()"));
+    assert.ok(await evaluate("document.querySelector('.sales-audit-card').textContent.includes('성수 매장 티켓')"));
+  } finally {
+    if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
+    socket?.close();
+    for (const process of [chrome,server]) process.kill('SIGTERM');
+    await Promise.all([chrome,server].map(async process => { if (process.exitCode === null && process.signalCode === null) await Promise.race([once(process,'exit'),delay(5000)]); if (process.exitCode === null && process.signalCode === null) process.kill('SIGKILL'); }));
+    await rm(profile,{recursive:true,force:true,maxRetries:8,retryDelay:250});
+  }
+});

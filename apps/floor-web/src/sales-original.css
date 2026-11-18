@@ -336,3 +336,14 @@
     margin-top: 4px;
   }
 }
+
+.load-more-pager {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  align-items: center;
+  padding-top: 16px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+}

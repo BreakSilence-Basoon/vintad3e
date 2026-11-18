@@ -17,7 +17,7 @@ async function waitFor(fn) {
   throw new Error('Timed out waiting for browser or server');
 }
 
-test('fixture sales list, search and sort in Chrome', { timeout: 90000 }, async () => {
+test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, async () => {
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-floor-browser-'));
@@ -36,13 +36,19 @@ test('fixture sales list, search and sort in Chrome', { timeout: 90000 }, async 
     closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     await send('Page.navigate',{url:`${origin}/sales`});
-    await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 3"));
+    await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 18"));
     assert.ok(await evaluate("document.querySelectorAll('.sales-audit-card')[0].textContent.includes('드립 커피')"));
     assert.ok(await evaluate("document.querySelectorAll('.sales-audit-card')[2].querySelector('strong').textContent === '-'"));
+    assert.ok(await evaluate("document.querySelector('.load-more-pager').textContent.includes('18 / 21')"));
+    assert.equal(await evaluate("document.querySelector('[aria-label=\"판매내역 더 불러오기\"] a').getAttribute('href')"), '/sales?salesPage=2');
+    await evaluate("document.querySelector('[aria-label=\"판매내역 더 불러오기\"] a').click()");
+    await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 21"));
+    assert.ok(await evaluate("!document.querySelector('.load-more-pager')"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.sales-audit-card').length===1&&document.querySelector('.sales-audit-card').textContent.includes('쿠키'))return true;const f=document.querySelector('.audit-filter-bar');f.querySelector('[name=keyword]').value='쿠키';f.requestSubmit();return false;})()"));
     assert.ok(await evaluate("document.querySelector('.sales-audit-card').textContent.includes('4,000 KRW')"));
-    await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.sales-audit-card').length===3&&document.querySelector('.sales-audit-card').textContent.includes('차'))return true;const f=document.querySelector('.audit-filter-bar');f.querySelector('[name=keyword]').value='';f.querySelector('[name=sort]').value='asc';f.requestSubmit();return false;})()"));
-    assert.ok(await evaluate("document.querySelector('.sales-audit-card').textContent.includes('성수 매장 티켓')"));
+    await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.sales-audit-card').length===18&&document.querySelector('.sales-audit-card').textContent.includes('주스'))return true;const f=document.querySelector('.audit-filter-bar');f.querySelector('[name=keyword]').value='';f.querySelector('[name=sort]').value='asc';f.requestSubmit();return false;})()"));
+    assert.ok(await evaluate("document.querySelector('.load-more-pager').textContent.includes('18 / 21')"));
+    assert.ok(await evaluate("document.querySelector('.load-more-pager a').getAttribute('href').includes('sort=asc')"));
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

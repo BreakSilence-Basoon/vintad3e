@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3826",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/inventory-collection.test.ts"
+    "test": "node --test src/inventory-collection.test.ts src/inventory-fixture.test.ts"
   },
   "dependencies": {
     "@vintad3e/ui": "workspace:*",

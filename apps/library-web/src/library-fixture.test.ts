@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getLibraryFixtures, searchLibraryFixtures } from './library-fixture.ts';
+import { getLibraryFixtures, searchLibraryFixtures, getFixtureSource } from './library-fixture.ts';
 
 test('documents exist only with explicit development opt-in', () => {
   assert.deepEqual(getLibraryFixtures('production', '1'), []);
@@ -13,4 +13,12 @@ test('title search is trimmed and sorted without searching document bodies', () 
   assert.deepEqual(searchLibraryFixtures(docs, '  운영  ').map(doc => doc.title), ['매장 운영 안내']);
   assert.deepEqual(searchLibraryFixtures(docs, '필요한'), []);
   assert.deepEqual(searchLibraryFixtures(docs, '').map(doc => doc.title), ['매장 운영 안내', '업무 인수인계']);
+});
+
+test('source download only returns a known opted-in fixture', () => {
+  const document = getLibraryFixtures('development', '1')[0];
+  assert.deepEqual(getFixtureSource('development', '1', document.id), { filename: `${document.title}.md`, body: document.body });
+  assert.equal(getFixtureSource('production', '1', document.id), null);
+  assert.equal(getFixtureSource('development', undefined, document.id), null);
+  assert.equal(getFixtureSource('development', '1', 'unknown'), null);
 });

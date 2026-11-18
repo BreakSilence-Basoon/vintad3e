@@ -46,6 +46,12 @@ test('fixture calendar links to rental ledger and detail in Chrome', { timeout: 
     assert.ok(await evaluate("document.querySelector('.partners-ledger__detail').textContent.includes('100,000원')"));
     await evaluate("document.querySelector('input[name=query]').value='찾을 수 없는 대관처';document.querySelector('.partners-ledger form').requestSubmit()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('.staff-empty'))"));
+    await evaluate("document.querySelector('.partners-ledger button[type=reset]').click()");
+    await waitFor(async () => evaluate("document.querySelectorAll('.partners-ledger tbody tr').length===2"));
+    await evaluate("document.querySelector('.partners-ledger select[name=status]').value='PENDING';document.querySelector('.partners-ledger form').requestSubmit()");
+    await waitFor(async () => evaluate("document.querySelectorAll('.partners-ledger tbody tr').length===1 && document.querySelector('.partners-ledger tbody').textContent.includes('대관처 02')"));
+    assert.ok(await evaluate("document.querySelector('.partners-ledger tbody').textContent.includes('미수납')"));
+    assert.ok(await evaluate("!document.querySelector('.partners-ledger tbody').textContent.includes('100,000원')"));
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

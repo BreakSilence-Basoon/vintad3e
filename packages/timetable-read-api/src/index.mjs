@@ -90,8 +90,9 @@ export function createOwnScheduleHandler({ verifyAuthorization, findOwnShifts } 
       if (request.method !== 'GET' || url.pathname !== '/v1/me/shifts') return reply(404, { error: 'not_found' });
       const identity = await verifyAuthorization(request.headers.get('authorization'));
       if (!identity || !identityPart(identity.issuer) || !identityPart(identity.subject)) return reply(401, { error: 'unauthorized' }, { 'WWW-Authenticate': 'Bearer' });
-      if ([...url.searchParams.keys()].some((key) => !['from', 'to', 'limit', 'cursor'].includes(key)) ||
-          ['from', 'to', 'limit', 'cursor'].some((key) => url.searchParams.getAll(key).length > 1)) return reply(400, { error: 'invalid_request' });
+      if ([...url.searchParams.keys()].some((key) => !['from', 'to', 'limit', 'cursor', 'include'].includes(key)) ||
+          ['from', 'to', 'limit', 'cursor', 'include'].some((key) => url.searchParams.getAll(key).length > 1) ||
+          url.searchParams.has('include') && url.searchParams.get('include') !== 'attendance') return reply(400, { error: 'invalid_request' });
       const from = url.searchParams.get('from'), to = url.searchParams.get('to');
       const limitText = url.searchParams.get('limit') ?? '50';
       if (!timestamp(from) || !timestamp(to) || from >= to || Date.parse(to) - Date.parse(from) > 62 * 86400000 ||
@@ -101,14 +102,18 @@ export function createOwnScheduleHandler({ verifyAuthorization, findOwnShifts } 
         try { cursor = parseCursor(url.searchParams.get('cursor')); } catch { return reply(400, { error: 'invalid_request' }); }
       }
       const limit = Number(limitText);
-      const rows = await findOwnShifts(identity.issuer, identity.subject, from, to, cursor, limit + 1, identity.issuedAt);
+      const includeAttendance = url.searchParams.get('include') === 'attendance';
+      const rows = await findOwnShifts(identity.issuer, identity.subject, from, to, cursor, limit + 1, identity.issuedAt, includeAttendance);
       if (rows === null) return reply(404, { error: 'not_found' });
       if (!Array.isArray(rows) || rows.length > limit + 1 || rows.some((row) => !id(row.id) || !id(row.locationId) ||
           typeof row.locationLabel !== 'string' || row.locationLabel !== row.locationLabel.trim() || !row.locationLabel || row.locationLabel.length > 100 || /[\p{Cc}]/u.test(row.locationLabel) ||
           !timestamp(row.startsAt) || !timestamp(row.endsAt) || row.endsAt <= row.startsAt ||
-          !Number.isInteger(row.graceMinutes) || row.graceMinutes < 0 || row.graceMinutes > 180)) throw new Error('Invalid stored shift');
-      const shifts = rows.slice(0, limit).map(({ id, locationId, locationLabel, startsAt, endsAt, graceMinutes }) =>
-        ({ id, location: { id: locationId, label: locationLabel }, startsAt, endsAt, graceMinutes }));
+          !Number.isInteger(row.graceMinutes) || row.graceMinutes < 0 || row.graceMinutes > 180 ||
+          includeAttendance && (row.attendanceRecordId === null ? row.attendanceStartsAt !== null || row.attendanceEndsAt !== null :
+            !id(row.attendanceRecordId) || !timestamp(row.attendanceStartsAt) || !(row.attendanceEndsAt === null || timestamp(row.attendanceEndsAt) && row.attendanceEndsAt >= row.attendanceStartsAt)))) throw new Error('Invalid stored shift');
+      const shifts = rows.slice(0, limit).map(({ id, locationId, locationLabel, startsAt, endsAt, graceMinutes, attendanceRecordId, attendanceStartsAt, attendanceEndsAt }) =>
+        ({ id, location: { id: locationId, label: locationLabel }, startsAt, endsAt, graceMinutes,
+          ...(includeAttendance ? { attendance: attendanceRecordId === null ? null : { startsAt: attendanceStartsAt, endsAt: attendanceEndsAt } } : {}) }));
       return reply(200, { shifts, nextCursor: rows.length > limit ? makeCursor(shifts.at(-1)) : null });
     } catch { return reply(503, { error: 'unavailable' }); }
   };

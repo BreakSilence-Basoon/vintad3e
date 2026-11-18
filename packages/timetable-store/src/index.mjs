@@ -91,20 +91,27 @@ export function createTimetableStore(db) {
     ORDER BY h.starts_at DESC, h.id DESC LIMIT ?`);
   const firstOwnHistory = ownHistoryQuery(false);
   const nextOwnHistory = ownHistoryQuery(true);
-  const ownShiftQuery = (afterCursor) => db.prepare(`SELECT s.id, s.starts_at AS startsAt, s.ends_at AS endsAt,
+  const ownShiftQuery = (afterCursor, includeAttendance = false) => db.prepare(`SELECT s.id, s.starts_at AS startsAt, s.ends_at AS endsAt,
     s.grace_minutes AS graceMinutes, l.id AS locationId, l.label AS locationLabel
+    ${includeAttendance ? ', a.record_id AS attendanceRecordId, h.starts_at AS attendanceStartsAt, h.ends_at AS attendanceEndsAt' : ''}
     FROM memberships m LEFT JOIN scheduled_shifts s ON s.business_id = m.business_id AND s.staff_id = m.staff_id
       AND s.starts_at < ? AND s.ends_at > ? ${version >= 7 ? 'AND s.active = 1' : ''} ${afterCursor ? 'AND (s.starts_at, s.id) < (?, ?)' : ''}
     LEFT JOIN schedule_locations l ON l.business_id = s.business_id AND l.id = s.location_id
+    ${includeAttendance ? `LEFT JOIN scheduled_attendance a ON a.business_id = s.business_id AND a.shift_id = s.id
+    LEFT JOIN history h ON h.business_id = a.business_id AND h.id = a.record_id AND h.staff_id = s.staff_id AND a.staff_id = s.staff_id` : ''}
     WHERE m.issuer = ? AND m.subject = ? AND m.active = 1 AND m.role IN ('VIEWER', 'ADMIN') ${epochFilter}
     ORDER BY s.starts_at DESC, s.id DESC LIMIT ?`);
   const firstOwnShifts = version >= 6 ? ownShiftQuery(false) : null;
   const nextOwnShifts = version >= 6 ? ownShiftQuery(true) : null;
+  const firstOwnShiftsWithAttendance = version >= 14 ? ownShiftQuery(false, true) : null;
+  const nextOwnShiftsWithAttendance = version >= 14 ? ownShiftQuery(true, true) : null;
   return {
-    async findOwnShifts(issuer, subject, from, to, cursor, limit, issuedAt) {
-      if (!firstOwnShifts) throw new Error('Migration required');
-      const rows = cursor ? nextOwnShifts.all(to, from, cursor.startsAt, cursor.id, issuer, subject, ...tokenArgs(issuedAt), limit) :
-        firstOwnShifts.all(to, from, issuer, subject, ...tokenArgs(issuedAt), limit);
+    async findOwnShifts(issuer, subject, from, to, cursor, limit, issuedAt, includeAttendance = false) {
+      const first = includeAttendance ? firstOwnShiftsWithAttendance : firstOwnShifts;
+      const next = includeAttendance ? nextOwnShiftsWithAttendance : nextOwnShifts;
+      if (!first || !next) throw new Error('Migration required');
+      const rows = cursor ? next.all(to, from, cursor.startsAt, cursor.id, issuer, subject, ...tokenArgs(issuedAt), limit) :
+        first.all(to, from, issuer, subject, ...tokenArgs(issuedAt), limit);
       return rows.length ? rows.filter((row) => row.id !== null) : null;
     },
     async findOwnHistory(issuer, subject, cursor, limit, issuedAt) {

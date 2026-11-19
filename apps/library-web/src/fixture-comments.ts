@@ -34,9 +34,15 @@ export function addFixtureComment(id: string, body: string): boolean {
   if (!allowed.has(id) || !text || text.length > 2000) return false;
   try {
     const key = prefix + id;
-    const current = parseFixtureComments(window.sessionStorage.getItem(key) ?? '[]');
+    const raw = window.sessionStorage.getItem(key) ?? '[]';
+    if (raw.length > 3_000_000) return false;
+    const value: unknown = JSON.parse(raw);
+    if (!Array.isArray(value) || value.length > 200) return false;
+    const current = parseFixtureComments(raw);
+    if (current.length !== value.length || value.some(item => Object.keys(item).sort().join(',') !== 'body,createdAt,id')) return false;
     const comment = { id: crypto.randomUUID(), body: text, createdAt: new Date().toISOString() };
-    window.sessionStorage.setItem(key, JSON.stringify([comment, ...current].slice(0, 201)));
+    if (current.some(item => item.id === comment.id)) return false;
+    window.sessionStorage.setItem(key, JSON.stringify([comment, ...current]));
     window.dispatchEvent(new Event(changedEvent));
     return true;
   } catch { return false; }

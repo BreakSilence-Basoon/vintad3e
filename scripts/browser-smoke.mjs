@@ -26,7 +26,7 @@ try {
   if (process.argv.length>2 && !process.argv.slice(2).includes(name)) continue;
   const port=await freePort(), origin=`http://127.0.0.1:${port}`;
   const cwd=resolve(`apps/${name}-web`);
-  const child=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], {cwd, env:{...process.env,NODE_ENV:'development',[flag]:'1',VINTAD3E_PORTAL_FIXTURE_ORIGIN:origin},stdio:'ignore'});
+  const child=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], {cwd, env:{...process.env,NODE_ENV:'development',[flag]:'1',[`${flag}_ORIGIN`]:origin},stdio:'ignore'});
   try {
    let ready=false;
    for(let i=0;i<120;i++){if(child.exitCode!==null)break;try {const r=await fetch(origin,{redirect:'manual'});if(r.status<500){ready=true;break;}} catch {} await delay(250);}

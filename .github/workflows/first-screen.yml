@@ -2,6 +2,10 @@ name: First screen browser checks
 on:
   pull_request:
     paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'docs/first-run.md'
+      - 'README.md'
       - 'scripts/browser-smoke.mjs'
       - 'package.json'
       - 'pnpm-lock.yaml'
@@ -21,3 +25,31 @@ jobs:
       - run: corepack enable
       - run: corepack pnpm install --frozen-lockfile --ignore-scripts
       - run: corepack pnpm test:browser-smoke
+  clean-first-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: corepack enable
+      - name: Follow first-run clone and installation instructions
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          git clone https://github.com/BreakSilence-Basoon/vintad3e.git
+          cd vintad3e
+          node --version
+          test "$(corepack pnpm --version)" = '10.11.0'
+          corepack pnpm install --frozen-lockfile --ignore-scripts
+          corepack pnpm --filter @vintad3e/portal-web dev > "$RUNNER_TEMP/vintad3e-portal.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 120); do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:3825; then ready=1; break; fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then cat "$RUNNER_TEMP/vintad3e-portal.log"; exit 1; fi
+            sleep 1
+          done
+          test "$ready" = 1

@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3827",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/coupon-fixture.test.ts",
+    "test": "node --test src/coupon-fixture.test.ts src/settlement-fixture-storage.test.ts",
     "test:fixture-browser": "node --test src/coupon-fixture-browser.test.mjs"
   },
   "dependencies": {

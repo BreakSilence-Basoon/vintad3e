@@ -75,6 +75,18 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
       await evaluate("document.querySelector('.gtm-sns-score-toggle').click()");
       assert.equal(await evaluate("document.querySelector('.gtm-sns-score-toggle').getAttribute('aria-expanded')"), 'true');
     }
+    await send('Page.navigate',{url:`${origin}/settlements`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('#coupon-staff'))"));
+    await waitFor(async () => evaluate("(()=>{if(document.querySelector('.settlement-history__table input:not(:disabled)'))return true;const s=document.querySelector('#coupon-staff');if(s&&!s.disabled){s.value='supporter-1';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
+    assert.equal(await evaluate("document.querySelector('.settlement-history__table tbody input').checked"), false);
+    await evaluate("document.querySelector('.settlement-history__table tbody input').click()");
+    await waitFor(async () => evaluate("document.querySelector('.settlement-history__table tbody input')?.checked === true"));
+    assert.ok(await evaluate("document.querySelector('.settlement-history__table tbody input').getAttribute('aria-label').startsWith('지급 완료')"));
+    await evaluate('window.__beforeSettlementReload = true');
+    await send('Page.reload');
+    await waitFor(async () => evaluate("window.__beforeSettlementReload !== true && document.querySelector('.settlement-history__table tbody input:not(:disabled)')?.checked === true"));
+    await waitFor(async () => evaluate("(()=>{const s=document.querySelector('#coupon-staff');if(document.querySelector('[data-fixture-staff=\"supporter-2\"] .settlement-history__table tbody input:not(:disabled)'))return true;if(s&&!s.disabled){s.value='supporter-2';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
+    assert.equal(await evaluate("document.querySelector('.settlement-history__table tbody input').checked"), false);
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

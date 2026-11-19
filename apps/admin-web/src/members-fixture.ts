@@ -7,6 +7,7 @@ export function getFixtureMembers(env: string | undefined, enabled: string | und
   return [
     { staffId: '00000000-0000-4000-8000-000000000001', displayName: '직원 01', primaryEmail: 'staff01@example.invalid', memberType: 'employee', status: '재직', positionTitle: '직원', gradeLabel: null },
     { staffId: '00000000-0000-4000-8000-000000000002', displayName: '외부 구성원 01', primaryEmail: 'partner01@example.invalid', memberType: 'partner', status: '활동 중', positionTitle: null, gradeLabel: null },
+    { staffId: '00000000-0000-4000-8000-000000000003', displayName: '관리자 01', primaryEmail: 'admin01@example.invalid', memberType: 'employee', status: '재직', positionTitle: '관리자', gradeLabel: null },
   ];
 }
 
@@ -30,6 +31,7 @@ export const fixtureApps = [
 export function fixtureGrants(env: string | undefined, enabled: string | undefined, id: string): FixtureGrant[] | null {
   const member = getFixtureMembers(env, enabled).find(item => item.staffId === id);
   if (!member) return null;
+  if (member.staffId === '00000000-0000-4000-8000-000000000003') return fixtureApps.filter(app => ['portal', 'partners', 'admin'].includes(app.id)).map(app => ({ appId: app.id, appName: app.name, role: 'ADMIN', validFrom: '2000-01-01T00:00:00.000Z', validUntil: null }));
   const app = member.memberType === 'employee' ? fixtureApps[0] : fixtureApps[4];
   return [{ appId: app.id, appName: app.name, role: 'VIEWER', validFrom: '2000-01-01T00:00:00.000Z', validUntil: null }];
 }

@@ -27,6 +27,7 @@ test('admin lists, audit filters and invalid addresses work with keyboard input'
         await enter(page, page.getByRole('link', { name: '처음부터 보기' }));
         await page.locator('.staff-table tbody a').first().waitFor();
         await enter(page, page.locator('.staff-table tbody a').first());
+        await page.waitForURL(/\/members\/[0-9a-f-]+$/);
         await page.getByText('staff01@example.invalid', { exact: true }).waitFor();
         await enter(page, page.locator('.admin-actions a').first());
         await page.locator('.permissions-matrix').waitFor();

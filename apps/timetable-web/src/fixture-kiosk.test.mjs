@@ -1,0 +1,34 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { fixtureKioskOrigin, handleFixtureKiosk } from './fixture-kiosk.mjs';
+const origin = 'http://127.0.0.1:3824';
+const env = { NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '1', VINTAD3E_TIMETABLE_FIXTURE_ADMIN: '1' };
+function post(action, body, extra = {}) { return new Request(`${origin}/api/fixture/kiosk/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3824', origin, 'content-type': 'application/json', ...extra }, body: JSON.stringify(body) }); }
+test('a synthetic device issues one-use, expiring challenges and can be revoked', async () => {
+  const registered = await handleFixtureKiosk(post('register', { label: '기기 01' }), env, 'register', 1000);
+  assert.equal(registered.status, 201);
+  const device = await registered.json();
+  const issued = await handleFixtureKiosk(post('challenge', { id: device.id }), env, 'challenge', 1000);
+  const challenge = await issued.json();
+  const accepted = await handleFixtureKiosk(post('scan', { token: challenge.token }), env, 'scan', 1001);
+  assert.equal((await accepted.json()).eventType, 'CHECK_IN');
+  const history = await handleFixtureKiosk(new Request(`${origin}/api/fixture/kiosk/events`, { headers: { host: '127.0.0.1:3824' } }), env, 'events', 1001);
+  const event = (await history.json()).events[0];
+  assert.equal(event.eventType, 'CHECK_IN');
+  assert.equal((await handleFixtureKiosk(post('correct', { id: event.id, recordedAt: new Date(900).toISOString(), reason: '변경' }), env, 'correct', 1001)).status, 400);
+  assert.equal((await handleFixtureKiosk(post('correct', { id: event.id, recordedAt: new Date(900).toISOString(), reason: '시각 정정' }), env, 'correct', 1001)).status, 200);
+  assert.equal((await handleFixtureKiosk(post('void', { id: event.id, reason: '기록 무효' }), env, 'void', 1002)).status, 204);
+  assert.equal((await handleFixtureKiosk(post('scan', { token: challenge.token }), env, 'scan', 1002)).status, 404);
+  const expired = await (await handleFixtureKiosk(post('challenge', { id: device.id }), env, 'challenge', 1003)).json();
+  assert.equal((await handleFixtureKiosk(post('scan', { token: expired.token }), env, 'scan', 31003)).status, 404);
+  const revoked = await (await handleFixtureKiosk(post('challenge', { id: device.id }), env, 'challenge', 32000)).json();
+  assert.equal((await handleFixtureKiosk(post('revoke', { id: device.id }), env, 'revoke', 32001)).status, 204);
+  assert.equal((await handleFixtureKiosk(post('scan', { token: revoked.token }), env, 'scan', 32002)).status, 404);
+});
+test('fixture cannot enable production, nonlocal hosts or cross-origin mutations', async () => {
+  assert.equal(fixtureKioskOrigin({ ...env, NODE_ENV: 'production' }), null);
+  assert.equal((await handleFixtureKiosk(post('register', { label: '기기 01' }), { ...env, NODE_ENV: 'production' }, 'register')).status, 404);
+  assert.equal((await handleFixtureKiosk(post('register', { label: '기기 01' }, { origin: 'https://example.invalid' }), env, 'register')).status, 403);
+  assert.equal((await handleFixtureKiosk(post('register', { label: '기기 01' }), { ...env, VINTAD3E_TIMETABLE_FIXTURE_ADMIN: '' }, 'register')).status, 404);
+  assert.equal(fixtureKioskOrigin({ ...env, VINTAD3E_TIMETABLE_FIXTURE_ORIGIN: 'http://example.invalid:3824' }), null);
+});

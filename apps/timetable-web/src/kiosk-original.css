@@ -1,0 +1,847 @@
+body:has(.kiosk-screen) {
+  height: 100svh;
+}
+
+body:has(.kiosk-setup) {
+  background: var(--surface-strong);
+}
+
+body:has(.employee-scan-page) {
+  background: #0e1211;
+}
+
+body:has(.employee-scan-page) .topbar,
+body:has(.kiosk-setup) .topbar {
+  display: none;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .topbar .topbar__inner,
+body:has(.kiosk-screen) .topbar__inner {
+  width: min(600px, calc(100% - (var(--page-gutter) * 2)));
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-admin-shell {
+  width: min(480px, calc(100% - (var(--page-gutter) * 2)));
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .page-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .page-controls--split {
+  justify-content: space-between;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .page-controls__link {
+  display: inline-block;
+  color: var(--accent-strong);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .page-controls__link:hover {
+  color: var(--accent);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .page-controls + .content-section,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .page-controls + .history-summary {
+  margin-top: 0;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 1px solid rgba(43, 74, 64, 0.18);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .status--ok {
+  border-color: rgba(34, 108, 79, 0.18);
+  background: rgba(34, 108, 79, 0.08);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .status--late {
+  border-color: rgba(160, 47, 33, 0.2);
+  background: rgba(160, 47, 33, 0.08);
+  color: #8d281c;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .status--warning {
+  border-color: rgba(170, 126, 44, 0.22);
+  background: rgba(170, 126, 44, 0.1);
+  color: #72561f;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .status--neutral {
+  border-color: var(--border);
+  background: rgba(91, 81, 69, 0.07);
+  color: var(--muted);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .flash--success {
+  border-color: rgba(34, 108, 79, 0.2);
+  background: rgba(34, 108, 79, 0.08);
+  color: var(--accent-strong);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .flash--error {
+  border-color: rgba(160, 47, 33, 0.2);
+  background: rgba(160, 47, 33, 0.08);
+  color: #81271d;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .month-switcher {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .month-switcher strong {
+  min-width: 108px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .data-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .data-table th,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .data-table td {
+  padding: 14px 13px;
+  border-bottom: 1px solid rgba(54, 44, 32, 0.09);
+  text-align: left;
+  vertical-align: middle;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .data-table th {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .data-table tr:last-child td {
+  border-bottom: 0;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .data-table tbody tr:hover {
+  background: rgba(255, 253, 248, 0.58);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .data-table .data-table__empty {
+  height: 116px;
+  color: var(--muted);
+  text-align: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .admin-section {
+  padding: 36px 0 44px;
+  border-top: 1px solid var(--border);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .admin-section--kiosks {
+  border-top: 0;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .admin-section > header {
+  margin-bottom: 24px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .admin-section > header h2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.35rem;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .admin-section > header p {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 18px;
+  margin-bottom: 28px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-registration-form {
+  width: min(430px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  grid-template-columns: minmax(0, 320px) auto;
+  justify-content: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid input,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid rgba(54, 44, 32, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 253, 248, 0.84);
+  color: var(--foreground);
+  outline: 0;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid input:focus,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid select:focus {
+  border-color: rgba(43, 74, 64, 0.52);
+  box-shadow: 0 0 0 3px rgba(43, 74, 64, 0.1);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid__wide {
+  grid-column: span 2;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid__actions {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-registration-form .form-grid__actions {
+  justify-content: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-registration-form .button {
+  min-height: 48px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .record-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 230px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .adjustment-context {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 18px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: rgba(255, 253, 248, 0.62);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .adjustment-context div {
+  display: grid;
+  gap: 4px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .adjustment-context dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .adjustment-context dd {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .danger-zone {
+  margin-top: 12px;
+  padding: 16px 18px;
+  border: 1px solid rgba(160, 47, 33, 0.16);
+  border-radius: 12px;
+  background: rgba(160, 47, 33, 0.035);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .danger-zone summary {
+  color: #81271d;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .danger-zone > p {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .table-actions,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .plain-list__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .plain-list {
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .plain-list li {
+  min-height: 62px;
+  padding: 12px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-device-list li:not(.plain-list__empty) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-capacity-count {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-page-feedback {
+  margin-top: 20px;
+  margin-bottom: 0;
+  text-align: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .plain-list li > span:first-child {
+  display: grid;
+  gap: 3px;
+  color: var(--foreground);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .plain-list small {
+  color: var(--muted);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .plain-list__actions {
+  color: var(--muted);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .plain-list .plain-list__empty {
+  min-height: 94px;
+  justify-content: center;
+  color: var(--muted);
+  text-align: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-setup {
+  min-height: calc(100svh - 75px);
+  padding: var(--page-gutter);
+  display: grid;
+  place-items: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .state-panel,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-setup__panel {
+  width: min(580px, 100%);
+  padding: 36px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(255, 253, 248, 0.92);
+  box-shadow: var(--shadow);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .state-panel--kiosk-home {
+  width: min(680px, 100%);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .state-panel.state-panel--kiosk-home h1 {
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .state-panel h1,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-setup h1 {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .state-panel p,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-setup__panel > p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scan-page {
+  width: 100%;
+  min-height: 100svh;
+  background: #0e1211;
+  overflow: hidden;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  background: #0e1211;
+  color: var(--surface-strong);
+  overflow: hidden;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__camera {
+  position: absolute;
+  inset: 0;
+  background: #0e1211;
+  overflow: hidden;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__camera::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(6, 9, 8, 0.3),
+    transparent 24%,
+    transparent 68%,
+    rgba(6, 9, 8, 0.56)
+  );
+  content: '';
+  pointer-events: none;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__camera video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__close {
+  position: absolute;
+  z-index: 4;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 253, 248, 0.28);
+  border-radius: 50%;
+  background: rgba(14, 18, 17, 0.68);
+  color: var(--surface-strong);
+  backdrop-filter: blur(12px);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__close:hover {
+  background: rgba(14, 18, 17, 0.86);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__close:focus-visible {
+  outline: 3px solid rgba(255, 253, 248, 0.78);
+  outline-offset: 3px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__close svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.9;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__frame {
+  position: absolute;
+  z-index: 2;
+  top: 46%;
+  left: 50%;
+  width: min(68vw, 46svh, 320px);
+  aspect-ratio: 1;
+  border: 2px solid rgba(255, 253, 248, 0.92);
+  border-radius: 24px;
+  box-shadow: 0 0 0 9999px rgba(6, 9, 8, 0.3);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__pending {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  background: rgba(14, 18, 17, 0.7);
+  color: var(--surface-strong);
+  font-weight: 800;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(255, 253, 248, 0.24);
+  border-top-color: var(--surface-strong);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__status {
+  position: absolute;
+  z-index: 4;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: max(16px, env(safe-area-inset-left));
+  display: grid;
+  justify-items: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__status > p {
+  width: fit-content;
+  max-width: 100%;
+  padding: 11px 16px;
+  border: 1px solid rgba(255, 253, 248, 0.22);
+  border-radius: 999px;
+  background: rgba(14, 18, 17, 0.72);
+  color: var(--surface-strong);
+  backdrop-filter: blur(12px);
+  font-size: 0.9rem;
+  font-weight: 750;
+  line-height: 1.5;
+  text-align: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__error,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__result {
+  width: min(420px, 100%);
+  padding: 26px 22px;
+  display: grid;
+  justify-items: center;
+  gap: 13px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface-strong);
+  color: var(--foreground);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__error p,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__result p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__result strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.35rem;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner__check {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--surface-strong);
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner--success .employee-scanner__frame,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .employee-scanner--error .employee-scanner__frame {
+  opacity: 0;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-setup {
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 15% 0%, #fff 0, transparent 34rem),
+    var(--background);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-setup__panel {
+  display: grid;
+  gap: 22px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-screen {
+  min-height: 0;
+  flex: 1 1 0;
+  padding: clamp(24px, 4vw, 56px);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  container-type: size;
+  background: transparent;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-screen__body {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-content {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-shell {
+  position: relative;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-code {
+  width: min(42vw, 450px);
+  width: min(42vw, 450px, calc(100cqh - 42px));
+  aspect-ratio: 1;
+  padding: 20px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(54, 44, 32, 0.14);
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 20px 54px rgba(32, 21, 9, 0.1);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-code svg {
+  width: 100%;
+  height: 100%;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px 12px;
+  color: var(--muted);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-meta strong {
+  color: var(--accent-strong);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-meta .is-expiring {
+  color: #9a2d20;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-state {
+  width: min(42vw, 450px);
+  width: min(42vw, 450px, calc(100cqh - 42px));
+  min-height: 0;
+  aspect-ratio: 1;
+  padding: 32px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: rgba(255, 253, 248, 0.76);
+  text-align: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-state:has(.qr-placeholder) {
+  grid-template-rows: minmax(0, 1fr) auto;
+  place-content: stretch;
+  align-items: center;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .qr-placeholder {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  justify-self: center;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0 46%,
+      rgba(43, 74, 64, 0.08) 46% 54%,
+      transparent 54%
+    ),
+    linear-gradient(
+      transparent 0 46%,
+      rgba(43, 74, 64, 0.08) 46% 54%,
+      transparent 54%
+    ),
+    rgba(43, 74, 64, 0.04);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-reset {
+  justify-self: start;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-reset button {
+  min-height: 44px;
+  padding: 8px 0;
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: rgba(104, 92, 76, 0.72);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .table-wrap:focus-visible,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-reset button:focus-visible {
+  outline: 3px solid rgba(43, 74, 64, 0.24);
+  outline-offset: 3px;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-embedded {
+  width: 100%;
+  min-height: min(470px, calc(100svh - 230px));
+  display: grid;
+  place-items: center;
+  container-type: inline-size;
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-embedded .kiosk-qr-code,
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-embedded .kiosk-qr-state {
+  width: min(100%, 420px);
+}
+
+:where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-embedded .kiosk-qr-state--error > strong:only-child {
+  font-size: 1.18rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 860px) {
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-code,
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-state {
+    width: min(70vw, 440px);
+    width: min(70vw, 440px, calc(100cqh - 42px));
+  }
+}
+
+@media (max-width: 640px) {
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .state-panel--kiosk-home {
+    padding-right: 8px;
+    padding-left: 8px;
+    gap: 12px;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .state-panel.state-panel--kiosk-home h1 {
+    font-size: clamp(0.68rem, 3.15vw, 0.82rem);
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .state-panel--kiosk-home p {
+    font-size: clamp(0.63rem, 2.8vw, 0.76rem);
+    line-height: 1.65;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-home-mobile-line {
+    display: block;
+    white-space: nowrap;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .page-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .month-switcher {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-registration-form {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-registration-form > label {
+    min-width: 0;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-registration-form .form-grid__actions {
+    justify-content: flex-end;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .adjustment-context {
+    grid-template-columns: 1fr;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .form-grid__wide {
+    grid-column: auto;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .plain-list li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-device-list li:not(.plain-list__empty) {
+    grid-template-columns: 1fr;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-device-list .plain-list__actions {
+    justify-content: flex-start;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .state-panel,
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-setup__panel {
+    padding: 26px 20px;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-screen {
+    padding: 22px;
+  }
+
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-code,
+  :where(body:has(.kiosk-screen),body:has(.kiosk-setup),body:has(.kiosk-admin-shell),body:has(.employee-scan-page),body:has(.fixture-admin-attendance)) .kiosk-qr-state {
+    width: min(86vw, 400px);
+    width: min(86vw, 400px, calc(100cqh - 42px));
+  }
+}
+
+@page schedule-report {
+  size: A4 portrait;
+  margin: 14mm 12mm 16mm;
+}

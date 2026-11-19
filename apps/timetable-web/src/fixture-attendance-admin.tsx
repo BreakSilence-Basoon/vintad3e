@@ -1,0 +1,25 @@
+'use client';
+import { useCallback, useEffect, useState } from 'react';
+import { toSeoulDateTimeInput } from './date-time';
+
+type Event = { id: string; eventType: 'CHECK_IN' | 'CHECK_OUT'; recordedAt: string; deviceLabel: string };
+const monthFor = (value: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit' }).format(value);
+const labelTime = (value: string) => new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(value));
+
+export function FixtureAttendanceAdmin() {
+  const [events, setEvents] = useState<Event[]>([]), [month, setMonth] = useState(''), [selected, setSelected] = useState<Event | null>(null), [time, setTime] = useState(''), [reason, setReason] = useState(''), [error, setError] = useState('');
+  const refresh = useCallback(async () => { try { const response = await fetch('/api/fixture/kiosk/events', { cache: 'no-store' }); if (!response.ok) throw new Error(); setEvents((await response.json()).events); } catch { setError('출퇴근 기록을 불러오지 못했습니다.'); } }, []);
+  useEffect(() => { setMonth(monthFor(new Date())); void refresh(); }, [refresh]);
+  function shiftMonth(offset: number) { const [year, value] = month.split('-').map(Number); const date = new Date(Date.UTC(year, value - 1 + offset, 1)); setMonth(date.toISOString().slice(0, 7)); }
+  async function submit(action: 'correct' | 'void') {
+    if (!selected) return;
+    const date = new Date(`${time}:00+09:00`);
+    if (!reason.trim() || (action === 'correct' && !Number.isFinite(date.getTime()))) { setError('정정할 시각과 이유를 확인해주세요.'); return; }
+    try { const response = await fetch(`/api/fixture/kiosk/${action}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: selected.id, reason, ...(action === 'correct' ? { recordedAt: date.toISOString() } : {}) }) }); if (!response.ok) throw new Error(); setSelected(null); setReason(''); setError(''); await refresh(); } catch { setError('기록을 저장하지 못했습니다.'); }
+  }
+  const visible = events.filter(event => monthFor(new Date(event.recordedAt)) === month);
+  return <main className="app-shell timetable-console fixture-admin-attendance"><div className="page-controls"><div className="month-switcher" aria-label="조회 월 선택"><button className="button button--ghost button--small" type="button" aria-label="이전 달" onClick={() => shiftMonth(-1)}>←</button><strong>{month && `${Number(month.slice(0, 4))}년 ${Number(month.slice(5))}월`}</strong><button className="button button--ghost button--small" type="button" aria-label="다음 달" onClick={() => shiftMonth(1)}>→</button></div></div>{error && <div className="flash flash--error" role="alert">{error}</div>}
+    {selected && <section className="admin-section attendance-adjustment" id="attendance-adjustment"><header><h2>{selected.eventType === 'CHECK_IN' ? '출근' : '퇴근'} 기록 정정</h2><p>직원 01 · {selected.deviceLabel}</p></header><dl className="adjustment-context"><div><dt>근무 구분</dt><dd>근무표 없음</dd></div><div><dt>현재 기록</dt><dd>{labelTime(selected.recordedAt)}</dd></div></dl><form className="form-grid" onSubmit={event => { event.preventDefault(); void submit('correct'); }}><label>바꿀 시각 (서울 기준)<input type="datetime-local" value={time} onChange={event => setTime(event.target.value)} required /></label><label className="form-grid__wide">정정 이유<input type="text" value={reason} onChange={event => setReason(event.target.value)} minLength={3} maxLength={500} placeholder="실제 출근 시각을 확인한 근거를 입력하세요" required /></label><div className="form-grid__actions"><button className="button button--primary" type="submit">시각 정정 저장</button><button className="button button--ghost" type="button" onClick={() => setSelected(null)}>선택 취소</button></div></form><details className="danger-zone"><summary>이 기록을 무효 처리해야 하나요?</summary><button className="button button--ghost" type="button" onClick={() => void submit('void')}>기록 무효 처리</button></details></section>}
+    <section className="admin-section"><div className="data-table-wrap"><table className="data-table"><thead><tr><th>직원</th><th>근무</th><th>매장</th><th>상태</th><th>출근</th><th>퇴근</th></tr></thead><tbody>{visible.length ? visible.map(item => <tr key={item.id}><td><strong>직원 01</strong></td><td>근무표 없음<br /><small>지각 계산 대상 아님</small></td><td>{item.deviceLabel}</td><td><span className="status">유효</span></td>{(['CHECK_IN', 'CHECK_OUT'] as const).map(type => <td key={type}>{item.eventType === type ? <div className="record-action"><span>{labelTime(item.recordedAt)}</span><button className="button button--ghost button--small" type="button" aria-label={`직원 01의 ${type === 'CHECK_IN' ? '출근' : '퇴근'} 기록 정정`} onClick={() => { setSelected(item); setTime(toSeoulDateTimeInput(item.recordedAt)); setReason(''); setError(''); }}>정정</button></div> : <span className="muted">기록 없음</span>}</td>)}</tr>) : <tr><td className="data-table__empty" colSpan={6}>선택한 달에 확인할 근태 기록이 없습니다.</td></tr>}</tbody></table></div></section>
+  </main>;
+}

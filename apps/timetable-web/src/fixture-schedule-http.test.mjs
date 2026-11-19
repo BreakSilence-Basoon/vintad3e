@@ -1,6 +1,7 @@
 import './fixture-history-admin-browser.test.mjs';
 import './fixture-schedule-admin-browser.test.mjs';
 import './fixture-self-browser.test.mjs';
+import './fixture-kiosk-http.test.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:net';

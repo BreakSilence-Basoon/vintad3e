@@ -90,11 +90,16 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     await run("window.confirm=()=>true;document.querySelector('.graphic-dialog__close').click()");
     await send('Page.navigate',{url:`${origin}/admin/sales`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.sales-history-page .audit-filter-bar[data-hydrated=true]'))"));
-    assert.equal(await evaluate("document.querySelector('.audit-empty').textContent"), '아직 표시할 판매내역이 없습니다.');
+    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card').length"), 2);
+    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card')[1].querySelector('summary strong').textContent"), '-');
+    await evaluate("document.querySelector('.sales-audit-card details').open=true");
+    assert.ok(await evaluate("document.querySelector('.sales-audit-card__snapshot').textContent.includes('POS-001')"));
     await evaluate("(()=>{const f=document.querySelector('.audit-filter-bar');f.querySelector('[name=keyword]').value='셔츠';f.querySelector('[name=source]').value='pos';f.requestSubmit()})()");
     await waitFor(async () => evaluate("location.search.includes('source=pos') && location.search.includes('keyword=')"));
     assert.ok(await evaluate("!location.search.includes('range=all') && !location.search.includes('status=all')"));
     assert.equal(await evaluate("document.querySelector('.audit-filter-bar [name=keyword]').value"), '셔츠');
+    await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 1"));
+    assert.ok(await evaluate("document.querySelector('.sales-audit-card').textContent.includes('42,000 KRW')"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.admin-toast--error')?.textContent.includes('Toss 동기화 실행에 실패했습니다.'))return true;[...document.querySelectorAll('button')].find(x=>x.textContent==='수동 갱신')?.click();return false;})()"));
     await waitFor(async () => evaluate("(()=>{if([...document.querySelectorAll('.admin-toast--error')].some(x=>x.textContent.includes('교차 검증 실행에 실패했습니다.')))return true;[...document.querySelectorAll('button')].find(x=>x.textContent==='교차 검증 즉시 실행')?.click();return false;})()"));
   } finally {

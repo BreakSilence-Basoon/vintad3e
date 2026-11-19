@@ -9,7 +9,7 @@ test('development project list renders the source layout with fixture data', { t
   const listener = createServer(); listener.listen(0, '127.0.0.1'); await once(listener, 'listening');
   const port = listener.address().port; await new Promise(resolve => listener.close(resolve));
   const origin = `http://127.0.0.1:${port}`;
-  const child = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_CREATIVE_FIXTURE:'1'}, stdio:'ignore' });
+  const child = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_CREATIVE_FIXTURE:'1',VINTAD3E_CREATIVE_FIXTURE_ORIGIN:origin}, stdio:'ignore' });
   try {
     let response;
     for (let i = 0; i < 100; i++) {
@@ -24,6 +24,13 @@ test('development project list renders the source layout with fixture data', { t
     assert.match(html, /홍보 자료/);
     assert.match(html, /제작 중/);
     assert.match(html, /기획/);
+    assert.equal((await fetch(`${origin}/confirmations/proposal-01`, { redirect: 'manual' })).status, 307);
+    assert.equal((await fetch(`${origin}/confirmations/unknown`, { redirect: 'manual' })).status, 404);
+    const login = await fetch(`${origin}/api/fixture/login`, { method: 'POST', headers: { origin }, body: new URLSearchParams({ next: '/confirmations/proposal-01' }), redirect: 'manual' });
+    assert.equal(login.status, 303);
+    assert.equal(login.headers.get('location'), '/confirmations/proposal-01');
+    const cookie = login.headers.get('set-cookie').split(';')[0];
+    assert.equal((await fetch(`${origin}/confirmations/proposal-01`, { headers: { cookie } })).status, 200);
   } finally {
     child.kill('SIGTERM');
     if (child.exitCode === null && child.signalCode === null) await Promise.race([once(child,'exit'),delay(5000)]);

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { fixtureHistory } from './fixture-history.ts';
-import { fixtureEmployeeId, fixtureHistoryDay, historyNotInFuture, historyWithinShiftWindow, parseHistoryEdits, selectHistory } from './fixture-history-admin.ts';
+import { fixtureEmployeeId, fixtureHistoryDay, historyNotInFuture, historyWithinShiftWindow, parseHistoryEdits, selectHistory, writeHistoryEdit } from './fixture-history-admin.ts';
 import { linkedAttendance, linkedAttendanceWithinWindow, linkedEmployees } from './fixture-linked-attendance.ts';
 import { fixtureSelfEnabled, selfAttendance, selfSchedule } from './fixture-self.ts';
 
@@ -16,6 +16,19 @@ test('admin fixture accepts only bounded valid edits from the current Seoul day'
   assert.deepEqual(parseHistoryEdits(raw, day + 1), {});
   assert.deepEqual(parseHistoryEdits('x'.repeat(32001), day), {});
   assert.deepEqual(parseHistoryEdits('{', day), {});
+});
+test('history writes preserve damaged and unknown state while keeping other edits and documented daily reset', () => {
+  const value = { startsAt: '2026-11-16T02:00:00.000Z', endsAt: '2026-11-16T09:00:00.000Z', note: '수정 사유' };
+  let raw: string | null = null, blocked = false;
+  const store = { getItem: () => { if (blocked) throw new Error('unavailable'); return raw; }, setItem: (_key: string, text: string) => { raw = text; } };
+  assert.deepEqual(writeHistoryEdit(store, 'history', day, '0', value), { '0': value });
+  assert.deepEqual(writeHistoryEdit(store, 'history', day, '1', null), { '0': value, '1': null });
+  for (const damaged of ['{broken', JSON.stringify({ day, edits: { unknown: value } }), JSON.stringify({ day, edits: { '0': { ...value, extra: 'preserve' } } }), JSON.stringify({ day, edits: {}, extra: 'preserve' })]) {
+    raw = damaged; assert.equal(writeHistoryEdit(store, 'history', day, '1', null), null); assert.equal(raw, damaged);
+  }
+  raw = JSON.stringify({ day: day - 1, edits: { '0': value } });
+  assert.deepEqual(writeHistoryEdit(store, 'history', day, '1', null), { '1': null });
+  const before = raw; blocked = true; assert.equal(writeHistoryEdit(store, 'history', day, '0', value), null); assert.equal(raw, before);
 });
 test('edits and deletions are applied before date, employee and sort filtering', () => {
   const edits = { '0': { startsAt: '2026-11-15T00:00:00.000Z', endsAt: '2026-11-15T08:00:00.000Z', note: '변경' }, '1': null };

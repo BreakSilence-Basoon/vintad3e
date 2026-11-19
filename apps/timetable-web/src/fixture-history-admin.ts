@@ -28,6 +28,27 @@ export function parseHistoryEdits(raw: string, day: number): HistoryEdits {
     return result;
   } catch { return {}; }
 }
+export function writeHistoryEdit(store: Pick<Storage, 'getItem' | 'setItem'>, slot: string, day: number, id: string, value: Edit): HistoryEdits | null {
+  if (!Number.isSafeInteger(day) || !/^(?:[0-9]|1[0-9]|20)$/.test(id)) return null;
+  try {
+    const raw = store.getItem(slot);
+    let current: HistoryEdits = {};
+    if (raw !== null) {
+      if (raw.length > 32000) return null;
+      const saved: unknown = JSON.parse(raw);
+      if (!saved || typeof saved !== 'object' || Array.isArray(saved) || Object.keys(saved).sort().join(',') !== 'day,edits') return null;
+      const data = saved as { day: unknown; edits: unknown };
+      if (!Number.isSafeInteger(data.day) || !data.edits || typeof data.edits !== 'object' || Array.isArray(data.edits)) return null;
+      const entries = Object.entries(data.edits), parsed = parseHistoryEdits(raw, data.day as number);
+      if (entries.length !== Object.keys(parsed).length || entries.some(([, item]) => item !== null && (!item || typeof item !== 'object' || Array.isArray(item) || Object.keys(item).sort().join(',') !== 'endsAt,note,startsAt'))) return null;
+      if (data.day === day) current = parsed;
+    }
+    const next = { ...current, [id]: value }, encoded = JSON.stringify({ day, edits: next });
+    if (!Object.hasOwn(parseHistoryEdits(encoded, day), id)) return null;
+    store.setItem(slot, encoded);
+    return next;
+  } catch { return null; }
+}
 export function selectHistory(base: HistoryRecord[], edits: HistoryEdits, filters: AttendanceHistoryFilters, now: number): HistoryRecord[] {
   const today = seoulDay(now);
   return base.flatMap(record => Object.hasOwn(edits, record.id) ? edits[record.id] === null ? [] : [{ ...record, ...edits[record.id]! }] : [record]).filter(record => {

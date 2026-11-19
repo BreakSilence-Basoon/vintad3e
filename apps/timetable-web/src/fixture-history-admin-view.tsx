@@ -6,7 +6,7 @@ import { AttendanceHistoryPager } from './attendance-history-pager';
 import { FixtureHistoryList } from './fixture-history-list';
 import { toSeoulDateTimeInput } from './date-time';
 import { buildHistoryHref } from './history-filters';
-import { fixtureHistoryDay, historyNotInFuture, historyWithinShiftWindow, parseHistoryEdits, selectHistory, type HistoryEdits, type HistoryRecord } from './fixture-history-admin';
+import { fixtureHistoryDay, historyNotInFuture, historyWithinShiftWindow, parseHistoryEdits, selectHistory, writeHistoryEdit, type HistoryEdits, type HistoryRecord } from './fixture-history-admin';
 import type { AttendanceHistoryFilters } from './attendance-history-filter';
 import { fixtureScheduleChanged, linkedAttendance, linkedAttendanceWithinWindow } from './fixture-linked-attendance';
 import { readScheduleOverrides, writeScheduleOverride, type ScheduleOverrides } from './fixture-schedule-storage';
@@ -73,8 +73,7 @@ export function FixtureHistoryAdmin({ base, filters, now, page }: { base: Histor
         setSchedule(updated); window.dispatchEvent(new Event(fixtureScheduleChanged)); return true;
       } catch { return false; }
     }
-    const next = { ...edits, [selected.id]: value === null ? null : { startsAt: value.startsAt, endsAt: value.endsAt, note: value.note ?? '' } };
-    try { const encoded = JSON.stringify({ day, edits: next }); if (!Object.hasOwn(parseHistoryEdits(encoded, day), selected.id)) return false; sessionStorage.setItem(slot, encoded); setEdits(next); return true; } catch { return false; }
+    try { const next = writeHistoryEdit(sessionStorage, slot, day, selected.id, value === null ? null : { startsAt: value.startsAt, endsAt: value.endsAt, note: value.note ?? '' }); if (!next) return false; setEdits(next); return true; } catch { return false; }
   }
   return <><FixtureHistoryList records={visible} onSelect={loaded ? setSelected : undefined} /><AttendanceHistoryPager href={buildHistoryHref(filters, page + 1, true)} totalCount={records.length} visibleCount={visible.length} />{selected ? <HistoryEditor key={selected.id} record={selected} originalStart={base.find(item => item.id === selected.id)?.startsAt ?? selected.startsAt} onClose={() => setSelected(null)} onSave={save} /> : null}</>;
 }

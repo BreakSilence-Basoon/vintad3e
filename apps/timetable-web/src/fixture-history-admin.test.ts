@@ -3,6 +3,7 @@ import test from 'node:test';
 import { fixtureHistory } from './fixture-history.ts';
 import { fixtureEmployeeId, fixtureHistoryDay, historyNotInFuture, historyWithinShiftWindow, parseHistoryEdits, selectHistory } from './fixture-history-admin.ts';
 import { linkedAttendance, linkedAttendanceWithinWindow, linkedEmployees } from './fixture-linked-attendance.ts';
+import { fixtureSelfEnabled, selfAttendance, selfSchedule } from './fixture-self.ts';
 
 const now = Date.parse('2026-11-18T09:00:00.000Z');
 const filters = { employee: 'all', from: '', to: '', range: 'all' as const, sort: 'desc' as const };
@@ -54,4 +55,15 @@ test('schedule attendance appears for the matching synthetic employee and uses t
   assert.equal(linkedAttendanceWithinWindow(shift.startInput, shift.endInput, '2026-11-07T18:30:00.000Z', '2026-11-08T21:00:00.000Z'), true);
   assert.equal(linkedAttendanceWithinWindow(shift.startInput, shift.endInput, '2026-11-07T18:29:00.000Z', null), false);
   assert.deepEqual(linkedAttendance({ '2026-11-08-employee-1': { ...shift, attendance: null } }), []);
+});
+
+test('self fixture is development-only and projects only the synthetic employee own schedule and attendance', () => {
+  assert.equal(fixtureSelfEnabled('development', '1', undefined, '1'), true);
+  for (const [env, fixture, admin, self] of [['production', '1', undefined, '1'], ['development', undefined, undefined, '1'], ['development', '1', '1', '1'], ['development', '1', undefined, undefined]]) assert.equal(fixtureSelfEnabled(env, fixture, admin, self), false);
+  assert.deepEqual(selfSchedule([{ employee: { id: 'employee-1' } }, { employee: { id: 'employee-2' } }]), [{ employee: { id: 'employee-1' } }]);
+  const attendance = { startsAt: '2026-11-08T00:45:00.000Z', endsAt: '2026-11-08T09:00:00.000Z' };
+  const rows = selfAttendance({ '2026-11-08-employee-1': { startInput: '2026-11-08T09:00', endInput: '2026-11-08T18:00', note: '근무', attendance }, '2026-11-18-employee-2': { startInput: '2026-11-18T09:00', endInput: '2026-11-18T18:00', note: '다른 직원', attendance } }, { ...filters, employee: linkedEmployees[1].id }, now);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].employeeName, '직원 01');
+  assert.equal(selfAttendance({}, filters, now).length, 0);
 });

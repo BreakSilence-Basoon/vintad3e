@@ -10,6 +10,7 @@ import { fixtureScheduleEntries } from './fixture-schedule-entries';
 import { readScheduleOverrides, writeScheduleOverride, type ScheduleOverride, type ScheduleOverrides } from './fixture-schedule-storage';
 import { toSeoulDateTimeInput } from './date-time';
 import { fixtureScheduleChanged } from './fixture-linked-attendance';
+import { fixtureSelfEmployeeId, selfSchedule } from './fixture-self';
 
 export type SessionScheduleShift = { id: string; location: { id: string; label: string }; startsAt: string; endsAt: string; graceMinutes: number; attendance: { startsAt: string; endsAt: string | null } | null };
 type ScheduleEntry = { id: string; date: string; employee: { id: string; displayName: string }; location: { id: string; label: string }; startInput: string; endInput: string; attendance: { startsAt: string; endsAt: string | null } | null };
@@ -18,7 +19,7 @@ const weekdays = ['일', '월', '화', '수', '목', '금', '토'] as const;
 const navigationParams = { view: 'schedule' };
 
 /** The empty-data rendering from Timetable's schedule calendar. */
-export function ScheduleEmptyCalendar({ month, fixtureEnabled = false, fixtureAdmin = false, sessionShifts }: { month: string; fixtureEnabled?: boolean; fixtureAdmin?: boolean; sessionShifts?: SessionScheduleShift[] }) {
+export function ScheduleEmptyCalendar({ month, fixtureEnabled = false, fixtureAdmin = false, fixtureSelf = false, sessionShifts }: { month: string; fixtureEnabled?: boolean; fixtureAdmin?: boolean; fixtureSelf?: boolean; sessionShifts?: SessionScheduleShift[] }) {
   const [displayMonth, setDisplayMonth] = useState(month);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const [employee, setEmployee] = useState('');
@@ -33,11 +34,12 @@ export function ScheduleEmptyCalendar({ month, fixtureEnabled = false, fixtureAd
   }, [fixtureEnabled, sessionShifts]);
 
   const cells = emptyCalendarCells(displayMonth);
-  const fixtures = fixtureEnabled ? fixtureScheduleEntries(displayMonth, overrides ?? {}, cells.map(cell => cell.dateKey)) : [];
+  const allFixtures = fixtureEnabled ? fixtureScheduleEntries(displayMonth, overrides ?? {}, cells.map(cell => cell.dateKey)) : [];
+  const fixtures = fixtureSelf ? selfSchedule(allFixtures) : allFixtures;
   const fromSession = (sessionShifts ?? []).map(item => ({ ...item, date: toSeoulDateTimeInput(item.startsAt).slice(0, 10), employee: { id: 'self', displayName: '직원' }, startInput: toSeoulDateTimeInput(item.startsAt), endInput: toSeoulDateTimeInput(item.endsAt) }));
   const shifts: ScheduleEntry[] = fixtureEnabled ? fixtures : fromSession;
-  const locations = fixtureEnabled ? fixtureLocations : [...new Map(fromSession.map(item => [item.location.id, item.location])).values()];
-  const employees = fixtureEnabled ? fixtureEmployees : [];
+  const locations = fixtureEnabled ? (fixtureSelf ? fixtureLocations.slice(0, 1) : fixtureLocations) : [...new Map(fromSession.map(item => [item.location.id, item.location])).values()];
+  const employees = fixtureEnabled ? (fixtureSelf ? fixtureEmployees.filter(employee => employee.id === fixtureSelfEmployeeId) : fixtureEmployees) : [];
   const visibleShifts = filterFixtureSchedule(shifts, employee, location);
   const selected = shifts.find(item => item.id === selectedId);
   const selectedFixture = fixtures.find(item => item.id === selectedId);
@@ -45,6 +47,7 @@ export function ScheduleEmptyCalendar({ month, fixtureEnabled = false, fixtureAd
     if (!selectedFixture || overrides === null) return false;
     try { const saved = writeScheduleOverride(sessionStorage, selectedFixture.id, value); if (!saved) return false; setOverrides(saved); window.dispatchEvent(new Event(fixtureScheduleChanged)); return true; } catch { return false; }
   }
+  if (fixtureSelf && loaded && overrides === null) return <section className="schedule-calendar-page" aria-label="근무시간표"><div className="state-panel" role="alert"><strong>근무시간표를 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해주세요.</p></div></section>;
   return <section className="schedule-calendar-page" aria-label="근무시간표">
     <header className="schedule-calendar-page__toolbar" aria-label="근무시간표 도구">
       <div className="schedule-calendar-page__month">

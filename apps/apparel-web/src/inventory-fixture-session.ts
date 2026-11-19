@@ -27,10 +27,26 @@ export function readFixtureStock(): Rows {
   try { return parseFixtureStock(window.sessionStorage.getItem(storageSlot) ?? '{}'); } catch { return {}; }
 }
 
+function safeFixtureStock(raw: string): boolean {
+  if (raw.length > 16000) return false;
+  try {
+    const value: unknown = JSON.parse(raw);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    const entries = Object.entries(value), parsed = parseFixtureStock(raw);
+    if (entries.length !== Object.keys(parsed).length) return false;
+    return entries.every(([key, candidate]) => {
+      if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || Object.keys(candidate).sort().join(',') !== 'onHand,shortage,target,tracking') return false;
+      const row = candidate as Row, saved = parsed[key];
+      return saved && row.onHand === saved.onHand && row.target === saved.target && row.shortage === saved.shortage && row.tracking === saved.tracking;
+    });
+  } catch { return false; }
+}
+
 export function writeFixtureStock(rows: Rows): boolean {
   try {
+    if (!safeFixtureStock(window.sessionStorage.getItem(storageSlot) ?? '{}')) return false;
     const encoded = JSON.stringify(rows);
-    if (Object.keys(parseFixtureStock(encoded)).length !== Object.keys(rows).length) return false;
+    if (!safeFixtureStock(encoded) || Object.keys(parseFixtureStock(encoded)).length !== Object.keys(rows).length) return false;
     window.sessionStorage.setItem(storageSlot, encoded);
     return true;
   } catch { return false; }

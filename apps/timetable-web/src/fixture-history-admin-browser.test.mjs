@@ -40,7 +40,7 @@ test('fixture administrator edits, reloads and deletes attendance with required 
     await evaluate("document.querySelector('dialog form').requestSubmit()");
     await waitFor(async()=>evaluate("!document.querySelector('dialog[open]') && document.querySelector('.attendance-history-card__note')?.textContent === '합성 사유'"));
     await send('Page.reload');
-    await waitFor(async()=>evaluate("document.querySelector('.attendance-history-card__note')?.textContent === '합성 사유'"));
+    await waitFor(async()=>evaluate("document.querySelector('.attendance-history-card__note')?.textContent === '합성 사유' && Boolean(document.querySelector('.attendance-history-card__note').closest('button'))"));
     assert.ok(await evaluate("document.querySelector('.attendance-history-card__note').closest('button').textContent.includes('8:55')"));
     await evaluate("document.querySelector('.attendance-history-card__note').closest('button').click()");
     await waitFor(async()=>evaluate("Boolean(document.querySelector('dialog[open]'))"));

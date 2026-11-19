@@ -6,7 +6,7 @@
 
 - 명령을 입력할 터미널과 인터넷 연결이 필요합니다. 아래 준비 단계에서는 Git과 Node.js 24, Corepack으로 실행하는 pnpm 10.11.0을 확인합니다.
 - 빈타제 저장소의 루트 폴더에서 명령을 실행합니다. 루트 폴더는 `package.json`과 `scripts` 폴더가 함께 있는 곳입니다. 저장소에 포함된 `scripts/local-api-fixture.cjs`와 `scripts/fixture-process.cjs`가 필요합니다.
-- 아래 설치 명령은 공개 커밋만 담은 격리된 Linux 환경에서 빈 캐시와 공개 패키지 저장소를 사용해 검증했습니다. `--ignore-scripts`로 설치 단계 스크립트를 실행하지 않은 시험입니다. Windows에서의 새 설치는 별도 확인이 필요합니다.
+- 아래 설치 명령은 격리된 Linux의 빈 캐시와 Windows의 새 저장소 폴더에서 확인했습니다. Windows 시험에서는 기존 pnpm 캐시를 사용했으며, 두 경우 모두 `--ignore-scripts`로 설치 단계 스크립트를 실행하지 않았습니다.
 - 로컬 포트 43131과 43132를 사용합니다. 이미 다른 프로그램이 사용 중이면 시험을 중단하고 해당 프로그램을 확인하세요.
 
 ## 0. 저장소와 프로그램 확인
@@ -64,7 +64,7 @@ node scripts/local-api-fixture.cjs
 
 이 예시는 외부 로그인 제공자에 연결하거나 접근 토큰을 발급하지 않습니다. 실제 사용자 인증, 브라우저 로그인, 권한 관리, HTTPS 배포, 백업·복구와 실제 업무 처리는 아직 검증되지 않았습니다. 인터넷에 서버를 공개하거나 이 예시를 운영 환경으로 사용하지 마세요.
 
-참고: [Ledger API 실험](../apps/ledger-api/README.md), [Timetable API 실험](../apps/timetable-api/README.md). Windows에서의 전체 실행과 새 컴퓨터의 설치 과정은 별도로 확인해야 합니다.
+참고: [Ledger API 실험](../apps/ledger-api/README.md), [Timetable API 실험](../apps/timetable-api/README.md). Windows에서는 위 `--check`를 확인했으며, 실제 콘솔에서 장시간 실행한 뒤 Ctrl+C로 종료하는 경로와 새 컴퓨터 설치는 별도 확인이 필요합니다.
 
 
 ## 가상 직원 예제

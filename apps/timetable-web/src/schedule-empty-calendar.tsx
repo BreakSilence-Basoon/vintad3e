@@ -9,6 +9,7 @@ import { FixtureScheduleEditor } from './fixture-schedule-editor';
 import { fixtureScheduleEntries } from './fixture-schedule-entries';
 import { readScheduleOverrides, writeScheduleOverride, type ScheduleOverride, type ScheduleOverrides } from './fixture-schedule-storage';
 import { toSeoulDateTimeInput } from './date-time';
+import { fixtureScheduleChanged } from './fixture-linked-attendance';
 
 export type SessionScheduleShift = { id: string; location: { id: string; label: string }; startsAt: string; endsAt: string; graceMinutes: number; attendance: { startsAt: string; endsAt: string | null } | null };
 type ScheduleEntry = { id: string; date: string; employee: { id: string; displayName: string }; location: { id: string; label: string }; startInput: string; endInput: string; attendance: { startsAt: string; endsAt: string | null } | null };
@@ -25,7 +26,7 @@ export function ScheduleEmptyCalendar({ month, fixtureEnabled = false, fixtureAd
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [overrides, setOverrides] = useState<ScheduleOverrides | null>({});
   const [loaded, setLoaded] = useState(false);
-  useEffect(() => { if (fixtureEnabled) { try { setOverrides(readScheduleOverrides(sessionStorage)); } catch { setOverrides(null); } } setLoaded(true); }, [fixtureEnabled]);
+  useEffect(() => { const reload = () => { if (fixtureEnabled) { try { setOverrides(readScheduleOverrides(sessionStorage)); } catch { setOverrides(null); } } setLoaded(true); }; reload(); window.addEventListener(fixtureScheduleChanged, reload); return () => window.removeEventListener(fixtureScheduleChanged, reload); }, [fixtureEnabled]);
   useEffect(() => { setDisplayMonth(month); }, [month]);
   useEffect(() => {
     if (!fixtureEnabled && sessionShifts) setLocation(current => sessionShifts.some(item => item.location.id === current) ? current : sessionShifts[0]?.location.id ?? '');
@@ -42,7 +43,7 @@ export function ScheduleEmptyCalendar({ month, fixtureEnabled = false, fixtureAd
   const selectedFixture = fixtures.find(item => item.id === selectedId);
   function saveFixture(value: ScheduleOverride) {
     if (!selectedFixture || overrides === null) return false;
-    try { const saved = writeScheduleOverride(sessionStorage, selectedFixture.id, value); if (!saved) return false; setOverrides(saved); return true; } catch { return false; }
+    try { const saved = writeScheduleOverride(sessionStorage, selectedFixture.id, value); if (!saved) return false; setOverrides(saved); window.dispatchEvent(new Event(fixtureScheduleChanged)); return true; } catch { return false; }
   }
   return <section className="schedule-calendar-page" aria-label="근무시간표">
     <header className="schedule-calendar-page__toolbar" aria-label="근무시간표 도구">

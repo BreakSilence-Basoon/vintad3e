@@ -10,6 +10,7 @@ import { fixtureHistory } from '../fixture-history';
 import { FixtureHistoryList } from '../fixture-history-list';
 import { FixtureHistoryAdmin } from '../fixture-history-admin-view';
 import { fixtureEmployeeId } from '../fixture-history-admin';
+import { linkedEmployees } from '../fixture-linked-attendance';
 import { AttendanceHistoryPager } from '../attendance-history-pager';
 import { historySessionCookie, loadTimetableHistory } from '../timetable-history-view.mjs';
 import { loadTimetableSchedule, scheduleCalendarRange } from '../timetable-schedule-view.mjs';
@@ -66,7 +67,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   return <main className="app-shell timetable-console timetable-home">
     <Suspense fallback={null}>
       <TimetableSlideSwitcher key={initialView} initialSlide={initialView} ariaLabel="출근부와 근무시간표" slides={[
-        { key: 'history', label: '출근부', content: <section className="attendance-history-list" aria-label="출근부">{failed ? <div className="state-panel" role="alert"><strong>출근부를 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해주세요.</p></div> : <><AttendanceHistoryFilter key={filterKey} employees={fixtureAdmin ? [{ id: fixtureEmployeeId, displayName: '직원' }] : []} filters={filters} isAdmin={fixtureAdmin} pathname="/" persistentParams={{ view: 'history' }} />{fixtureAdmin ? <FixtureHistoryAdmin base={fixtureHistory(process.env.NODE_ENV, process.env.VINTAD3E_TIMETABLE_FIXTURE, now, { ...filters, employee: 'all', range: 'all' })} filters={filters} now={now} page={historyPage} /> : <><FixtureHistoryList records={visibleRecords} /><AttendanceHistoryPager href={buildHistoryHref(filters, historyPage + 1)} totalCount={records.length} visibleCount={visibleRecords.length} /></>}</>}</section> },
+        { key: 'history', label: '출근부', content: <section className="attendance-history-list" aria-label="출근부">{failed ? <div className="state-panel" role="alert"><strong>출근부를 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해주세요.</p></div> : <><AttendanceHistoryFilter key={filterKey} employees={fixtureAdmin ? [{ id: fixtureEmployeeId, displayName: '직원' }, ...linkedEmployees] : []} filters={filters} isAdmin={fixtureAdmin} pathname="/" persistentParams={{ view: 'history' }} />{fixtureAdmin ? <FixtureHistoryAdmin base={fixtureHistory(process.env.NODE_ENV, process.env.VINTAD3E_TIMETABLE_FIXTURE, now, { ...filters, employee: 'all', range: 'all' })} filters={filters} now={now} page={historyPage} /> : <><FixtureHistoryList records={visibleRecords} /><AttendanceHistoryPager href={buildHistoryHref(filters, historyPage + 1)} totalCount={records.length} visibleCount={visibleRecords.length} /></>}</>}</section> },
         { key: 'schedule', label: '근무시간표', content: scheduleFailed ? <section className="schedule-calendar-page" aria-label="근무시간표"><div className="state-panel" role="alert"><strong>근무시간표를 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해주세요.</p></div></section> : <ScheduleEmptyCalendar month={selectedMonth} fixtureEnabled={fixtureEnabled} fixtureAdmin={fixtureAdmin} sessionShifts={scheduleShifts} /> },
       ]} />
     </Suspense>

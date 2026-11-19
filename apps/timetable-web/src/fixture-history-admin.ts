@@ -2,7 +2,7 @@ import type { AttendanceHistoryFilters } from './attendance-history-filter';
 import type { fixtureHistory } from './fixture-history';
 
 export const fixtureEmployeeId = '00000000-0000-4000-8000-000000000001';
-export type HistoryRecord = ReturnType<typeof fixtureHistory>[number] & { note?: string };
+export type HistoryRecord = ReturnType<typeof fixtureHistory>[number] & { note?: string; employeeId?: string; employeeName?: string; shiftStartInput?: string; shiftEndInput?: string };
 type Edit = { startsAt: string; endsAt: string | null; note: string } | null;
 export type HistoryEdits = Record<string, Edit>;
 const dayMs = 86400000;
@@ -29,9 +29,9 @@ export function parseHistoryEdits(raw: string, day: number): HistoryEdits {
   } catch { return {}; }
 }
 export function selectHistory(base: HistoryRecord[], edits: HistoryEdits, filters: AttendanceHistoryFilters, now: number): HistoryRecord[] {
-  if (filters.employee !== 'all' && filters.employee !== fixtureEmployeeId) return [];
   const today = seoulDay(now);
   return base.flatMap(record => Object.hasOwn(edits, record.id) ? edits[record.id] === null ? [] : [{ ...record, ...edits[record.id]! }] : [record]).filter(record => {
+    if (filters.employee !== 'all' && filters.employee !== (record.employeeId ?? fixtureEmployeeId)) return false;
     const day = seoulDay(Date.parse(record.startsAt));
     if (filters.range === 'today') return day === today;
     if (filters.range === 'last7') return day >= today - 6 && day <= today;

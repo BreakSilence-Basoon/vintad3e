@@ -62,6 +62,7 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
         await page.goto(`${origin}/formula`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL(url => url.pathname !== '/sign-in');
         await page.goto(`${origin}/formula`);
         const search = page.getByRole('searchbox', { name: '정산 공식 기호 검색' });
         await search.fill('찾을수없는항목');

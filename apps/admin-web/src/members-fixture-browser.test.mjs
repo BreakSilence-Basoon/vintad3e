@@ -48,6 +48,7 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     await evaluate("document.querySelector('.staff-table tbody a').click()");
     await waitFor(async () => evaluate("document.querySelector('.staff-console')?.textContent.includes('staff01@example.invalid') && document.querySelector('.staff-console')?.textContent.includes('Portal')"));
     assert.ok(await evaluate("document.querySelector('.staff-console').textContent.includes('크루')"));
+    assert.deepEqual(await evaluate("[...document.querySelectorAll('.staff-table tbody tr')].map(row=>[row.cells[0].textContent,row.cells[2].textContent])"), [['Portal','사용 중'],['Apparel','기간 만료'],['Timetable','시작 전'],['Library','일시 정지'],['Creative','회수됨']]);
     await evaluate("document.querySelector('.admin-actions a').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('.permissions-matrix'))"));
     assert.ok(await evaluate("document.querySelector('.permissions-matrix tbody').textContent.includes('관리자 01') && document.querySelector('.permissions-matrix tbody').textContent.includes('어드민')"));

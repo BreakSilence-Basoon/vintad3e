@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { fixtureGrants, fixtureMemberType, fixtureTier, getFixtureMembers, membersOfType } from './members-fixture.ts';
+import { fixtureGrantActive, fixtureGrantDisplay, fixtureGrants, fixtureMemberType, fixtureTier, getFixtureMembers, membersOfType } from './members-fixture.ts';
 
 test('members are restricted to an explicit development fixture', () => {
   assert.deepEqual(getFixtureMembers('production', '1'), []);
@@ -16,13 +16,27 @@ test('fixture details fail closed outside development and use separate employee 
   assert.equal(fixtureGrants('development', '1', 'unknown'), null);
   const employee = fixtureGrants('development', '1', members[0].staffId)!;
   const partner = fixtureGrants('development', '1', members[1].staffId)!;
-  assert.deepEqual(employee.map(grant => grant.appId), ['portal']);
+  assert.deepEqual(employee.map(grant => grant.appId), ['portal', 'apparel', 'timetable', 'library', 'creative']);
   assert.deepEqual(partner.map(grant => grant.appId), ['partners']);
   assert.equal(fixtureTier(members[0], employee), '크루');
   assert.equal(fixtureTier(members[1], partner), '게스트');
   const admin = fixtureGrants('development', '1', members[2].staffId)!;
   assert.deepEqual(admin.map(grant => grant.appId), ['portal', 'partners', 'admin']);
   assert.equal(fixtureTier(members[2], admin), '어드민');
+});
+
+test('grant status and date boundaries match the source and inactive grants do not confer fixture access', () => {
+  const employee = fixtureGrants('development', '1', '00000000-0000-4000-8000-000000000001')!;
+  const now = Date.parse('2026-11-19T00:00:00Z');
+  assert.deepEqual(employee.map(grant => fixtureGrantDisplay(grant, now).label), ['사용 중', '기간 만료', '시작 전', '일시 정지', '회수됨']);
+  assert.deepEqual(employee.filter(grant => fixtureGrantActive(grant, now)).map(grant => grant.appId), ['portal']);
+  const base = employee[0];
+  assert.equal(fixtureGrantDisplay({ ...base, validFrom: '2026-11-19T00:00:00Z' }, now).label, '사용 중');
+  assert.equal(fixtureGrantDisplay({ ...base, validUntil: '2026-11-19T00:00:00Z' }, now).label, '기간 만료');
+  assert.equal(fixtureGrantDisplay({ ...base, validFrom: 'invalid' }, now).label, '확인 필요');
+  assert.equal(fixtureGrantDisplay({ ...base, status: 'SUSPENDED', validFrom: 'invalid' }, now).label, '일시 정지');
+  assert.equal(fixtureGrantDisplay({ ...base, status: 'REVOKED', validFrom: 'invalid' }, now).label, '회수됨');
+  assert.equal(fixtureGrantActive(base, NaN), false);
 });
 test('member type selects only the corresponding synthetic members', () => {
   const members = getFixtureMembers('development', '1');

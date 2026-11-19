@@ -85,15 +85,22 @@ try {
             }) })) };
           });
           const focus = [];
-          const focusable = await page.evaluate(() => Array.from(document.querySelectorAll('a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])')).filter(el => { const style = getComputedStyle(el); return el.getClientRects().length > 0 && style.visibility !== 'hidden' && !el.closest('[inert],[aria-hidden="true"]'); }).length);
-          for (let i = 0; i < 15; i++) {
+          const focusable = await page.evaluate(() => {
+            window.__auditTabStops = Array.from(document.querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex],[contenteditable="true"]')).filter(el => { const style = getComputedStyle(el); return el.tabIndex >= 0 && !el.disabled && el.getClientRects().length > 0 && style.visibility !== 'hidden' && !el.closest('[inert],[aria-hidden="true"]'); });
+            return window.__auditTabStops.length;
+          });
+          const reached = new Set();
+          for (let i = 0; i < Math.min(400, Math.max(30, focusable * 4 + 20)); i++) {
             await page.keyboard.press('Tab');
-            const current = await page.evaluate(() => { const el = document.activeElement; if (!el || el === document.body) return null; const style = getComputedStyle(el); return { tag: el.tagName, type: el.getAttribute('type'), isFocused: el.matches(':focus'), focusWithin: el.matches(':focus-within'), hasFocus: document.hasFocus(), id: el.id, classes: typeof el.className === 'string' ? el.className : '', outline: style.outlineStyle, outlineWidth: style.outlineWidth, shadow: style.boxShadow, visible: el.getClientRects().length > 0 }; });
-            if (current) focus.push(current);
+            const current = await page.evaluate(() => { const el = document.activeElement; if (!el || el === document.body) return null; const style = getComputedStyle(el); return { index: window.__auditTabStops.indexOf(el), tag: el.tagName, type: el.getAttribute('type'), isFocused: el.matches(':focus'), focusWithin: el.matches(':focus-within'), hasFocus: document.hasFocus(), id: el.id, classes: typeof el.className === 'string' ? el.className : '', outline: style.outlineStyle, outlineWidth: style.outlineWidth, shadow: style.boxShadow, visible: el.getClientRects().length > 0 }; });
+            if (current) { focus.push(current); if (current.index >= 0) reached.add(current.index); }
+            if (reached.size === focusable && focusable > 0) break;
           }
+          const unreachable = await page.evaluate(indices => window.__auditTabStops.filter((_, i) => !indices.includes(i)).map(el => ({ tag: el.tagName, type: el.getAttribute('type'), html: el.outerHTML.slice(0, 300) })), Array.from(reached));
           const scroll = await page.evaluate(() => document.documentElement.scrollWidth);
-          if (scroll > width + 1 || errors.length || audit.violations.length || (focusable > 0 && !focus.length) || focus.some(item => item.outline === 'none' && item.shadow === 'none')) failed = true;
-          console.log(JSON.stringify({ app: name, mode, path, width, scroll, focusable, focusCount: focus.length, focusWithoutOutline: focus.filter(item => item.outline === 'none' && item.shadow === 'none').slice(0, 5), violations: audit.violations, incomplete: audit.incomplete, errors }));
+          if (scroll > width + 1 || errors.length || audit.violations.length || unreachable.length || (focusable > 0 && !focus.length) || focus.some(item => item.outline === 'none' && item.shadow === 'none')) failed = true;
+          console.log(JSON.stringify({ app: name, mode, path, width, scroll, focusable, reached: reached.size, unreachable, focusCount: focus.length, focusWithoutOutline: focus.filter(item => item.outline === 'none' && item.shadow === 'none').slice(0, 5), violations: audit.violations, incomplete: audit.incomplete.map(item => ({ id: item.id, count: item.nodes.length })), errors }));
+          for (const rule of audit.incomplete) for (const node of rule.nodes) console.log(JSON.stringify({ record: 'incomplete-node', app: name, mode, path, width, rule: rule.id, ...node }));
         } catch (error) { failed = true; console.log(JSON.stringify({ app: name, mode, path, width, error: error.message })); }
         finally { await context.close(); }
       }

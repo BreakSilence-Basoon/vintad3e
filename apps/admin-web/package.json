@@ -8,7 +8,7 @@
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "test": "node --test src/members-fixture.test.ts src/fixture-app-permissions.test.ts src/audit-fixture.test.ts src/home-fixture.test.ts src/fixture-session.test.mjs",
-    "test:fixture-browser": "node --test src/members-fixture-browser.test.mjs"
+    "test:fixture-browser": "node --test --test-concurrency=1 src/members-fixture-browser.test.mjs src/interaction-keyboard-browser.test.mjs"
   },
   "dependencies": {
     "@vintad3e/ui": "workspace:*",

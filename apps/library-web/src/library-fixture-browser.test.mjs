@@ -24,6 +24,7 @@ test('bookmarks show the original empty state with fixtures disabled', { timeout
   try {
     const response = await waitFor(async () => { const result = await fetch(`${origin}/bookmarks`); return result.status === 200 ? result : false; });
     assert.match(await response.text(), /저장한 게시물이 없습니다\./);
+    assert.match(await (await fetch(`${origin}/meetings`)).text(), /회의 기록이 없습니다\./);
     assert.equal((await fetch(`${origin}/publications/00000000-0000-4000-8000-000000000001`)).status, 404);
     assert.equal((await fetch(`${origin}/api/publications/00000000-0000-4000-8000-000000000001/source`)).status, 404);
     assert.equal((await fetch(`${origin}/objects/00000000-0000-4000-8000-000000000003`)).status, 404);

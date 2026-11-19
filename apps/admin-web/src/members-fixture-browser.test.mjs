@@ -58,6 +58,8 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     await waitFor(async () => evaluate("document.querySelectorAll('.staff-table')[1]?.textContent.includes('외부 구성원 01')"));
     assert.ok(await evaluate("document.querySelectorAll('.staff-table')[1].textContent.includes('게스트')"));
     assert.ok(await evaluate("document.querySelector('.preview-menu-permissions').textContent.includes('대관')"));
+    assert.deepEqual(await evaluate("[...document.querySelector('.preview-menu-permissions tbody tr:first-child').cells].map(cell=>cell.textContent)"), ['DJ', '전체', '없음', '없음']);
+    assert.deepEqual(await evaluate("[...document.querySelector('.preview-menu-permissions tbody tr:last-child').cells].map(cell=>cell.textContent)"), ['협업처', '전체', '없음', '읽기만']);
     await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.staff-table')[1]?.textContent.includes('직원 01'))return true;const s=document.querySelector('select');if(s&&!s.disabled){s.value='portal';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
     assert.ok(await evaluate("document.querySelectorAll('.staff-table')[1].textContent.includes('크루')"));
     await send('Page.navigate',{url:`${origin}/members`});

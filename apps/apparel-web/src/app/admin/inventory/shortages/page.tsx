@@ -4,7 +4,7 @@ import { getFixtureInventory } from '../../../../inventory-fixture';
 import { ShortageFixtureView } from '../../../../shortage-fixture-view';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: '침깨 > Apparel > 부족 수량이 있는 옵션 품목' };
+export const metadata = { title: '빈타제 > Apparel > 부족 수량이 있는 옵션 품목' };
 export default function InventoryShortagesPage() {
   if (process.env.NODE_ENV !== 'development' || process.env.VINTAD3E_APPAREL_FIXTURE !== '1') notFound();
   const products = getFixtureInventory(process.env.NODE_ENV, process.env.VINTAD3E_APPAREL_FIXTURE);

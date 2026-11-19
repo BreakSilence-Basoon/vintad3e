@@ -5,7 +5,7 @@ import { getFixtureSales, filterFixtureSales } from '../../../sales-fixture';
 import { SalesFixtureList } from '../../../sales-fixture-list';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: '침깨 > Apparel > 판매내역' };
+export const metadata = { title: '빈타제 > Apparel > 판매내역' };
 export default async function SalesPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const filters = parseSalesFilters(await searchParams);
   const now = new Date();

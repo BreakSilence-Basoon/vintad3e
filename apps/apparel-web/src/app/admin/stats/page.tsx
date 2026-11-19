@@ -3,7 +3,7 @@ import { SalesOverviewBoard } from '../../../sales-overview-board';
 import { getSalesOverviewFixture } from '../../../sales-overview-fixture';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: '침깨 > Apparel > 통계' };
+export const metadata = { title: '빈타제 > Apparel > 통계' };
 export default async function StatsPage({ searchParams }: { searchParams: Promise<{ from?: string | string[]; to?: string | string[] }> }) {
   const params = await searchParams;
   if (Array.isArray(params.from) || Array.isArray(params.to)) notFound();

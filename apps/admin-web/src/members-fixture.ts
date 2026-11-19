@@ -25,7 +25,7 @@ export const fixtureApps = [
   { id: 'portal', name: 'Portal' }, { id: 'apparel', name: 'Apparel' }, { id: 'timetable', name: 'Timetable' },
   { id: 'supporters', name: 'Supporters' }, { id: 'partners', name: 'Partners' }, { id: 'library', name: 'Library' },
   { id: 'floor', name: 'Floor' }, { id: 'ledger', name: 'Ledger' }, { id: 'creative', name: 'Creative' },
-  { id: 'admin', name: 'Admin' }, { id: 'chat', name: 'Chat침깨' },
+  { id: 'admin', name: 'Admin' }, { id: 'chat', name: 'Chat' },
 ] as const;
 
 export function fixtureGrants(env: string | undefined, enabled: string | undefined, id: string): FixtureGrant[] | null {

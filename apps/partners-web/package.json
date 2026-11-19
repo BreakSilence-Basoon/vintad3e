@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3828",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/partner-schedule.test.ts src/partner-fixture.test.ts src/dj-accountant-message.test.ts",
+    "test": "node --test src/partner-schedule.test.ts src/partner-fixture.test.ts src/dj-accountant-message.test.ts src/guest-session.test.mjs",
     "test:fixture-browser": "node --test src/partner-fixture-browser.test.mjs"
   },
   "dependencies": {

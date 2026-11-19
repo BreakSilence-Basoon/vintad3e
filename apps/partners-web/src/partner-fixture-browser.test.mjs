@@ -28,6 +28,9 @@ test('DJ entry is unavailable without the development fixture', { timeout: 60000
     assert.equal((await fetch(`${origin}/proj-bedroom/partner-01`)).status, 404);
     assert.equal((await fetch(`${origin}/unknown-area`)).status, 404);
     assert.equal((await fetch(`${origin}/dj/partner-01`)).status, 404);
+    assert.equal((await fetch(`${origin}/guide/dj`)).status, 404);
+    assert.equal((await fetch(`${origin}/proj-bedroom/guide/ko`)).status, 404);
+    assert.equal((await fetch(`${origin}/proj-bedroom/partner-01/guest`)).status, 404);
   } finally {
     server.kill('SIGTERM');
     if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000)]);
@@ -39,13 +42,27 @@ test('fixture calendar links to rental ledger and detail in Chrome', { timeout: 
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-partners-browser-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_PARTNERS_FIXTURE:'1'}, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_PARTNERS_FIXTURE:'1',VINTAD3E_PARTNERS_FIXTURE_ORIGIN:origin}, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(origin)).ok);
     assert.equal((await fetch(`${origin}/proj-bedroom/unknown`)).status, 404);
     assert.equal((await fetch(`${origin}/dj/partner-01`)).status, 404);
+    assert.equal((await fetch(`${origin}/guide/dj`)).status, 200);
+    assert.equal((await fetch(`${origin}/guide/dj/en-house`)).status, 200);
+    assert.equal((await fetch(`${origin}/guide/dj/unknown`)).status, 404);
+    assert.equal((await fetch(`${origin}/proj-bedroom/guide/ja`)).status, 200);
+    assert.equal((await fetch(`${origin}/proj-bedroom/guide/unknown`)).status, 404);
+    const anonymous = await fetch(`${origin}/proj-bedroom/partner-01/guest`, { redirect: 'manual' });
+    assert.equal(anonymous.status, 307);
+    const login = await fetch(`${origin}/proj-bedroom/partner-01/session/login`, { method: 'POST', headers: { origin }, redirect: 'manual' });
+    assert.equal(login.status, 303);
+    const cookie = login.headers.get('set-cookie').split(';')[0];
+    assert.equal((await fetch(`${origin}/proj-bedroom/partner-01/guest`, { headers: { cookie }, redirect: 'manual' })).status, 200);
+    assert.equal((await fetch(`${origin}/proj-bedroom/partner-02/guest`, { headers: { cookie }, redirect: 'manual' })).status, 307);
+    assert.equal((await fetch(`${origin}/proj-bedroom/partner-01/session/logout`, { method: 'POST', headers: { origin, cookie }, redirect: 'manual' })).status, 303);
+    assert.equal((await fetch(`${origin}/proj-bedroom/partner-01/guest`, { headers: { cookie }, redirect: 'manual' })).status, 307);
     await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
     const target = await (await fetch(`${debug}/json/new?about:blank`, {method:'PUT'})).json();
     socket = new WebSocket(target.webSocketDebuggerUrl);

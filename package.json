@@ -7,6 +7,10 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "test": "node scripts/check-founder-note.mjs && node --test tests/workspace-selection.test.mjs scripts/fixture-process.test.cjs scripts/fixture-http.test.cjs"
+    "test": "node scripts/check-founder-note.mjs && node --test tests/workspace-selection.test.mjs scripts/fixture-process.test.cjs scripts/fixture-http.test.cjs",
+    "test:browser-smoke": "node scripts/browser-smoke.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
   }
 }

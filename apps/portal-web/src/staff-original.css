@@ -375,7 +375,7 @@ body:has(.staff-console--loading) .public-footer {
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(14, 10, 7, 0.72), rgba(14, 10, 7, 0.28) 54%, rgba(14, 10, 7, 0.12)),
-    url('/images/login-background.jpg') center / cover no-repeat;
+    url('/images/neutral/background.svg') center / cover no-repeat;
 }
 
 .login-screen__content {

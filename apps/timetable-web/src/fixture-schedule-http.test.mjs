@@ -56,6 +56,12 @@ test('development server renders schedule and paginates attendance', { timeout: 
     assert.match(html, /schedule-calendar__shift--draft/);
     assert.match(html, /근무 상세 보기/);
     const returnPath = '/?view=schedule&month=2026-02';
+    const loginPage = await fetch(`${origin}/sign-in?${new URLSearchParams({ next: returnPath })}`);
+    assert.equal(loginPage.status, 200);
+    const loginHtml = await loginPage.text();
+    assert.match(loginHtml, /action="\/auth\/start"/);
+    assert.match(loginHtml, /회사 계정으로 로그인/);
+    assert.match(loginHtml, /name="next" value="\/\?view=schedule&amp;month=2026-02"/);
     const authStart = await fetch(`${origin}/auth/start?${new URLSearchParams({ next: returnPath })}`, { redirect: 'manual' });
     assert.equal(authStart.status, 302);
     assert.equal(authStart.headers.get('location'), 'https://identity.example.invalid/authorize');

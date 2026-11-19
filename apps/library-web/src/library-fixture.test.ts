@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getLibraryFixtures, searchLibraryFixtures, getFixtureSource } from './library-fixture.ts';
 import { getFixtureMeeting, MEETING_ID } from './fixture-meeting.ts';
+import { fixtureHome } from './fixture-home.ts';
 
 test('only the explicitly enabled development meeting exists', () => {
   assert.equal(getFixtureMeeting('production', '1', MEETING_ID), null);
@@ -21,6 +22,16 @@ test('title search is trimmed and sorted without searching document bodies', () 
   assert.deepEqual(searchLibraryFixtures(docs, '  운영  ').map(doc => doc.title), ['매장 운영 안내']);
   assert.deepEqual(searchLibraryFixtures(docs, '필요한'), []);
   assert.deepEqual(searchLibraryFixtures(docs, '').map(doc => doc.title), ['매장 운영 안내', '업무 인수인계']);
+});
+
+test('home combines only opted-in synthetic documents and files and filters their titles', () => {
+  assert.deepEqual(fixtureHome('production', '1', ''), []);
+  assert.deepEqual(fixtureHome('development', undefined, ''), []);
+  const home = fixtureHome('development', '1', '');
+  assert.equal(home.length, 3);
+  assert.ok(home.some(item => item.href.startsWith('/objects/')));
+  assert.deepEqual(fixtureHome('development', '1', '운영').map(item => item.title), ['매장 운영 안내']);
+  assert.deepEqual(fixtureHome('development', '1', '.txt').map(item => item.title), ['업무 안내.txt']);
 });
 
 test('source download only returns a known opted-in fixture', () => {

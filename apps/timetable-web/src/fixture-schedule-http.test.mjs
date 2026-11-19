@@ -35,8 +35,10 @@ test('development server renders schedule and paginates attendance', { timeout: 
   const port = server.address().port; await new Promise(resolve => server.close(resolve));
   const origin = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
-    cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '1', VINTAD3E_TIMETABLE_API_ORIGIN: authOrigin }, stdio: 'ignore',
+    cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '1', VINTAD3E_TIMETABLE_API_ORIGIN: authOrigin }, stdio: ['ignore', 'pipe', 'pipe'],
   });
+  let serverOutput = '';
+  for (const stream of [child.stdout, child.stderr]) stream.on('data', chunk => { serverOutput = (serverOutput + chunk.toString()).slice(-12000); });
   let chrome, profile, socket, closeBrowser;
   try {
     let response;
@@ -67,7 +69,7 @@ test('development server renders schedule and paginates attendance', { timeout: 
     assert.equal(authLogout.status, 200);
     assert.match(authLogout.headers.getSetCookie()[0], /^__Host-vintad3e-session=; .*Max-Age=0$/);
     const historyRedirect = await fetch(`${origin}/history?range=custom&from=2026-02-01&to=2026-02-28&sort=asc&historyPage=2&employee=00000000-0000-4000-8000-000000000001`, { redirect: 'manual' });
-    assert.equal(historyRedirect.status, 307);
+    if (historyRedirect.status !== 307) throw new Error(`History redirect returned ${historyRedirect.status}. Server output: ${serverOutput}`);
     const historyLocation = new URL(historyRedirect.headers.get('location'), origin);
     assert.equal(historyLocation.pathname, '/');
     assert.equal(historyLocation.searchParams.get('view'), 'history');

@@ -1,4 +1,8 @@
 {
-  "amount": 123400,
-  "formula": { "method": "rate", "numerator": 375, "denominator": 10000 }
+  "variables": { "amount": 123400, "rate": 3 },
+  "expression": {
+    "op": "divide",
+    "left": { "op": "multiply", "left": { "var": "amount" }, "right": { "var": "rate" } },
+    "right": { "value": 100 }
+  }
 }

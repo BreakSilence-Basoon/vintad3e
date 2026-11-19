@@ -50,7 +50,7 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
     const cookie = login.headers.get('set-cookie').split(';')[0];
     const formula = await fetch(`${origin}/formula`, { headers: { cookie } });
     assert.equal(formula.status, 200);
-    assert.ok((await formula.text()).includes('4,628원'));
+    assert.ok((await formula.text()).includes('3,702원'));
     await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
     const target = await (await fetch(`${debug}/json/new?about:blank`, {method:'PUT'})).json();
     socket = new WebSocket(target.webSocketDebuggerUrl);

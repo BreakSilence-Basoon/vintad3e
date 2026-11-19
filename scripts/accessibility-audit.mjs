@@ -81,14 +81,14 @@ try {
               let el; try { el = document.querySelector(node.target[0]); } catch {}
               const backgrounds = []; for (let cur = el; cur && backgrounds.length < 8; cur = cur.parentElement) { const style = getComputedStyle(cur); backgrounds.push({ color: style.backgroundColor, image: style.backgroundImage, opacity: style.opacity }); }
               const style = el && getComputedStyle(el);
-              return { target: node.target, html: node.html, checks: node.any.map(check => ({ id: check.id, data: check.data, message: check.message })), foreground: style?.color, fontSize: style?.fontSize, fontWeight: style?.fontWeight, rect: el ? { x: el.getBoundingClientRect().x + window.scrollX, y: el.getBoundingClientRect().y + window.scrollY, width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height } : null, backgrounds };
+              return { target: node.target, html: node.html, checks: node.any.map(check => ({ id: check.id, data: check.data, message: check.message })), foreground: el instanceof SVGElement && /^(text|tspan)$/i.test(el.tagName) ? style?.fill : style?.color, fontSize: style?.fontSize, fontWeight: style?.fontWeight, rect: el ? { x: el.getBoundingClientRect().x + window.scrollX, y: el.getBoundingClientRect().y + window.scrollY, width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height } : null, backgrounds };
             }) })) };
           });
           // Sample actual rendered backgrounds with text hidden, including gradients.
           // Screenshots stay in memory; off-screen or non-RGB cases remain for manual review.
           const undecided = audit.incomplete.flatMap(rule => rule.id === 'color-contrast' ? rule.nodes : []);
           if (undecided.length) {
-            const hidden = await page.addStyleTag({ content: '* { -webkit-text-fill-color: transparent !important; text-shadow: none !important; }' });
+            const hidden = await page.addStyleTag({ content: '* { -webkit-text-fill-color: transparent !important; text-shadow: none !important; } svg text, svg tspan { fill: transparent !important; stroke: transparent !important; } select { background-image: none !important; }' });
             const canCapturePage = await page.evaluate(() => document.documentElement.scrollHeight <= 15000);
             if (canCapturePage) await page.evaluate(() => window.scrollTo(0, 0));
             const shot = await page.screenshot({ animations: 'disabled', fullPage: canCapturePage });
@@ -118,7 +118,7 @@ try {
                 const element = page.locator(node.target[0]).first();
                 await element.scrollIntoViewIfNeeded({ timeout: 2000 });
                 const rect = await element.boundingBox();
-                const hiddenText = await page.addStyleTag({ content: '* { -webkit-text-fill-color: transparent !important; text-shadow: none !important; }' });
+                const hiddenText = await page.addStyleTag({ content: '* { -webkit-text-fill-color: transparent !important; text-shadow: none !important; } svg text, svg tspan { fill: transparent !important; stroke: transparent !important; } select { background-image: none !important; }' });
                 const scrolledShot = await page.screenshot({ animations: 'disabled' });
                 await hiddenText.evaluate(el => el.remove());
                 [node.backgroundSamples] = await measure(scrolledShot.toString('base64'), [{ ...node, rect }]);

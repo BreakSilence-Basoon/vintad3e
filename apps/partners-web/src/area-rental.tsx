@@ -1,6 +1,6 @@
-import { SettlementLedger } from '../../settlement-ledger';
-import { getPartnerFixture } from '../../partner-fixture';
-import { seoulDate } from '../../partner-schedule';
+import { SettlementLedger } from './settlement-ledger';
+import { getPartnerFixture } from './partner-fixture';
+import { seoulDate } from './partner-schedule';
 
 export const dynamic = 'force-dynamic';
 export default function Page() {

@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { bedroomFixture } from '../../../bedroom-fixture';
-import { seoulDate } from '../../../partner-schedule';
-import { SettlementLedger } from '../../../settlement-ledger';
+import { bedroomFixture } from './bedroom-fixture';
+import { seoulDate } from './partner-schedule';
+import { SettlementLedger } from './settlement-ledger';
 
 export const dynamic = 'force-dynamic';
 export default async function Page({ params }: { params: Promise<{ partner: string }> }) {

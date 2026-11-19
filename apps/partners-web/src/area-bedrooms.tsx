@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { bedroomFixtures } from '../../bedroom-fixture';
-import { seoulDate } from '../../partner-schedule';
+import { bedroomFixtures } from './bedroom-fixture';
+import { seoulDate } from './partner-schedule';
 
 export const dynamic = 'force-dynamic';
 export default function Page() {

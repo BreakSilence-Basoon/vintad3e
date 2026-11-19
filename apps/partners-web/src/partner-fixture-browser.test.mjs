@@ -26,6 +26,8 @@ test('DJ entry is unavailable without the development fixture', { timeout: 60000
     assert.ok(!(await response.text()).includes('세무사 전달문'));
     assert.equal((await fetch(`${origin}/proj-bedroom`)).status, 404);
     assert.equal((await fetch(`${origin}/proj-bedroom/partner-01`)).status, 404);
+    assert.equal((await fetch(`${origin}/unknown-area`)).status, 404);
+    assert.equal((await fetch(`${origin}/dj/partner-01`)).status, 404);
   } finally {
     server.kill('SIGTERM');
     if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000)]);
@@ -42,6 +44,8 @@ test('fixture calendar links to rental ledger and detail in Chrome', { timeout: 
   let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(origin)).ok);
+    assert.equal((await fetch(`${origin}/proj-bedroom/unknown`)).status, 404);
+    assert.equal((await fetch(`${origin}/dj/partner-01`)).status, 404);
     await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
     const target = await (await fetch(`${debug}/json/new?about:blank`, {method:'PUT'})).json();
     socket = new WebSocket(target.webSocketDebuggerUrl);

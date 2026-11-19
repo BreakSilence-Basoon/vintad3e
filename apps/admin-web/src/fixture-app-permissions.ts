@@ -9,6 +9,16 @@ const menuNames: Record<string, readonly string[]> = {
   admin: ['앱 접근'], chat: ['외부 AI 연결 승인', '웹 화면'],
 };
 export function fixtureMenus(appId: string): readonly string[] { return menuNames[appId] ?? []; }
+
+// Synthetic presentation values only. These do not authorize any operation.
+export function fixtureMenuPermissions(env: string | undefined, enabled: string | undefined, appId: string) {
+  if (env !== 'development' || enabled !== '1') return [];
+  return fixtureMenus(appId).map((menu, index) => ({
+    menu, admin: appId === 'partners' ? '전체' : index === 0 ? '조회' : '전체',
+    crew: appId !== 'partners' && index === 0 ? '조회' : '없음',
+    guest: appId === 'partners' && menu === '협업처' ? '읽기만' : '없음',
+  }));
+}
 export function fixtureAppId(value: string | undefined): string { return fixtureApps.find(app => app.id === value)?.id ?? fixtureApps[0].id; }
 export function fixtureAppMembers(env: string | undefined, enabled: string | undefined, appId: string, now: number) {
   return getFixtureMembers(env, enabled).flatMap(member => {

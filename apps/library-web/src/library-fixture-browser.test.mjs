@@ -35,6 +35,13 @@ test('bookmarks show the original empty state with fixtures disabled', { timeout
     assert.equal(new URL(oversized.headers.get('location'), origin).searchParams.get('q').length, 200);
     const duplicate = await fetch(`${origin}/publications?q=one&q=two`, { redirect: 'manual' });
     assert.equal(new URL(duplicate.headers.get('location'), origin).search, '');
+    const oldPublish = await fetch(`${origin}/publications/new`, { redirect: 'manual' });
+    assert.equal(oldPublish.status, 307);
+    assert.equal(new URL(oldPublish.headers.get('location'), origin).pathname, '/publish');
+    const publish = await (await fetch(`${origin}/publish`)).text();
+    assert.match(publish, /Notion 페이지 URL/);
+    assert.match(publish, /Markdown · HTML/);
+    assert.match(publish, /발행 내용 확인/);
   } finally {
     server.kill('SIGTERM');
     if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000)]);
@@ -127,6 +134,24 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     await send('Page.navigate',{url:`${origin}/mypage`});
     await waitFor(async () => evaluate("document.querySelector('#my-comments-title')?.parentElement.textContent.includes('최근 댓글 200개를 표시합니다.')"));
     assert.equal(await evaluate("document.querySelectorAll('.library-comments li').length"),200);
+    await send('Page.navigate',{url:`${origin}/publish`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.library-register-form[data-hydrated=true]') && document.querySelector('.publication-form[data-hydrated=true]'))"));
+    await evaluate("window.publicationFetchCount=0;window.originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{if(new URL(typeof input==='string'?input:input.url,location.href).pathname.startsWith('/api/publications')){window.publicationFetchCount++;return Promise.reject(new Error('unexpected request'))}return window.originalFetch(input,init)}");
+    await run("(()=>{const x=document.querySelector('#notion-url');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,'https://www.notion.so/example');x.dispatchEvent(new Event('input',{bubbles:true}));})()");
+    await waitFor(async () => evaluate("(()=>{if(document.querySelector('.library-form-message--error'))return true;document.querySelector('.library-register-form').requestSubmit();return false;})()"));
+    assert.ok(await evaluate("document.querySelector('.library-form-message--error').textContent.includes('문서를 처리하지 못했습니다.')"));
+    await run("(()=>{const x=document.querySelector('#publication-audience');x.value='SELECTED';x.dispatchEvent(new Event('change',{bubbles:true}));})()");
+    await waitFor(async () => evaluate("Boolean(document.querySelector('#publication-readers'))"));
+    await run("(()=>{const x=document.querySelector('#publication-readers');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,'직원');x.dispatchEvent(new Event('input',{bubbles:true}));})()");
+    await run("Array.from(document.querySelectorAll('.publication-form button')).find(b=>b.textContent==='직원 검색').click()");
+    await waitFor(async () => evaluate("Boolean(Array.from(document.querySelectorAll('.publication-readers button')).find(b=>b.textContent==='직원 선택'))"));
+    await run("Array.from(document.querySelectorAll('.publication-readers button')).find(b=>b.textContent==='직원 선택').click()");
+    await waitFor(async () => evaluate("Boolean(document.querySelector('[aria-label=\"직원 열람 대상에서 제외\"]'))"));
+    await run("(()=>{const x=document.querySelector('#publication-title');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,'문서');x.dispatchEvent(new Event('input',{bubbles:true}));const files=new DataTransfer();files.items.add(new File(['# 문서'],'document.md',{type:'text/markdown'}));document.querySelector('#publication-source').files=files.files;})()");
+    await run("document.querySelector('.publication-form').requestSubmit()");
+    await waitFor(async () => evaluate("document.querySelector('.publication-toast--error')?.textContent.includes('문서를 발행하지 못했습니다.')"));
+    assert.equal(await evaluate('window.publicationFetchCount'), 0);
+    assert.equal(await evaluate('location.pathname'), '/publish');
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

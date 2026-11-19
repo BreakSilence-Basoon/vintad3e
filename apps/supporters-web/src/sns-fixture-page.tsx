@@ -6,7 +6,7 @@ import { StaffToastViewport } from '@vintad3e/ui/toast';
 import { SnsFixtureSelf } from './sns-fixture-self';
 
 export function SnsFixturePage({ platform, staff }: { platform: 'instagram' | 'tiktok'; staff?: string | string[] }) {
-  const fixtures = getCouponFixtures(process.env.NODE_ENV, process.env.VINTAD3E_SUPPORTERS_FIXTURE).filter(item => item.id === 'supporter-1');
+  const fixtures = getCouponFixtures(process.env.NODE_ENV, process.env.VINTAD3E_SUPPORTERS_FIXTURE);
   const selected = selectCouponFixture(fixtures, staff);
   const name = platform === 'instagram' ? 'Instagram' : 'TikTok';
   const self = process.env.NODE_ENV === 'development' && process.env.VINTAD3E_SUPPORTERS_FIXTURE === '1' && process.env.VINTAD3E_SUPPORTERS_FIXTURE_SELF === '1';

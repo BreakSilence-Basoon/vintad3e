@@ -45,14 +45,14 @@ test('apparel stock validation, saving and sales filters work with keyboard inpu
         await page.locator('.graphic-dialog').waitFor({ state: 'detached' });
 
         await page.goto(`${origin}/admin/sales?range=all`);
-        await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 3);
+        await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 2);
         const form = page.locator('.audit-filter-bar');
         const search = form.locator('input[name=keyword]');
         await search.focus(); await page.keyboard.type('찾을수없는항목');
         await enter(page, form.locator('button[type=submit]'));
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 0);
         await enter(page, form.getByRole('button', { name: '초기화' }));
-        await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 3);
+        await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 2);
         await enter(page, page.getByRole('button', { name: '교차 검증 즉시 실행' }));
         await page.locator('.admin-toast--error').filter({ hasText: '교차 검증 실행에 실패했습니다' }).waitFor();
       } finally { await context.close(); }

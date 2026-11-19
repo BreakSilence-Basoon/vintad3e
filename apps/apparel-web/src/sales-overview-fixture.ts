@@ -1,4 +1,5 @@
 import type { SalesGrain, SalesOverviewData, SalesOverviewDesignRow } from './sales-overview-types';
+import { getFixtureSales } from './sales-fixture.ts';
 
 const DAY = 86400000;
 const KST = 9 * 3600000;
@@ -51,8 +52,9 @@ export function getSalesOverviewFixture(env: string | undefined, enabled: string
   const to = requestedTo === undefined ? end : Date.parse(requestedTo);
   if (!Number.isFinite(from) || !Number.isFinite(to) || from >= to || to - from > 366 * DAY || from < availableFrom - DAY || to > end + DAY) return null;
   const anchor = Math.floor((end + KST) / DAY) * DAY - KST - 3600000;
+  const sharedSale = getFixtureSales(env, enabled, now).find(sale => sale.id === 'sale-1');
   const allSales: Sale[] = [
-    { at: anchor, channel: 'store', kind: 'apparel', amount: 42000, units: 1, design: '셔츠' },
+    ...(sharedSale ? [{ at: Date.parse(sharedSale.soldAt), channel: 'store' as const, kind: 'apparel' as const, amount: sharedSale.amount, units: sharedSale.quantity, design: sharedSale.item }] : []),
     { at: anchor - 30 * DAY, channel: 'store', kind: 'fnb', amount: 8000, units: 2 },
     { at: anchor - 45 * DAY, channel: 'online', kind: 'apparel', amount: 60000, units: 1, design: '후드' },
     { at: anchor - 100 * DAY, channel: 'online', kind: 'apparel', amount: 35000, units: 1, design: '셔츠' },

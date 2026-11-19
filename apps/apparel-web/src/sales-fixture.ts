@@ -11,8 +11,9 @@ function dayInput(value: string): number | null {
 
 export function getFixtureSales(env: string | undefined, enabled: string | undefined, now: Date): FixtureSale[] {
   if (env !== 'development' || enabled !== '1' || !Number.isFinite(now.getTime())) return [];
+  const todayStart = dayOf(now.getTime()) * DAY - 9 * 3600000;
   return [
-    { id: 'sale-1', soldAt: now.toISOString(), item: '셔츠', quantity: 1, amount: 42000, source: 'pos', status: 'checked', number: 'POS-001' },
+    ...(todayStart < now.getTime() ? [{ id: 'sale-1', soldAt: new Date(todayStart).toISOString(), item: '셔츠', quantity: 1, amount: 42000, source: 'pos' as const, status: 'checked' as const, number: 'POS-001' }] : []),
     { id: 'sale-2', soldAt: new Date(now.getTime() - 2 * DAY).toISOString(), item: '후드', quantity: 2, amount: 0, source: 'seongsu_ticket', status: 'pending', number: 'TICKET-001' },
   ];
 }

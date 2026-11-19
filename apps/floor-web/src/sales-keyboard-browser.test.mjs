@@ -35,7 +35,7 @@ test('floor sales search, pagination and inventory read view work with keyboard 
         await enter(page, form.getByRole('button', { name: '초기화' }));
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 18);
         await page.goto(`${origin}/inventory`);
-        await page.getByText('재료 01', { exact: true }).waitFor();
+        await page.waitForFunction(() => document.querySelector('main')?.textContent.includes('재료 01'));
         assert.equal(await page.locator('.inventory-editor').count(), 0);
       } finally { await context.close(); }
     }

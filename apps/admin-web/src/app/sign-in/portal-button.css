@@ -64,3 +64,8 @@
 @media (prefers-reduced-motion: reduce) {
   .login-portal-button__overlay { transition: none; }
 }
+
+.login-screen__app-name {
+  color: var(--foreground);
+  text-shadow: none;
+}

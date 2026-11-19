@@ -65,3 +65,8 @@
   .login-portal-button__overlay { transition: none; }
 }
 .login-screen { background-image: linear-gradient(90deg, rgba(14, 10, 7, .72), rgba(14, 10, 7, .28) 54%, rgba(14, 10, 7, .12)); }
+
+.login-screen__app-name {
+  color: var(--foreground);
+  text-shadow: none;
+}

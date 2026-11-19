@@ -77,18 +77,82 @@ try {
           await page.addScriptTag({ content: axe });
           const audit = await page.evaluate(async () => {
             const result = await window.axe.run(document, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'link-name', 'label', 'image-alt', 'html-has-lang', 'aria-valid-attr', 'aria-required-attr', 'aria-valid-attr-value'] } });
-            return { violations: result.violations.map(item => ({ id: item.id, impact: item.impact, nodes: item.nodes.map(node => node.target).slice(0, 8) })), incomplete: result.incomplete.map(item => item.id) };
+            return { violations: result.violations.map(item => ({ id: item.id, impact: item.impact, nodes: item.nodes.map(node => node.target).slice(0, 8) })), incomplete: result.incomplete.map(item => ({ id: item.id, nodes: item.nodes.map(node => {
+              let el; try { el = document.querySelector(node.target[0]); } catch {}
+              const backgrounds = []; for (let cur = el; cur && backgrounds.length < 8; cur = cur.parentElement) { const style = getComputedStyle(cur); backgrounds.push({ color: style.backgroundColor, image: style.backgroundImage, opacity: style.opacity }); }
+              const style = el && getComputedStyle(el);
+              return { target: node.target, html: node.html, checks: node.any.map(check => ({ id: check.id, data: check.data, message: check.message })), foreground: el instanceof SVGElement && /^(text|tspan)$/i.test(el.tagName) ? style?.fill : style?.color, fontSize: style?.fontSize, fontWeight: style?.fontWeight, rect: el ? { x: el.getBoundingClientRect().x + window.scrollX, y: el.getBoundingClientRect().y + window.scrollY, width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height } : null, backgrounds };
+            }) })) };
           });
+          // Sample actual rendered backgrounds with text hidden, including gradients.
+          // Screenshots stay in memory; off-screen or non-RGB cases remain for manual review.
+          const undecided = audit.incomplete.flatMap(rule => rule.id === 'color-contrast' ? rule.nodes : []);
+          if (undecided.length) {
+            const hidden = await page.addStyleTag({ content: '* { -webkit-text-fill-color: transparent !important; text-shadow: none !important; } svg text, svg tspan { fill: transparent !important; stroke: transparent !important; } select { background-image: none !important; }' });
+            const canCapturePage = await page.evaluate(() => document.documentElement.scrollHeight <= 15000);
+            if (canCapturePage) await page.evaluate(() => window.scrollTo(0, 0));
+            const shot = await page.screenshot({ animations: 'disabled', fullPage: canCapturePage });
+            await hidden.evaluate(el => el.remove());
+            const measure = async (png, nodes) => page.evaluate(async ({ png, nodes }) => {
+              const image = new Image(); image.src = `data:image/png;base64,${png}`; await image.decode();
+              const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
+              const ctx = canvas.getContext('2d', { willReadFrequently: true }); ctx.drawImage(image, 0, 0);
+              const luminance = rgb => rgb.map(n => { const c = n / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+              return nodes.map(node => {
+                const box = node.rect, components = /^rgb\((\d+), (\d+), (\d+)\)$/.exec(node.foreground || '');
+                if (!box || !components || box.width < 2 || box.height < 2 || box.x < 0 || box.y < 0 || box.x + box.width > canvas.width || box.y + box.height > canvas.height) return null;
+                const text = components.slice(1).map(Number), samples = [];
+                for (const y of [0.25, 0.5, 0.75]) for (const x of [0.2, 0.5, 0.8]) {
+                  const pixel = Array.from(ctx.getImageData(Math.floor(box.x + box.width * x), Math.floor(box.y + box.height * y), 1, 1).data).slice(0, 3);
+                  const [dark, light] = [luminance(text), luminance(pixel)].sort((a, b) => a - b);
+                  samples.push({ background: pixel, ratio: Number(((light + 0.05) / (dark + 0.05)).toFixed(2)) });
+                }
+                return samples;
+              });
+            }, { png, nodes });
+            const measurements = await measure(shot.toString('base64'), undecided);
+            undecided.forEach((node, i) => { node.backgroundSamples = measurements[i]; });
+            // A narrow table may hide a cell in a horizontal scroller; reveal it before sampling.
+            for (const node of undecided.filter(node => !node.backgroundSamples && node.target.length === 1)) {
+              try {
+                const element = page.locator(node.target[0]).first();
+                await element.scrollIntoViewIfNeeded({ timeout: 2000 });
+                const rect = await element.boundingBox();
+                const hiddenText = await page.addStyleTag({ content: '* { -webkit-text-fill-color: transparent !important; text-shadow: none !important; } svg text, svg tspan { fill: transparent !important; stroke: transparent !important; } select { background-image: none !important; }' });
+                const scrolledShot = await page.screenshot({ animations: 'disabled' });
+                await hiddenText.evaluate(el => el.remove());
+                [node.backgroundSamples] = await measure(scrolledShot.toString('base64'), [{ ...node, rect }]);
+              } catch { /* Keep unresolved when a node cannot be safely sampled. */ }
+            }
+          }
           const focus = [];
-          const focusable = await page.evaluate(() => Array.from(document.querySelectorAll('a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])')).filter(el => { const style = getComputedStyle(el); return el.getClientRects().length > 0 && style.visibility !== 'hidden' && !el.closest('[inert],[aria-hidden="true"]'); }).length);
-          for (let i = 0; i < 15; i++) {
+          const focusable = await page.evaluate(() => {
+            window.__auditTabStops = Array.from(document.querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex],[contenteditable="true"]')).filter(el => { const style = getComputedStyle(el); const closed = el.closest('details:not([open])'); const inClosedDetails = closed && !closed.querySelector(':scope > summary')?.contains(el); return el.tabIndex >= 0 && !el.disabled && el.getClientRects().length > 0 && style.visibility !== 'hidden' && !el.closest('[inert],[aria-hidden="true"]') && !inClosedDetails; });
+            return window.__auditTabStops.length;
+          });
+          const reached = new Set();
+          for (let i = 0; i < Math.min(400, Math.max(30, focusable * 4 + 20)); i++) {
             await page.keyboard.press('Tab');
-            const current = await page.evaluate(() => { const el = document.activeElement; if (!el || el === document.body) return null; const style = getComputedStyle(el); return { tag: el.tagName, type: el.getAttribute('type'), isFocused: el.matches(':focus'), focusWithin: el.matches(':focus-within'), hasFocus: document.hasFocus(), id: el.id, classes: typeof el.className === 'string' ? el.className : '', outline: style.outlineStyle, outlineWidth: style.outlineWidth, shadow: style.boxShadow, visible: el.getClientRects().length > 0 }; });
-            if (current) focus.push(current);
+            const current = await page.evaluate(() => { const el = document.activeElement; if (!el || el === document.body) return null; const style = getComputedStyle(el); return { index: window.__auditTabStops.indexOf(el), tag: el.tagName, type: el.getAttribute('type'), isFocused: el.matches(':focus'), focusWithin: el.matches(':focus-within'), hasFocus: document.hasFocus(), id: el.id, classes: typeof el.className === 'string' ? el.className : '', outline: style.outlineStyle, outlineWidth: style.outlineWidth, shadow: style.boxShadow, visible: el.getClientRects().length > 0 }; });
+            if (current) { focus.push(current); if (current.index >= 0) reached.add(current.index); }
+            if (reached.size === focusable && focusable > 0) break;
+          }
+          const unreachable = await page.evaluate(indices => window.__auditTabStops.filter((el, i) => el.isConnected && !el.disabled && !indices.includes(i)).map(el => ({ tag: el.tagName, type: el.getAttribute('type'), html: el.outerHTML.slice(0, 300) })), Array.from(reached));
+          const summaryFailures = [];
+          const summaries = page.locator('details > summary');
+          for (let i = 0, count = await summaries.count(); i < count; i++) {
+            const summary = summaries.nth(i);
+            if (!await summary.isVisible()) continue;
+            const before = await summary.evaluate(el => el.parentElement.open);
+            await summary.focus(); await page.keyboard.press('Enter');
+            const after = await summary.evaluate(el => el.parentElement.open);
+            if (before === after) summaryFailures.push(i);
+            else { await page.keyboard.press('Enter'); }
           }
           const scroll = await page.evaluate(() => document.documentElement.scrollWidth);
-          if (scroll > width + 1 || errors.length || audit.violations.length || (focusable > 0 && !focus.length) || focus.some(item => item.outline === 'none' && item.shadow === 'none')) failed = true;
-          console.log(JSON.stringify({ app: name, mode, path, width, scroll, focusable, focusCount: focus.length, focusWithoutOutline: focus.filter(item => item.outline === 'none' && item.shadow === 'none').slice(0, 5), violations: audit.violations, incomplete: audit.incomplete, errors }));
+          if (scroll > width + 1 || errors.length || audit.violations.length || summaryFailures.length || unreachable.length || (focusable > 0 && !focus.length) || focus.some(item => item.outline === 'none' && item.shadow === 'none')) failed = true;
+          console.log(JSON.stringify({ app: name, mode, path, width, scroll, focusable, reached: reached.size, unreachable, focusCount: focus.length, summaryFailures, focusWithoutOutline: focus.filter(item => item.outline === 'none' && item.shadow === 'none').slice(0, 5), violations: audit.violations, incomplete: audit.incomplete.map(item => ({ id: item.id, count: item.nodes.length })), errors }));
+          for (const rule of audit.incomplete) for (const node of rule.nodes) console.log(JSON.stringify({ record: 'incomplete-node', app: name, mode, path, width, rule: rule.id, ...node }));
         } catch (error) { failed = true; console.log(JSON.stringify({ app: name, mode, path, width, error: error.message })); }
         finally { await context.close(); }
       }

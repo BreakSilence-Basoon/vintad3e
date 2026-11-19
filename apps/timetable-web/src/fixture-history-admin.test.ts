@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { fixtureHistory } from './fixture-history.ts';
-import { fixtureEmployeeId, fixtureHistoryDay, historyWithinShiftWindow, parseHistoryEdits, selectHistory } from './fixture-history-admin.ts';
+import { fixtureEmployeeId, fixtureHistoryDay, historyNotInFuture, historyWithinShiftWindow, parseHistoryEdits, selectHistory } from './fixture-history-admin.ts';
 
 const now = Date.parse('2026-11-18T09:00:00.000Z');
 const filters = { employee: 'all', from: '', to: '', range: 'all' as const, sort: 'desc' as const };
@@ -33,4 +33,12 @@ test('synthetic attendance uses the original scheduled shift window', () => {
   assert.equal(historyWithinShiftWindow(start, '2026-11-16T18:00:00.000Z', '2026-11-17T20:00:00.000Z'), true);
   assert.equal(historyWithinShiftWindow(start, '2026-11-16T17:59:59.000Z', null), false);
   assert.equal(historyWithinShiftWindow(start, start, '2026-11-17T20:00:01.000Z'), false);
+});
+
+test('synthetic corrections reject future attendance just like the source', () => {
+  const now = Date.parse('2026-11-17T08:00:00.000Z');
+  assert.equal(historyNotInFuture('2026-11-17T00:00:00.000Z', '2026-11-17T08:00:00.000Z', now), true);
+  assert.equal(historyNotInFuture('2026-11-17T08:00:01.000Z', null, now), false);
+  assert.equal(historyNotInFuture('2026-11-17T00:00:00.000Z', '2026-11-17T08:00:01.000Z', now), false);
+  assert.equal(historyNotInFuture('invalid', null, now), false);
 });

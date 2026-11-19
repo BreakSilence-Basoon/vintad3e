@@ -49,3 +49,7 @@ export function historyWithinShiftWindow(originalStart: string, startsAt: string
   const lower = shiftStart - 6 * 3600000, upper = shiftStart + 20 * 3600000;
   return [startsAt, ...(endsAt ? [endsAt] : [])].every(value => Date.parse(value) >= lower && Date.parse(value) <= upper);
 }
+
+export function historyNotInFuture(startsAt: string, endsAt: string | null, now: number): boolean {
+  return instant(startsAt) && (endsAt === null || instant(endsAt)) && Number.isFinite(now) && Date.parse(startsAt) <= now && (endsAt === null || Date.parse(endsAt) <= now);
+}

@@ -50,6 +50,12 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
     assert.equal(await evaluate("document.querySelector('#coupon-staff').value"), 'supporter-2');
     assert.ok(await evaluate("!document.querySelector('.coupon-share-field')"));
     await waitFor(async () => evaluate("(()=>{if(location.search.includes('supporter-1')&&document.querySelector('.coupon-share-field strong')?.textContent==='VINTAD3E')return true;const s=document.querySelector('#coupon-staff');if(s&&!s.disabled){s.value='supporter-1';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
+    for (const [path, platform] of [['instagram', 'Instagram'], ['tiktok', 'TikTok']]) {
+      await send('Page.navigate',{url:`${origin}/${path}`});
+      await waitFor(async () => evaluate(`document.querySelector('.gtm-section--connect p')?.textContent.startsWith(${JSON.stringify(platform)})`));
+      assert.equal(await evaluate("document.querySelector('.gtm-section--connect p').textContent"), `${platform} 계정을 연결한 서포터즈가 생기면 여기에서 성과를 볼 수 있습니다.`);
+      assert.equal(await evaluate("document.querySelector('.gtm-page').querySelectorAll('a, button, form').length"), 0);
+    }
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

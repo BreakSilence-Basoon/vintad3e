@@ -20,6 +20,7 @@ export function InventoryFileImport() {
 
   async function choose(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0], request = ++sequence.current;
+    event.currentTarget.value = '';
     setPreview(null); setError('');
     if (!file) return;
     try {

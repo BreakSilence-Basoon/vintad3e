@@ -49,6 +49,16 @@ test('fixture administrator edits, reloads and deletes attendance with required 
     assert.ok(await evaluate("document.querySelector('.attendance-history-card__note').closest('button').textContent.includes('8:55')"));
     await evaluate("document.querySelector('.attendance-history-card__note').closest('button').click()");
     await waitFor(async()=>evaluate("Boolean(document.querySelector('dialog[open]'))"));
+    await evaluate("document.querySelector('dialog form').requestSubmit()");
+    await waitFor(async()=>evaluate("document.querySelector('[role=alert]')?.textContent.includes('변경된 출퇴근 시각이 없습니다')"));
+    await evaluate("(()=>{const x=document.querySelector('dialog input[name=reason]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,'  정정 메모  ');x.dispatchEvent(new Event('input',{bubbles:true}))})()");
+    await evaluate("document.querySelector('dialog form').requestSubmit()");
+    await waitFor(async()=>evaluate("!document.querySelector('dialog[open]') && document.querySelector('.attendance-history-card__note')?.textContent === '정정 메모'"));
+    await evaluate('window.__historyBeforeReload = true');
+    await send('Page.reload');
+    await waitFor(async()=>evaluate("window.__historyBeforeReload !== true && document.querySelector('.attendance-history-card__note')?.textContent === '정정 메모' && Boolean(document.querySelector('.attendance-history-card__note').closest('button'))"));
+    await evaluate("document.querySelector('.attendance-history-card__note').closest('button').click()");
+    await waitFor(async()=>evaluate("Boolean(document.querySelector('dialog[open]'))"));
     await evaluate("[...document.querySelectorAll('dialog button')].find(x=>x.textContent==='삭제').click()");
     await waitFor(async()=>evaluate("Boolean([...document.querySelectorAll('dialog button')].find(x=>x.textContent==='삭제 확인'))"));
     await evaluate("[...document.querySelectorAll('dialog button')].find(x=>x.textContent==='삭제 확인').click()");

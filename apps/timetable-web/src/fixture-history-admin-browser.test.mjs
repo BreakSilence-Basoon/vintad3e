@@ -39,8 +39,9 @@ test('fixture administrator edits, reloads and deletes attendance with required 
     await evaluate("(()=>{const x=document.querySelector('dialog input[name=checkInAt]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,x.value.slice(0,11)+'08:55');x.dispatchEvent(new Event('input',{bubbles:true}));x.dispatchEvent(new Event('change',{bubbles:true}))})()");
     await evaluate("document.querySelector('dialog form').requestSubmit()");
     await waitFor(async()=>evaluate("!document.querySelector('dialog[open]') && document.querySelector('.attendance-history-card__note')?.textContent === '합성 사유'"));
+    await evaluate('window.__historyBeforeReload = true');
     await send('Page.reload');
-    await waitFor(async()=>evaluate("document.querySelector('.attendance-history-card__note')?.textContent === '합성 사유' && Boolean(document.querySelector('.attendance-history-card__note').closest('button'))"));
+    await waitFor(async()=>evaluate("window.__historyBeforeReload !== true && document.querySelector('.attendance-history-card__note')?.textContent === '합성 사유' && Boolean(document.querySelector('.attendance-history-card__note').closest('button'))"));
     assert.ok(await evaluate("document.querySelector('.attendance-history-card__note').closest('button').textContent.includes('8:55')"));
     await evaluate("document.querySelector('.attendance-history-card__note').closest('button').click()");
     await waitFor(async()=>evaluate("Boolean(document.querySelector('dialog[open]'))"));
@@ -48,8 +49,9 @@ test('fixture administrator edits, reloads and deletes attendance with required 
     await waitFor(async()=>evaluate("Boolean([...document.querySelectorAll('dialog button')].find(x=>x.textContent==='삭제 확인'))"));
     await evaluate("[...document.querySelectorAll('dialog button')].find(x=>x.textContent==='삭제 확인').click()");
     await waitFor(async()=>evaluate("!document.querySelector('dialog[open]') && document.querySelectorAll('button.attendance-history-card').length === 6"));
+    await evaluate('window.__historyBeforeReload = true');
     await send('Page.reload');
-    await waitFor(async()=>evaluate("document.querySelectorAll('button.attendance-history-card').length === 6"));
+    await waitFor(async()=>evaluate("window.__historyBeforeReload !== true && document.querySelectorAll('button.attendance-history-card').length === 6"));
     assert.equal(await evaluate("Boolean(document.querySelector('.attendance-history-card__note'))"), false);
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(()=>{}),delay(3000)]);

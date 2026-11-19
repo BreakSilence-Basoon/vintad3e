@@ -1,0 +1,66 @@
+.login-screen__content:has(.login-portal-button) {
+  transform: none;
+}
+
+.login-screen__workspace:has(> .login-portal-button) {
+  gap: 24px;
+}
+
+.login-portal-button {
+  position: relative;
+  display: block;
+  width: min(288px, 100%);
+  aspect-ratio: 3 / 2;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.login-portal-button__art { position: absolute; inset: 0; display: grid; place-items: center; color: var(--foreground); font-family: var(--font-body), sans-serif; font-size: 1.5rem; font-weight: 700; }
+
+.login-portal-button__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--surface-strong) 42%, transparent);
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--surface-strong) 60%, transparent);
+  color: var(--foreground);
+  font-family: var(--font-body), sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+@supports (backdrop-filter: blur(0)) {
+  .login-portal-button__overlay {
+    backdrop-filter: blur(12px);
+  }
+}
+
+@supports (-webkit-backdrop-filter: blur(0)) {
+  .login-portal-button__overlay {
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+.login-portal-button:hover .login-portal-button__overlay,
+.login-portal-button:focus-visible .login-portal-button__overlay { opacity: 1; }
+
+.login-portal-button:focus-visible {
+  outline: 3px solid var(--surface-strong);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 7px var(--accent-strong);
+}
+
+@media (max-height: 640px) {
+  .login-portal-button {
+    width: min(216px, 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-portal-button__overlay { transition: none; }
+}

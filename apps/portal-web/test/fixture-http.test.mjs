@@ -27,6 +27,8 @@ test('development fixture signs in, opens the local tile and signs out through H
     assert.ok([303, 307].includes(signedOut.status)); assert.equal(signedOut.headers.get('location'), '/sign-in');
     const form = await (await fetch(`${origin}/sign-in`)).text();
     assert.match(form, /회사 계정으로 로그인/);
+    assert.equal((await fetch(`${origin}/confirmations/proposal-01`, { redirect: 'manual' })).status, 307);
+    assert.equal((await fetch(`${origin}/confirmations/unknown`, { redirect: 'manual' })).status, 404);
     const denied = await fetch(`${origin}/api/fixture/login`, { method: 'POST', redirect: 'manual', headers: { origin: 'http://other.invalid' } });
     assert.equal(denied.status, 403);
     const login = await fetch(`${origin}/api/fixture/login`, { method: 'POST', redirect: 'manual', headers: { origin } });
@@ -39,6 +41,10 @@ test('development fixture signs in, opens the local tile and signs out through H
     assert.equal(logout.status, 303);
     const after = await fetch(origin, { headers: { cookie }, redirect: 'manual' });
     assert.ok([303, 307].includes(after.status)); assert.equal(after.headers.get('location'), '/sign-in');
+    const confirmationLogin = await fetch(`${origin}/api/fixture/login`, { method: 'POST', headers: { origin }, body: new URLSearchParams({ next: '/confirmations/proposal-01' }), redirect: 'manual' });
+    assert.equal(confirmationLogin.headers.get('location'), '/confirmations/proposal-01');
+    const confirmationCookie = confirmationLogin.headers.get('set-cookie').split(';')[0];
+    assert.equal((await fetch(`${origin}/confirmations/proposal-01`, { headers: { cookie: confirmationCookie } })).status, 200);
   } finally {
     child.kill('SIGTERM');
     if (child.exitCode === null) await Promise.race([once(child, 'exit'), delay(5000)]);

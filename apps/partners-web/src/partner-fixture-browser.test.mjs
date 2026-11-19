@@ -80,8 +80,14 @@ test('fixture calendar links to rental ledger and detail in Chrome', { timeout: 
     await evaluate("document.querySelector('.partners-settlement-terms summary').click()");
     assert.ok(await evaluate("document.querySelector('.partners-settlement-terms').textContent.includes('판매금액의 5%')"));
     assert.equal((await fetch(`${origin}/proj-bedroom/unknown`)).status, 404);
-    await send('Page.navigate',{url:`${origin}/dj`});
+    await send('Page.navigate',{url:origin});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.partners-calendar__chip[href=\"/dj\"]'))"));
+    await evaluate("document.querySelector('.partners-calendar__chip[href=\"/dj\"]').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('.partners-accountant'))"));
+    await waitFor(async () => evaluate("document.querySelectorAll('.partners-ledger tbody tr').length === 2"));
+    assert.ok(await evaluate("document.querySelector('.partners-ledger tbody').textContent.includes('지급 완료') && document.querySelector('.partners-ledger tbody').textContent.includes('지급 대기')"));
+    await waitFor(async () => evaluate("(()=>{if(document.querySelector('.partners-ledger__detail'))return true;document.querySelector('.partners-ledger tbody button')?.click();return false;})()"));
+    assert.ok(await evaluate("document.querySelector('.partners-ledger__detail').textContent.includes('출연료')"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.partners-accountant__row').length===2)return true;[...document.querySelectorAll('.partners-accountant button')].find(x=>x.textContent==='DJ 추가')?.click();return false;})()"));
     await evaluate("document.querySelector('[aria-label=\"DJ 2 삭제\"]').click()");
     await waitFor(async () => evaluate("document.querySelectorAll('.partners-accountant__row').length===1"));

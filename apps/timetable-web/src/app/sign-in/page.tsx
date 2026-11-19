@@ -6,7 +6,7 @@ type Props = { searchParams?: Promise<Record<string, string | string[] | undefin
 export default async function SignInPage({ searchParams }: Props) {
   const params = searchParams ? await searchParams : {};
   const next = Array.isArray(params.next) ? params.next[0] : params.next;
-  const fixture = Boolean(fixtureOrigin(process.env));
+  const fixture = Boolean(fixtureOrigin(process.env)) && !process.env.VINTAD3E_TIMETABLE_API_ORIGIN;
   const portal = process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:3825/' : undefined;
   return <div className="public-login-frame"><main className="login-screen"><section className="login-screen__content" aria-label="직원 로그인"><div className="login-screen__workspace">
     <a href={portal} className="login-portal-button" aria-label="포털로 돌아가기"><span className="login-portal-button__art" aria-hidden="true">빈타제</span><span className="login-portal-button__overlay" aria-hidden="true">포털로 돌아가기</span></a>

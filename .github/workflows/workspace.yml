@@ -29,6 +29,7 @@ jobs:
       - run: corepack pnpm install --frozen-lockfile --ignore-scripts
       - run: corepack pnpm test
       - run: corepack pnpm --filter @vintad3e/ui test
+      - run: corepack pnpm --filter @vintad3e/ui test:lint
       - run: corepack pnpm --filter @vintad3e/timetable-policy test
       - run: corepack pnpm --filter @vintad3e/ledger-facts test
       - run: corepack pnpm --filter @vintad3e/ledger-evidence-vault test

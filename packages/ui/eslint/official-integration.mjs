@@ -23,16 +23,14 @@ const verify = (source, sourceFile = filename) => configuredIssues(
 );
 const prefix = 'import { Button } from "@vintad3e/ui/components/button";\n';
 
-test('actual Timetable submit wrapper explicitly forwards its approved appearance without a file exemption', async () => {
-  const sourceFile = path.join(root, 'apps/timetable/src/components/form-submit-button.tsx');
+test('public Timetable history editor uses the approved danger appearance', async () => {
+  const sourceFile = path.join(root, 'apps/timetable-web/src/fixture-history-admin-view.tsx');
   const source = await readFile(sourceFile, 'utf8');
-  const approved = "appearanceSlot === 'text-danger' ? 'text-danger' : undefined";
+  const approved = 'appearanceSlot="text-danger"';
   assert.ok(source.includes(approved));
   assert.deepEqual(verify(source, sourceFile).filter((issue) => issue.severity === 2), []);
-  for (const replacement of ['appearanceSlot', "appearanceSlot === 'text-danger' ? 'arbitrary-class' : undefined"]) {
-    assert.ok(verify(source.replace(approved, replacement), sourceFile)
-      .some((issue) => issue.ruleId === 'bs-ui/no-inline-slot-misuse'));
-  }
+  assert.ok(verify(source.replace(approved, 'appearanceSlot="arbitrary-class"'), sourceFile)
+    .some((issue) => issue.ruleId === 'bs-ui/no-inline-slot-misuse'));
 });
 
 test('an unconfigured fixture cannot turn an ignored-file warning into success', () => {

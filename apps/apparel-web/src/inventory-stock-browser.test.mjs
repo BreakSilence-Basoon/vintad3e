@@ -108,7 +108,10 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     await send('Page.navigate',{url:`${origin}/admin/support`});
     await waitFor(async () => evaluate("document.querySelectorAll('.support-results tbody tr').length > 30"));
     const allCount = await evaluate("document.querySelectorAll('.support-results tbody tr').length");
-    await waitFor(async () => evaluate(`(()=>{const input=document.querySelector('#support-dictionary-search');if(input?.value==='SKU' && document.querySelectorAll('.support-results tbody tr').length<${allCount}) return true; if(input){Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,'SKU');input.dispatchEvent(new Event('input',{bubbles:true}));}return false;})()`));
+    await waitFor(async () => evaluate("(()=>{const heading=document.querySelector('.support-results thead th');if(heading?.getAttribute('aria-sort')==='descending')return true;heading?.querySelector('button')?.click();return false;})()"));
+    await evaluate("document.querySelector('#support-dictionary-search').focus()");
+    await send('Input.insertText', { text: 'SKU' });
+    await waitFor(async () => evaluate(`document.querySelectorAll('.support-results tbody tr').length < ${allCount}`));
     assert.ok(await evaluate("document.querySelector('.support-results tbody').textContent.includes('SKU')"));
     const oldSort = await evaluate("document.querySelector('.support-results thead th').getAttribute('aria-sort')");
     await run("document.querySelector('.support-results thead button').click()");

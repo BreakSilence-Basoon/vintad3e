@@ -74,3 +74,17 @@ test('sales filters accept original options and bound invalid input', () => {
   assert.equal(filters.sortDirection, 'asc');
   assert.equal(filters.keyword.length, 80);
 });
+import { getFixtureSales, filterFixtureSales } from './sales-fixture.ts';
+
+test('synthetic sales honor explicit opt-in, KST dates, filters and ordering', () => {
+  const now = new Date('2026-11-19T03:00:00.000Z');
+  const sales = getFixtureSales('development', '1', now);
+  assert.deepEqual(getFixtureSales('production', '1', now), []);
+  assert.deepEqual(getFixtureSales('development', undefined, now), []);
+  assert.equal(sales.length, 2);
+  assert.deepEqual(filterFixtureSales(sales, parseSalesFilters({ range: 'today' }), now).map(item => item.id), ['sale-1']);
+  assert.deepEqual(filterFixtureSales(sales, parseSalesFilters({ source: 'seongsu_ticket', status: 'pending' }), now).map(item => item.id), ['sale-2']);
+  assert.deepEqual(filterFixtureSales(sales, parseSalesFilters({ range: 'custom', from: '2026-11-17', to: '2026-11-17' }), now).map(item => item.id), ['sale-2']);
+  assert.deepEqual(filterFixtureSales(sales, parseSalesFilters({ keyword: '셔츠', source: 'pos' }), now).map(item => item.id), ['sale-1']);
+  assert.deepEqual(filterFixtureSales(sales, parseSalesFilters({ sort: 'asc' }), now).map(item => item.id), ['sale-2', 'sale-1']);
+});

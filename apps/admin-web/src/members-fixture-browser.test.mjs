@@ -45,6 +45,10 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     await waitFor(async () => evaluate("document.querySelector('.staff-table tbody')?.textContent.includes('staff01@example.invalid')"));
     assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody tr').length"),2);
     assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody a').length"),2);
+    await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('.staff-table tbody td')).display"), 'grid');
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('.staff-table tbody td')).gridTemplateColumns.split(' ').length"), 2);
+    await send('Emulation.clearDeviceMetricsOverride');
     await evaluate("document.querySelector('.staff-table tbody a').click()");
     await waitFor(async () => evaluate("document.querySelector('.staff-console')?.textContent.includes('staff01@example.invalid') && document.querySelector('.staff-console')?.textContent.includes('Portal')"));
     assert.ok(await evaluate("document.querySelector('.staff-console').textContent.includes('크루')"));

@@ -23,3 +23,27 @@ test('rejects invalid and inconsistent quantities using source messages', () => 
   assert.deepEqual(validateDraft(row, { ...draft, onHand: '3', target: '10', shortage: '4' }), { error: '부족 수량은 목표재고와 현재 수량 기준으로 계산된 값이어야 합니다.' });
   assert.deepEqual(validateDraft({ ...row, tracking: false }, { ...draft, target: '-1', shortage: '-1' }), { row: { ...row, tracking: false } });
 });
+import { fixtureInventoryRequest } from './shortage-fixture-request.ts';
+import { readFixtureStock } from './inventory-fixture-session.ts';
+
+test('shortage saves are restricted to known fixtures and reuse tab stock', async () => {
+  const values = new Map<string, string>();
+  let rejectWrites = false;
+  const storage = { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => { if (rejectWrites) throw new Error('unavailable'); values.set(key, value); } };
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { sessionStorage: storage } });
+  try {
+    const key = 'basic:seongsu:TSHIRT-001-BK-M';
+    const input = { stockTargetId: key, skuId: 'TSHIRT-001-BK-M', skuCode: 'TSHIRT-001-BK-M', locationId: 'seongsu', locationCode: 'seongsu', onHandQty: 3, targetQty: 10, shortageQty: 7 };
+    const request = (body: object) => fixtureInventoryRequest('/api/admin/stock-target-shortage', { method: 'POST', body: JSON.stringify(body) });
+    assert.equal((await request(input)).status, 200);
+    assert.deepEqual(readFixtureStock()[key], { onHand: 3, target: 10, shortage: 7, tracking: true });
+    assert.equal((await request({ ...input, shortageQty: 6 })).status, 400);
+    assert.equal((await request({ ...input, skuCode: 'unknown' })).status, 400);
+    rejectWrites = true;
+    assert.equal((await request({ ...input, onHandQty: 4, shortageQty: 6 })).status, 503);
+    assert.equal(readFixtureStock()[key].onHand, 3);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'window', previous); else Reflect.deleteProperty(globalThis, 'window');
+  }
+});

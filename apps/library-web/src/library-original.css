@@ -990,6 +990,21 @@
 .library-feed h2 a { color: var(--foreground); text-decoration: none; }
 .library-feed h2 a:hover { text-decoration: underline; }
 .library-feed .library-document-meta, .library-comments .library-document-meta { display: flex; gap: 8px 16px; flex-wrap: wrap; }
+.library-home--feed { width: min(760px, calc(100% - var(--page-gutter) * 2)); }
+.library-home--feed .library-page { gap: 24px; }
+.library-home--feed .library-feed { display: grid; gap: 14px; }
+.library-home--feed .library-feed > li { padding: 0; border: 0; }
+.library-post { position: relative; min-width: 0; padding: 24px 26px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-strong); transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+.library-post:hover, .library-post:focus-within { border-color: color-mix(in srgb, var(--accent) 38%, var(--border)); box-shadow: var(--shadow-soft); }
+.library-post__byline { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 9px; min-width: 0; margin-top: 14px; color: var(--muted); font-size: 0.8rem; line-height: 1.5; }
+.library-feed .library-post__title { margin: 0; font-size: 1.12rem; line-height: 1.5; font-weight: 750; letter-spacing: -0.02em; }
+.library-post__title a::after { position: absolute; inset: 0; content: ''; border-radius: inherit; }
+.library-post__title a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.library-post__author { color: var(--foreground); font-weight: 600; }
+.library-post__separator { color: var(--muted); opacity: .65; }
+.library-post__byline time { font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .library-home--feed .library-page { gap: 18px; } .library-home--feed .library-feed { gap: 10px; } .library-post { padding: 20px; border-radius: 14px; } .library-feed .library-post__title { font-size: 1rem; } }
+@media (prefers-reduced-motion: reduce) { .library-post { transition: none; } }
 .library-comments p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
 .publication-community { display: grid; gap: 16px; }
 .publication-community fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 12px; }

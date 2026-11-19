@@ -3,6 +3,20 @@ export type Platform = 'instagram' | 'tiktok';
 const allowed = new Set(['instagram-1', 'instagram-2', 'tiktok-1', 'tiktok-2']);
 const registrationsSlot = 'vintad3e:sns-registrations';
 const connectionSlot = (platform: Platform) => `vintad3e:sns-connection:${platform}`;
+const syncSlot = (platform: Platform) => `vintad3e:sns-sync:${platform}`;
+const validTime = (value: string) => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
+export function readSync(store: Store, platform: Platform): string | null {
+  if (platform !== 'instagram' && platform !== 'tiktok') return null;
+  try { const value = store.getItem(syncSlot(platform)); return value && validTime(value) ? value : null; } catch { return null; }
+}
+export function writeSync(store: Store, platform: Platform, now: Date): string | null {
+  if (platform !== 'instagram' && platform !== 'tiktok') return null;
+  try {
+    const old = store.getItem(syncSlot(platform));
+    if (old !== null && !validTime(old)) return null;
+    const value = now.toISOString(); store.setItem(syncSlot(platform), value); return value;
+  } catch { return null; }
+}
 export function readRegistrations(store: Store): Record<string, boolean> | null {
   try {
     const raw = store.getItem(registrationsSlot);

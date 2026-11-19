@@ -4,7 +4,7 @@ import { CouponStaffSelector } from '../../sns-fixture-selector';
 import { SettlementFixtureTable } from '../../settlement-fixture-table';
 import { koreanYear } from '../../settlement-viewer-calendar';
 
-export const metadata = { title: '침깨 > Supporters > 정산 내역' };
+export const metadata = { title: '빈타제 > Supporters > 정산 내역' };
 export const dynamic = 'force-dynamic';
 export default async function SettlementsPage({ searchParams }: { searchParams: Promise<{ staff?: string | string[] }> }) {
   const fixtures = getCouponFixtures(process.env.NODE_ENV, process.env.VINTAD3E_SUPPORTERS_FIXTURE);

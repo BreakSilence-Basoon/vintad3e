@@ -4,7 +4,7 @@ import { getFixtureAudit, filterFixtureAudit } from '../../../audit-fixture';
 import { AuditFixtureList } from '../../../audit-fixture-list';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: '침깨 > Apparel > 데이터 변경 이력' };
+export const metadata = { title: '빈타제 > Apparel > 데이터 변경 이력' };
 export default async function AuditPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const filters = parseAuditFilters(await searchParams);
   const now = new Date();

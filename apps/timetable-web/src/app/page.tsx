@@ -24,7 +24,7 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { view } = await searchParams;
   const screen = timetableInitialView(view) === 'schedule' ? '근무시간표' : '출근부';
-  return { title: `침깨 > Timetable > ${screen}` };
+  return { title: `빈타제 > Timetable > ${screen}` };
 }
 
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

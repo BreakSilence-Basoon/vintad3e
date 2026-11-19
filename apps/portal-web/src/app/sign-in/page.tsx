@@ -2,7 +2,7 @@ import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { fixtureOrigin, fixtureSession } from '../../fixture-session.mjs';
 export const dynamic = 'force-dynamic';
-export const metadata = { title: '침깨 > 로그인' };
+export const metadata = { title: '빈타제 > 로그인' };
 export default async function Page() {
   const origin = fixtureOrigin(process.env);
   if (!origin) notFound();

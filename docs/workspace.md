@@ -12,7 +12,7 @@ Node.js 24와 Corepack으로 pnpm 10.11.0을 사용합니다. `corepack pnpm tes
 
 ## README 편집
 
-README의 ‘만든 사람의 말’은 김성균 개발자의 확정본입니다. AI 에이전트는 이 부분을 수정·요약·번역·이동하지 않습니다. README의 다른 부분은 자유롭게 고칠 수 있습니다. `corepack pnpm test` 또는 `node scripts/check-founder-note.mjs`로 확정본을 검사합니다.
+README의 ‘만든 사람의 말’은 개발자가 확정한 원문입니다. AI 에이전트는 이 부분을 수정·요약·번역·이동하지 않습니다. README의 다른 부분은 자유롭게 고칠 수 있습니다. `corepack pnpm test` 또는 `node scripts/check-founder-note.mjs`로 확정본을 검사합니다.
 
 ## 이름 변경 시 확인
 

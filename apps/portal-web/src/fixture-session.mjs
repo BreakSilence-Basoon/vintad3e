@@ -5,6 +5,7 @@ const tokenPattern = /^[A-Za-z0-9_-]{43}$/;
 const key = Symbol.for('vintad3e.portal.fixture.sessions');
 const sessions = globalThis[key] ??= new Map();
 const ttl = 30 * 60 * 1000;
+export function fixtureNext(value) { return value === '/confirmations/proposal-01' ? value : '/'; }
 
 export function fixtureResumePath(value) {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(value)) return '/';
@@ -38,7 +39,7 @@ export function fixtureSession(cookie, host, env, now = Date.now()) {
   const token = readToken(cookie); prune(now);
   return token !== null && sessions.has(token);
 }
-export function handleFixtureSession(request, action, env, now = Date.now()) {
+export function handleFixtureSession(request, action, env, now = Date.now(), next = '/') {
   const origin = fixtureOrigin(env);
   if (!origin || request.method !== 'POST' || !['login', 'logout'].includes(action)) return new Response(null, { status: 404, headers: { 'cache-control': 'no-store' } });
   // Next can normalize request.url's host; Host and Origin must both match the configured loopback origin.
@@ -53,5 +54,5 @@ export function handleFixtureSession(request, action, env, now = Date.now()) {
     sessions.set(token, now + ttl);
     cookie = `${cookieName}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${ttl / 1000}`;
   }
-  return new Response(null, { status: 303, headers: { location: action === 'login' ? '/' : '/sign-in', 'set-cookie': cookie, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
+  return new Response(null, { status: 303, headers: { location: action === 'login' ? fixtureNext(next) : '/sign-in', 'set-cookie': cookie, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
 }

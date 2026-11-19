@@ -2,17 +2,20 @@
 
 import { useState, useSyncExternalStore } from 'react';
 import { Button, Input, Label } from '@vintad3e/ui/components';
+import { useRouter } from 'next/navigation';
+import { addSyntheticMeeting } from './fixture-meeting-storage';
 
 const subscribe = () => () => {};
 const hydratedSnapshot = () => true;
 const serverSnapshot = () => false;
 
-export function CreateMeetingForm() {
+export function CreateMeetingForm({ fixture = false }: { fixture?: boolean }) {
+  const router = useRouter();
   const [title, setTitle] = useState('');
   const [error, setError] = useState(false);
   const hydrated = useSyncExternalStore(subscribe, hydratedSnapshot, serverSnapshot);
   return <section data-hydrated={hydrated}><Label htmlFor="meeting-title" appearance="native">회의 제목</Label><Input id="meeting-title" appearance="native" value={title} maxLength={255} onChange={event => setTitle(event.target.value)} />
-    <section aria-busy={false}><Button profile="library" type="button" disabled={!title.trim()} onClick={() => setError(true)}>회의 기록 만들기</Button>{error && <p role="alert">처리하지 못했습니다. 다시 시도해 주세요.</p>}</section>
+    <section aria-busy={false}><Button profile="library" type="button" disabled={!title.trim()} onClick={() => { if (fixture) { try { const id = crypto.randomUUID(); if (addSyntheticMeeting(sessionStorage, { id, title: title.trim() })) { router.push(`/meetings/${id}`); return; } } catch {} } setError(true); }}>회의 기록 만들기</Button>{error && <p role="alert">처리하지 못했습니다. 다시 시도해 주세요.</p>}</section>
   </section>;
 }
 

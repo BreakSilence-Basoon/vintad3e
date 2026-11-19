@@ -17,7 +17,7 @@ async function waitFor(fn) {
   throw new Error('Timed out waiting for browser or server');
 }
 
-test('original record entry and empty views do not create meetings or upload files', { timeout: 90000 }, async () => {
+test('synthetic meeting creation stays in the tab and file upload remains disconnected', { timeout: 90000 }, async () => {
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-library-records-'));
@@ -45,8 +45,12 @@ test('original record entry and empty views do not create meetings or upload fil
     await evaluate("(()=>{const x=document.querySelector('#meeting-title');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,'회의');x.dispatchEvent(new Event('input',{bubbles:true}));})()");
     await waitFor(async () => evaluate("document.querySelector('section[data-hydrated=true] button')?.disabled === false"));
     await evaluate("document.querySelector('section[data-hydrated=true] button').click()");
-    await waitFor(async () => evaluate("document.querySelector('[role=alert]')?.textContent === '처리하지 못했습니다. 다시 시도해 주세요.'"));
+    await waitFor(async () => evaluate("location.pathname.startsWith('/meetings/') && document.querySelector('h1')?.textContent === '회의'"));
     assert.equal(await evaluate('window.recordWrites'), 0);
+    await evaluate('window.__meetingBeforeReload = true'); await send('Page.reload');
+    await waitFor(async () => evaluate("window.__meetingBeforeReload !== true && document.querySelector('h1')?.textContent === '회의'"));
+    await send('Page.navigate', { url: `${origin}/meetings` });
+    await waitFor(async () => evaluate("[...document.querySelectorAll('a')].some(a=>a.textContent==='회의')"));
     assert.equal((await fetch(`${origin}/meetings/unknown`)).status, 404);
     await evaluate("document.querySelector('a[href=\"/meetings/00000000-0000-4000-8000-000000000004\"]').click()");
     await waitFor(async () => evaluate("document.querySelector('h1')?.textContent === '업무 회의' && document.querySelectorAll('.library-register[data-hydrated=true]').length === 2"));

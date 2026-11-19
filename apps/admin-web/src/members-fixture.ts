@@ -20,7 +20,7 @@ export function membersOfType(members: FixtureMember[], type: MemberType): Fixtu
   return members.filter(member => member.memberType === type);
 }
 
-export type FixtureGrant = { appId: string; appName: string; role: 'VIEWER' | 'ADMIN'; validFrom: string; validUntil: string | null };
+export type FixtureGrant = { appId: string; appName: string; role: 'VIEWER' | 'ADMIN'; status: 'ACTIVE' | 'SUSPENDED' | 'REVOKED'; validFrom: string; validUntil: string | null };
 export const fixtureApps = [
   { id: 'portal', name: 'Portal' }, { id: 'apparel', name: 'Apparel' }, { id: 'timetable', name: 'Timetable' },
   { id: 'supporters', name: 'Supporters' }, { id: 'partners', name: 'Partners' }, { id: 'library', name: 'Library' },
@@ -31,9 +31,16 @@ export const fixtureApps = [
 export function fixtureGrants(env: string | undefined, enabled: string | undefined, id: string): FixtureGrant[] | null {
   const member = getFixtureMembers(env, enabled).find(item => item.staffId === id);
   if (!member) return null;
-  if (member.staffId === '00000000-0000-4000-8000-000000000003') return fixtureApps.filter(app => ['portal', 'partners', 'admin'].includes(app.id)).map(app => ({ appId: app.id, appName: app.name, role: 'ADMIN', validFrom: '2000-01-01T00:00:00.000Z', validUntil: null }));
+  if (member.staffId === '00000000-0000-4000-8000-000000000003') return fixtureApps.filter(app => ['portal', 'partners', 'admin'].includes(app.id)).map(app => ({ appId: app.id, appName: app.name, role: 'ADMIN', status: 'ACTIVE', validFrom: '2000-01-01T00:00:00.000Z', validUntil: null }));
   const app = member.memberType === 'employee' ? fixtureApps[0] : fixtureApps[4];
-  return [{ appId: app.id, appName: app.name, role: 'VIEWER', validFrom: '2000-01-01T00:00:00.000Z', validUntil: null }];
+  const active: FixtureGrant = { appId: app.id, appName: app.name, role: 'VIEWER', status: 'ACTIVE', validFrom: '2000-01-01T00:00:00.000Z', validUntil: null };
+  if (member.memberType === 'partner') return [active];
+  return [active,
+    { ...active, appId: 'apparel', appName: 'Apparel', validUntil: '2020-01-01T00:00:00.000Z' },
+    { ...active, appId: 'timetable', appName: 'Timetable', validFrom: '2100-01-01T00:00:00.000Z' },
+    { ...active, appId: 'library', appName: 'Library', status: 'SUSPENDED' },
+    { ...active, appId: 'creative', appName: 'Creative', status: 'REVOKED' },
+  ];
 }
 
 export function fixtureTier(member: FixtureMember, grants: FixtureGrant[]): '어드민' | '크루' | '게스트' {
@@ -41,8 +48,16 @@ export function fixtureTier(member: FixtureMember, grants: FixtureGrant[]): '어
 }
 
 export function fixtureGrantActive(grant: FixtureGrant, now: number): boolean {
+  return fixtureGrantDisplay(grant, now).label === '사용 중';
+}
+export function fixtureGrantDisplay(grant: Pick<FixtureGrant, 'status' | 'validFrom' | 'validUntil'>, now: number): { label: string; tone: 'live' | 'warning' | 'muted' } {
+  if (grant.status === 'REVOKED') return { label: '회수됨', tone: 'muted' };
+  if (grant.status === 'SUSPENDED') return { label: '일시 정지', tone: 'warning' };
   const from = Date.parse(grant.validFrom), until = grant.validUntil === null ? Infinity : Date.parse(grant.validUntil);
-  return Number.isFinite(from) && !Number.isNaN(until) && now >= from && now < until;
+  if (!Number.isFinite(from) || Number.isNaN(until) || !Number.isFinite(now)) return { label: '확인 필요', tone: 'warning' };
+  if (now < from) return { label: '시작 전', tone: 'muted' };
+  if (now >= until) return { label: '기간 만료', tone: 'muted' };
+  return { label: '사용 중', tone: 'live' };
 }
 const formatter = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
 export function formatKstDateTime(iso: string) { const time = Date.parse(iso); return Number.isFinite(time) ? formatter.format(time) : null; }

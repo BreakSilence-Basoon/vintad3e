@@ -43,7 +43,7 @@ test('portal login, navigation, confirmation and failures work in a browser', { 
         // Fail the server once and verify the screen recovers on the next request.
         await page.route('**/api/fixture/confirmation', route => route.fulfill({ status: 503, body: '' }));
         await page.reload();
-        await page.getByRole('alert').waitFor();
+        await page.locator('p[role=alert]').waitFor();
         await page.unroute('**/api/fixture/confirmation');
         await press(page, 'button', '제안 불러오기');
         await page.getByRole('button', { name: '제안 검토' }).waitFor();

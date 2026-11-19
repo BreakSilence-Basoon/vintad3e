@@ -6,6 +6,16 @@ const key = Symbol.for('vintad3e.portal.fixture.sessions');
 const sessions = globalThis[key] ??= new Map();
 const ttl = 30 * 60 * 1000;
 
+export function fixtureResumePath(value) {
+  if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(value)) return '/';
+  try {
+    const base = 'http://127.0.0.1:3825';
+    const url = new URL(value, base);
+    if (url.origin !== base || url.pathname === '/auth/session-resume') return '/';
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch { return '/'; }
+}
+
 export function fixtureOrigin(env) {
   if (env.NODE_ENV !== 'development' || env.VINTAD3E_PORTAL_FIXTURE !== '1') return null;
   const value = env.VINTAD3E_PORTAL_FIXTURE_ORIGIN || 'http://127.0.0.1:3825';

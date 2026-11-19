@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fixtureOrigin, fixtureSession, handleFixtureSession } from './fixture-session.mjs';
+import { fixtureOrigin, fixtureSession, handleFixtureSession, fixtureResumePath } from './fixture-session.mjs';
 const origin = 'http://127.0.0.1:3825';
 const env = { NODE_ENV: 'development', VINTAD3E_PORTAL_FIXTURE: '1' };
+test('resume accepts internal paths only', () => {
+  assert.equal(fixtureResumePath('/about?tab=all'), '/about?tab=all');
+  for (const path of ['//example.invalid/', '/\\example.invalid/', '/auth/session-resume', 'https://example.invalid/', undefined]) assert.equal(fixtureResumePath(path), '/');
+});
 function post(action, headers = {}) { return new Request(`${origin}/api/fixture/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3825', origin, ...headers } }); }
 function cookie(response) { return response.headers.get('set-cookie').split(';')[0]; }
 

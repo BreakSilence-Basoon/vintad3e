@@ -4,4 +4,6 @@
 
 개발 환경에서 `VINTAD3E_CREATIVE_FIXTURE=1`을 설정하면 합성 프로젝트 목록을 표시합니다. 원본과 같이 목록 항목은 상세 화면으로 연결되지 않습니다. 실제 프로젝트·인증·권한과는 무관합니다.
 
+같은 설정을 사용하면 `/sign-in`에서 로컬 합성 세션을 만들 수 있습니다. 세션은 개발 환경의 루프백 주소에서만 동작하며 실제 인증이나 업무 권한을 제공하지 않습니다.
+
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/creative-web dev`를 실행하고 `http://127.0.0.1:3831`을 엽니다.

@@ -186,13 +186,13 @@ const dictionaryEntries: SupportDictionaryEntry[] = [
     category: '상품/옵션',
     term: '카탈로그',
     meaning:
-      '온라인 판매처별 상품 운영을 뜻합니다. Apparel의 카탈로그 메뉴는 제거되었습니다.',
+      '온라인 판매처별 상품 운영을 뜻합니다.',
   },
   {
     category: '상품/옵션',
     term: '쇼룸',
     meaning:
-      '위탁판매 브랜드의 상품을 다루는 업무입니다. Apparel의 쇼룸 메뉴는 제거되었으며 기존 판매·재고·정산 기록은 보존됩니다.',
+      '위탁판매 브랜드의 상품을 다루는 업무입니다.',
   },
   {
     category: '티켓/판매',

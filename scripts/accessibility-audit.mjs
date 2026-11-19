@@ -72,6 +72,8 @@ try {
             else await page.waitForURL(url => !url.pathname.endsWith('/sign-in'), { timeout: 15000 });
             await page.addStyleTag({ content: 'nextjs-portal { display: none !important; }' });
           }
+          // Let route transitions settle before measuring their final contrast.
+          await page.waitForTimeout(1200);
           await page.addScriptTag({ content: axe });
           const audit = await page.evaluate(async () => {
             const result = await window.axe.run(document, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'link-name', 'label', 'image-alt', 'html-has-lang', 'aria-valid-attr', 'aria-required-attr', 'aria-valid-attr-value'] } });

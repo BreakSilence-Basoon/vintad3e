@@ -7,6 +7,7 @@ import '../timetable-slide-switcher.css';
 import '../schedule-original.css';
 import '../schedule-detail-original.css';
 import '../attendance-original.css';
+import '../attendance-history-editor-original.css';
 import '../header-original.css';
 import './page.css';
 

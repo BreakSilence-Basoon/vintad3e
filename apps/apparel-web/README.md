@@ -13,3 +13,5 @@
 Node 24와 Corepack을 준비해 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/apparel-web dev`를 실행하고 `http://127.0.0.1:3826`을 엽니다.
 
 `/admin/audit`는 원본의 빈 변경 이력과 필터를 표시하며 실행자 이름은 합성 명칭을 사용합니다. 실제 감사 기록과 로그인·권한은 연결하지 않았습니다.
+
+개발 환경에서 합성 자료를 켜면 변경 이력 세 건의 실행자·기간·검색·정렬을 확인할 수 있습니다. 실제 직원이나 감사 데이터는 포함하지 않습니다.

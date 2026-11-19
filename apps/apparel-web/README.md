@@ -8,6 +8,8 @@
 
 합성 재고는 원본의 수량 검증과 저장 알림을 따르며, 저장하지 않은 변경이 있을 때 창을 닫거나 위치 탭을 바꾸면 확인합니다. GitHub 호스팅 Chrome 시험은 이 흐름을 합성 데이터로 확인합니다.
 
+같은 개발 설정의 `/admin/stats`에서는 합성 매출로 원본 통계 차트와 기간 조절을 확인할 수 있습니다. 실제 판매 데이터·상품 이미지·로그인·권한은 연결하지 않았으며 운영 환경에서는 이 주소를 제공하지 않습니다.
+
 Node 24와 Corepack을 준비해 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/apparel-web dev`를 실행하고 `http://127.0.0.1:3826`을 엽니다.
 
 `/admin/audit`는 원본의 빈 변경 이력과 필터를 표시하며 실행자 이름은 합성 명칭을 사용합니다. 실제 감사 기록과 로그인·권한은 연결하지 않았습니다.

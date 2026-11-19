@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3832",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/members-fixture.test.ts src/fixture-app-permissions.test.ts src/audit-fixture.test.ts src/home-fixture.test.ts",
+    "test": "node --test src/members-fixture.test.ts src/fixture-app-permissions.test.ts src/audit-fixture.test.ts src/home-fixture.test.ts src/fixture-session.test.mjs",
     "test:fixture-browser": "node --test src/members-fixture-browser.test.mjs"
   },
   "dependencies": {

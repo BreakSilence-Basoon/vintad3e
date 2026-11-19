@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3824",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/view.test.ts src/calendar-cells.test.ts src/history-filters.test.ts src/fixture-history.test.ts src/fixture-history-admin.test.ts src/fixture-schedule.test.ts src/fixture-schedule-storage.test.ts src/timetable-read.test.mjs src/timetable-auth.test.mjs src/fixture-kiosk.test.mjs",
+    "test": "node --test src/view.test.ts src/calendar-cells.test.ts src/history-filters.test.ts src/fixture-history.test.ts src/fixture-history-admin.test.ts src/fixture-schedule.test.ts src/fixture-schedule-storage.test.ts src/timetable-read.test.mjs src/timetable-auth.test.mjs src/fixture-kiosk.test.mjs src/fixture-session.test.mjs src/fixture-confirmation.test.mjs",
     "test:fixture-http": "node --test src/fixture-schedule-http.test.mjs"
   },
   "dependencies": {

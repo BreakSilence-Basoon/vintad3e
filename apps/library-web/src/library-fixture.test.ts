@@ -30,3 +30,13 @@ test('source download only returns a known opted-in fixture', () => {
   assert.equal(getFixtureSource('development', undefined, document.id), null);
   assert.equal(getFixtureSource('development', '1', 'unknown'), null);
 });
+
+test('public files are limited to matching opted-in development fixtures', async () => {
+  const { getPublicFixture } = await import('./fixture-public-object.ts');
+  const id = '00000000-0000-4000-8000-000000000005';
+  assert.equal(getPublicFixture('production', '1', 'objects', id), null);
+  assert.equal(getPublicFixture('development', undefined, 'objects', id), null);
+  assert.equal(getPublicFixture('development', '1', 'documents', id), null);
+  assert.equal(getPublicFixture('development', '1', 'objects', 'unknown'), null);
+  assert.ok(getPublicFixture('development', '1', 'objects', id));
+});

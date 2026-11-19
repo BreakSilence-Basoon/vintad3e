@@ -68,6 +68,21 @@ test('original record entry and empty views do not create meetings or upload fil
     await evaluate("document.querySelector('.library-register button').click()");
     await waitFor(async () => evaluate("document.querySelector('[role=alert]')?.textContent === '처리하지 못했습니다. 다시 시도해 주세요.'"));
     assert.equal(await evaluate('window.recordWrites'), 0);
+    for (const [kind, id, title, expected] of [
+      ['objects', '00000000-0000-4000-8000-000000000005', '파일', '업무를 시작하기 전에 필요한 사항을 확인합니다.'],
+      ['documents', '00000000-0000-4000-8000-000000000006', '문서', '함께 일하는 사람에게 필요한 내용을 전달합니다.'],
+    ]) {
+      await send('Page.navigate', { url: `${origin}/public/${kind}/${id}` });
+      await waitFor(async () => evaluate(`document.querySelector('h1')?.textContent === ${JSON.stringify(title)}`));
+      await waitFor(async () => evaluate("(()=>{const button=[...document.querySelectorAll('button')].find(x=>x.textContent==='파일 열기');button?.click();return Boolean(document.querySelector('pre.publication-content'));})()"));
+      assert.equal(await evaluate("document.querySelector('pre.publication-content').textContent"), expected);
+      const link = await evaluate("[...document.querySelectorAll('a')].find(x=>x.textContent==='원본 열기').getAttribute('href')");
+      assert.equal(link, `/api/public/${kind}/${id}/source`);
+      const response = await fetch(`${origin}${link}`);
+      assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+      assert.equal(await response.text(), expected);
+    }
+    assert.equal((await fetch(`${origin}/api/public/objects/unknown/source`)).status, 404);
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

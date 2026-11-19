@@ -17,11 +17,13 @@ function instant(value: unknown): value is string {
 export function validScheduleOverride(value: unknown): value is Exclude<ScheduleOverride, null> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const item = value as Record<string, unknown>;
+  if (Object.keys(item).sort().join(',') !== 'attendance,endInput,note,startInput') return false;
   const start = inputInstant(item.startInput), end = inputInstant(item.endInput);
   if (start === null || end === null || end <= start || typeof item.note !== 'string' || !item.note.trim() || Array.from(item.note).length > 500) return false;
   if (item.attendance === null) return true;
   if (!item.attendance || typeof item.attendance !== 'object' || Array.isArray(item.attendance)) return false;
   const attendance = item.attendance as Record<string, unknown>;
+  if (Object.keys(attendance).sort().join(',') !== 'endsAt,startsAt') return false;
   return instant(attendance.startsAt) && (attendance.endsAt === null || instant(attendance.endsAt) && attendance.endsAt > attendance.startsAt);
 }
 export function readScheduleOverrides(store: Store): ScheduleOverrides | null {

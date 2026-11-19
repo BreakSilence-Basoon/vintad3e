@@ -30,6 +30,22 @@ test('schedule storage rejects malformed state and preserves timestamp semantics
   assert.equal(writeScheduleOverride(unavailable, id, value), null);
 });
 
+test('unknown schedule and attendance fields cannot replace identity or be discarded by a write', () => {
+  const store = memory();
+  const slot = 'vintad3e:timetable-schedule';
+  for (const record of [
+    { ...value, employee: { id: 'other' } },
+    { ...value, date: '2026-03-01' },
+    { ...value, attendance: { startsAt: '2026-02-08T00:00:00.000Z', endsAt: null, extra: 'preserve' } },
+  ]) {
+    const raw = JSON.stringify({ [id]: record });
+    store.setItem(slot, raw);
+    assert.equal(readScheduleOverrides(store), null);
+    assert.equal(writeScheduleOverride(store, id, value), null);
+    assert.equal(store.getItem(slot), raw);
+  }
+});
+
 test('moved and deleted synthetic schedules appear on the matching visible days only', () => {
   const moved = { ...value, startInput: '2026-03-02T09:00', endInput: '2026-03-02T18:00' };
   const changes = { [id]: moved, '2026-02-18-employee-2': null };

@@ -35,6 +35,11 @@ test('bookmarks show the original empty state with fixtures disabled', { timeout
     assert.equal(new URL(oversized.headers.get('location'), origin).searchParams.get('q').length, 200);
     const duplicate = await fetch(`${origin}/publications?q=one&q=two`, { redirect: 'manual' });
     assert.equal(new URL(duplicate.headers.get('location'), origin).search, '');
+    for (const path of ['/publish', '/publications/new']) {
+      const oldPublish = await fetch(`${origin}${path}`, { redirect: 'manual' });
+      assert.equal(oldPublish.status, 307);
+      assert.equal(new URL(oldPublish.headers.get('location'), origin).pathname, '/');
+    }
   } finally {
     server.kill('SIGTERM');
     if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000)]);

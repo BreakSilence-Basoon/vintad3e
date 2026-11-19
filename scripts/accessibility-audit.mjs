@@ -81,12 +81,38 @@ try {
               let el; try { el = document.querySelector(node.target[0]); } catch {}
               const backgrounds = []; for (let cur = el; cur && backgrounds.length < 8; cur = cur.parentElement) { const style = getComputedStyle(cur); backgrounds.push({ color: style.backgroundColor, image: style.backgroundImage, opacity: style.opacity }); }
               const style = el && getComputedStyle(el);
-              return { target: node.target, html: node.html, checks: node.any.map(check => ({ id: check.id, data: check.data, message: check.message })), foreground: style?.color, fontSize: style?.fontSize, fontWeight: style?.fontWeight, backgrounds };
+              return { target: node.target, html: node.html, checks: node.any.map(check => ({ id: check.id, data: check.data, message: check.message })), foreground: style?.color, fontSize: style?.fontSize, fontWeight: style?.fontWeight, rect: el ? { x: el.getBoundingClientRect().x, y: el.getBoundingClientRect().y, width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height } : null, backgrounds };
             }) })) };
           });
+          // Sample actual rendered backgrounds with text hidden, including gradients.
+          // Screenshots stay in memory; off-screen or non-RGB cases remain for manual review.
+          const undecided = audit.incomplete.flatMap(rule => rule.id === 'color-contrast' ? rule.nodes : []);
+          if (undecided.length) {
+            const hidden = await page.addStyleTag({ content: '* { -webkit-text-fill-color: transparent !important; text-shadow: none !important; }' });
+            const shot = await page.screenshot({ animations: 'disabled' });
+            await hidden.evaluate(el => el.remove());
+            const measurements = await page.evaluate(async ({ png, nodes }) => {
+              const image = new Image(); image.src = `data:image/png;base64,${png}`; await image.decode();
+              const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
+              const ctx = canvas.getContext('2d', { willReadFrequently: true }); ctx.drawImage(image, 0, 0);
+              const luminance = rgb => rgb.map(n => { const c = n / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }).reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+              return nodes.map(node => {
+                const box = node.rect, components = /^rgb\((\d+), (\d+), (\d+)\)$/.exec(node.foreground || '');
+                if (!box || !components || box.width < 2 || box.height < 2 || box.x < 0 || box.y < 0 || box.x + box.width > canvas.width || box.y + box.height > canvas.height) return null;
+                const text = components.slice(1).map(Number), samples = [];
+                for (const y of [0.25, 0.5, 0.75]) for (const x of [0.2, 0.5, 0.8]) {
+                  const pixel = Array.from(ctx.getImageData(Math.floor(box.x + box.width * x), Math.floor(box.y + box.height * y), 1, 1).data).slice(0, 3);
+                  const [dark, light] = [luminance(text), luminance(pixel)].sort((a, b) => a - b);
+                  samples.push({ background: pixel, ratio: Number(((light + 0.05) / (dark + 0.05)).toFixed(2)) });
+                }
+                return samples;
+              });
+            }, { png: shot.toString('base64'), nodes: undecided });
+            undecided.forEach((node, i) => { node.backgroundSamples = measurements[i]; });
+          }
           const focus = [];
           const focusable = await page.evaluate(() => {
-            window.__auditTabStops = Array.from(document.querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex],[contenteditable="true"]')).filter(el => { const style = getComputedStyle(el); return el.tabIndex >= 0 && !el.disabled && el.getClientRects().length > 0 && style.visibility !== 'hidden' && !el.closest('[inert],[aria-hidden="true"]'); });
+            window.__auditTabStops = Array.from(document.querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex],[contenteditable="true"]')).filter(el => { const style = getComputedStyle(el); const closed = el.closest('details:not([open])'); const inClosedDetails = closed && !closed.querySelector(':scope > summary')?.contains(el); return el.tabIndex >= 0 && !el.disabled && el.getClientRects().length > 0 && style.visibility !== 'hidden' && !el.closest('[inert],[aria-hidden="true"]') && !inClosedDetails; });
             return window.__auditTabStops.length;
           });
           const reached = new Set();
@@ -96,7 +122,7 @@ try {
             if (current) { focus.push(current); if (current.index >= 0) reached.add(current.index); }
             if (reached.size === focusable && focusable > 0) break;
           }
-          const unreachable = await page.evaluate(indices => window.__auditTabStops.filter((_, i) => !indices.includes(i)).map(el => ({ tag: el.tagName, type: el.getAttribute('type'), html: el.outerHTML.slice(0, 300) })), Array.from(reached));
+          const unreachable = await page.evaluate(indices => window.__auditTabStops.filter((el, i) => el.isConnected && !indices.includes(i)).map(el => ({ tag: el.tagName, type: el.getAttribute('type'), html: el.outerHTML.slice(0, 300) })), Array.from(reached));
           const scroll = await page.evaluate(() => document.documentElement.scrollWidth);
           if (scroll > width + 1 || errors.length || audit.violations.length || unreachable.length || (focusable > 0 && !focus.length) || focus.some(item => item.outline === 'none' && item.shadow === 'none')) failed = true;
           console.log(JSON.stringify({ app: name, mode, path, width, scroll, focusable, reached: reached.size, unreachable, focusCount: focus.length, focusWithoutOutline: focus.filter(item => item.outline === 'none' && item.shadow === 'none').slice(0, 5), violations: audit.violations, incomplete: audit.incomplete.map(item => ({ id: item.id, count: item.nodes.length })), errors }));

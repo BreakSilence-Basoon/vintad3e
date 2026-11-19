@@ -80,6 +80,11 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
       assert.equal(await evaluate("document.querySelector('.gtm-sync-basis').textContent"), `${platform} 동기화 기록 없음`);
       await evaluate("document.querySelector('.gtm-sns-score-toggle').click()");
       assert.equal(await evaluate("document.querySelector('.gtm-sns-score-toggle').getAttribute('aria-expanded')"), 'true');
+      await waitFor(async () => evaluate("(()=>{if(location.search.includes('supporter-2')&&document.querySelector('.gtm-sns-performance-table__row a')?.href.includes('/post/supporter-2/'))return true;const s=document.querySelector('#coupon-staff');if(s&&!s.disabled){s.value='supporter-2';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
+      assert.equal(await evaluate("document.querySelectorAll('.gtm-sns-performance-table__row').length"), 2);
+      assert.ok(await evaluate("[...document.querySelectorAll('.gtm-sns-performance-table__row a')].every(a=>new URL(a.href).hostname==='example.invalid' && a.href.includes('/post/supporter-2/'))"));
+      assert.ok(await evaluate("[...document.querySelectorAll('.gtm-sns-performance-table__row .register-toggle-button')].every(button=>button.disabled)"));
+      await waitFor(async () => evaluate("(()=>{if(location.search.includes('supporter-1')&&[...document.querySelectorAll('.gtm-sns-performance-table__row a')].some(a=>a.href.endsWith('/post/1')))return true;const s=document.querySelector('#coupon-staff');if(s&&!s.disabled){s.value='supporter-1';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
     }
     await send('Page.navigate',{url:`${origin}/settlements`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('#coupon-staff'))"));

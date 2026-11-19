@@ -30,4 +30,11 @@ test('SNS posts are restricted to opted-in synthetic accounts and links', () => 
   const posts = getSnsFixturePosts('development', '1', 'tiktok', 'supporter-1');
   assert.equal(posts.length, 2);
   assert.ok(posts.every(post => new URL(post.postUrl!).hostname === 'example.invalid'));
+  for (const platform of ['instagram', 'tiktok'] as const) {
+    const first = getSnsFixturePosts('development', '1', platform, 'supporter-1');
+    const second = getSnsFixturePosts('development', '1', platform, 'supporter-2');
+    assert.equal(second.length, 2);
+    assert.ok(second.every(post => new URL(post.postUrl!).hostname === 'example.invalid' && !first.some(item => item.id === post.id)));
+    assert.equal(getSnsFixturePosts('production', '1', platform, 'supporter-2').length, 0);
+  }
 });

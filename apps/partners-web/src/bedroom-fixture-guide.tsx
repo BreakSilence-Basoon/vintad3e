@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { guideEnabled } from './fixture-guide';
 import { BedroomFixtureControls } from './bedroom-fixture-controls';
+import { BedroomFixtureGallery } from './bedroom-fixture-gallery';
 
 const copy = {
   ko: { brief: '작가 브리프', contents: '목차', skip: '본문으로 건너뛰기', top: '맨 위로', sections: ['빈타제 소개', 'proj. bedroom 개요', '전시 구성', '전시 진행 프로세스', '공간의 분위기 및 비주얼 방향', '그래픽 아카이브', '참여 작가에게 요청드리는 사항', '빈타제 제공 사항', '공간 정보', '판매 및 정산 기준', '정산 안내', '프로젝트 비전'], paragraphs: ['작품과 이야기를 함께 소개하는 공간입니다.', '작가의 작업을 가까이에서 만날 수 있는 전시를 만듭니다.', '작품의 구성과 전시 기간을 함께 정합니다.', '전시 준비부터 마무리까지 일정을 함께 확인합니다.', '작품과 공간의 분위기가 어우러지도록 준비합니다.', '작품을 기록하고 이야기를 나눕니다.', '전시에 필요한 작품과 자료를 함께 확인합니다.', '전시 운영에 필요한 내용을 협의합니다.', '공간의 구성과 설치 위치를 미리 확인합니다.', '판매와 정산 조건은 협업 전에 함께 정합니다.', '판매 내역과 지급 일정을 함께 확인합니다.', '서로의 작업이 더 많은 사람에게 닿도록 함께합니다.'], revenue: '판매 금액 배분', artist: '작가', partner: '빈타제', schedule: ['작품과 전시 방향을 확인합니다.', '전시 준비와 설치를 진행합니다.', '전시 종료 후 정산을 진행합니다.'] },
@@ -16,7 +17,7 @@ export function BedroomFixtureGuide({ language }: { language: string }) {
     <main id="bedroom-content" tabIndex={-1}><div className="bedroom-title"><h1>proj.bedroom</h1><div className="bedroom-title-meta"><p>{text.brief}</p></div></div>
       <div className="bedroom-reading"><div className="bedroom-article"><details className="bedroom-mobile-contents"><summary>{text.contents}</summary><nav><ol>{text.sections.map((heading, index) => <li key={heading}><a href={`#section-${index + 1}`}>{heading}</a></li>)}</ol></nav></details>
         <article aria-label={text.brief}>{text.sections.map((heading, index) => <section key={heading} aria-labelledby={`section-${index + 1}`}><h2 id={`section-${index + 1}`}>{heading}</h2><p>{text.paragraphs[index]}</p>
-          {(index === 7 || index === 8) && Array.from({ length: index === 7 ? 1 : 10 }, (_, imageIndex) => <figure key={imageIndex}><svg viewBox="0 0 800 500" width="800" height="500" style={{ maxWidth: '100%', height: 'auto' }} role="img" aria-label={heading} xmlns="http://www.w3.org/2000/svg"><rect width="800" height="500" fill="#eeece8" /><rect x="120" y="80" width="560" height="340" fill="#d7d3cd" /><circle cx="400" cy="250" r="112" fill="#b9b4ae" /></svg></figure>)}
+          {(index === 7 || index === 8) && <BedroomFixtureGallery language={lang} count={index === 7 ? 1 : 10} />}
           {index === 3 && <ol className="bedroom-schedule">{text.schedule.map((item, step) => <li key={item}><span className="bedroom-schedule-time">{step + 1}</span><ul className="bedroom-schedule-tasks"><li>{item}</li></ul></li>)}</ol>}
           {index === 9 && <div className="bedroom-revenue"><div className="bedroom-revenue-bar"><div><span>{text.artist}</span><strong>60<small>%</small></strong></div><div><span>{text.partner}</span><strong>40<small>%</small></strong></div></div><p className="bedroom-revenue-label">{text.revenue}</p></div>}
         </section>)}</article></div></div></main>

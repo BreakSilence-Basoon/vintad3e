@@ -25,7 +25,11 @@ export function subscribeBookmarks(listener: () => void) {
 export function setFixtureBookmark(id: string, saved: boolean): boolean {
   if (!allowed.has(id)) return false;
   try {
-    const ids = new Set(parseFixtureBookmarks(bookmarkSnapshot()));
+    const raw = window.sessionStorage.getItem(key) ?? '[]';
+    if (raw.length > 2048) return false;
+    const value: unknown = JSON.parse(raw);
+    if (!Array.isArray(value) || value.some(item => typeof item !== 'string' || !allowed.has(item)) || new Set(value).size !== value.length) return false;
+    const ids = new Set<string>(value);
     if (saved) ids.add(id); else ids.delete(id);
     window.sessionStorage.setItem(key, JSON.stringify([...ids]));
     window.dispatchEvent(new Event(changedEvent));

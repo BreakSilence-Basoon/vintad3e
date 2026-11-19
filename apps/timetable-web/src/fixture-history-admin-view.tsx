@@ -6,7 +6,7 @@ import { AttendanceHistoryPager } from './attendance-history-pager';
 import { FixtureHistoryList } from './fixture-history-list';
 import { toSeoulDateTimeInput } from './date-time';
 import { buildHistoryHref } from './history-filters';
-import { fixtureHistoryDay, historyWithinShiftWindow, parseHistoryEdits, selectHistory, type HistoryEdits, type HistoryRecord } from './fixture-history-admin';
+import { fixtureHistoryDay, historyNotInFuture, historyWithinShiftWindow, parseHistoryEdits, selectHistory, type HistoryEdits, type HistoryRecord } from './fixture-history-admin';
 import type { AttendanceHistoryFilters } from './attendance-history-filter';
 
 const slot = 'vintad3e-timetable-history-fixture';
@@ -32,6 +32,7 @@ function HistoryEditor({ record, originalStart, onClose, onSave }: { record: His
     const endsAt = record.endsAt && end === toSeoulDateTimeInput(record.endsAt) ? record.endsAt : end ? inputInstant(end) : null;
     if (!startsAt || end && !endsAt) { setError('정정할 출퇴근 시각이 필요합니다.'); return; }
     if (endsAt && endsAt <= startsAt) { setError('퇴근 시각은 출근 시각보다 늦어야 합니다.'); return; }
+    if (!historyNotInFuture(startsAt, endsAt, Date.now())) { setError('아직 지나지 않은 미래 시각으로 출퇴근 기록을 정정할 수 없습니다.'); return; }
     if (!historyWithinShiftWindow(originalStart, startsAt, endsAt)) { setError('출퇴근 시각은 예정 근무의 허용 범위 안에서만 입력할 수 있습니다.'); return; }
     if (record.endsAt && !endsAt && !confirmed) return;
     if (startsAt === record.startsAt && endsAt === record.endsAt) { setError('변경된 출퇴근 시각이 없습니다.'); return; }

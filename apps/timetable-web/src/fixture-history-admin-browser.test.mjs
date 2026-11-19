@@ -37,6 +37,10 @@ test('fixture administrator edits, reloads and deletes attendance with required 
     assert.ok(await evaluate("document.querySelector('[role=alert]').textContent.includes('메모를 작성해주세요')"));
     await evaluate("(()=>{const x=document.querySelector('dialog input[name=reason]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,'합성 사유');x.dispatchEvent(new Event('input',{bubbles:true}))})()");
     await evaluate("(()=>{const x=document.querySelector('dialog input[name=checkInAt]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,x.value.slice(0,11)+'08:55');x.dispatchEvent(new Event('input',{bubbles:true}));x.dispatchEvent(new Event('change',{bubbles:true}))})()");
+    await evaluate("(()=>{const x=document.querySelector('dialog input[name=checkOutAt]');window.originalCheckout=x.value;Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,'2099-01-01T17:00');x.dispatchEvent(new Event('input',{bubbles:true}));x.dispatchEvent(new Event('change',{bubbles:true}));})()");
+    await evaluate("document.querySelector('dialog form').requestSubmit()");
+    await waitFor(async()=>evaluate("document.querySelector('[role=alert]')?.textContent.includes('미래 시각')"));
+    await evaluate("(()=>{const x=document.querySelector('dialog input[name=checkOutAt]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,window.originalCheckout);x.dispatchEvent(new Event('input',{bubbles:true}));x.dispatchEvent(new Event('change',{bubbles:true}));})()");
     await evaluate("document.querySelector('dialog form').requestSubmit()");
     await waitFor(async()=>evaluate("!document.querySelector('dialog[open]') && document.querySelector('.attendance-history-card__note')?.textContent === '합성 사유'"));
     await evaluate('window.__historyBeforeReload = true');

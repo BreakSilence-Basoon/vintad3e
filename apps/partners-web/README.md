@@ -10,4 +10,4 @@
 
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/partners-web dev`를 실행하고 `http://127.0.0.1:3828`을 엽니다.
 
-개발 설정의 `/proj-bedroom`에서는 합성 협업처 목록과 조건·지급 내역을 표시합니다. 이름·비율·금액·문서 주소는 모두 합성 값이며 실제 협업처나 계약과 무관합니다. 설정이 없거나 운영 환경에서는 제공하지 않습니다.
+개발 설정의 `/proj-bedroom`에서는 합성 협업처 두 곳의 목록과 각 협업처의 조건·지급 내역을 표시합니다. 이름·비율·금액·문서 주소는 모두 합성 값이며 실제 협업처나 계약과 무관합니다. 설정이 없거나 운영 환경에서는 제공하지 않습니다.

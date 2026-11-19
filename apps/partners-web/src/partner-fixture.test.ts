@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getDjFixture, getPartnerFixture } from './partner-fixture.ts';
-import { bedroomFixture } from './bedroom-fixture.ts';
+import { bedroomFixture, bedroomFixtures } from './bedroom-fixture.ts';
 import { filterLedger } from './ledger-filter.ts';
 import { eventOnDay, monthEvents } from './partner-schedule.ts';
 
@@ -43,4 +43,17 @@ test('bedroom partner and settlement exist only in the opted-in development fixt
     assert.equal(fixture.ledger.rows[0].status, 'PENDING');
     assert.equal(fixture.ledger.rows[0].completedAt, null);
   }
+  assert.deepEqual(bedroomFixtures('development', '1', '2026-11-18')?.map(partner => partner.id), ['partner-01', 'partner-02']);
+  const second = bedroomFixture('development', '1', '2026-11-18', 'partner-02');
+  assert.ok(second);
+  assert.equal(second.partner.name, '협업처 02');
+  assert.equal(second.partner.terms[0].value, '판매금액의 7%');
+  assert.equal(second.ledger.kind, 'ready');
+  if (second.ledger.kind === 'ready') {
+    assert.equal(second.ledger.rows[0].counterparty, second.partner.name);
+    assert.equal(second.ledger.rows[0].amount, '7000');
+    assert.equal(second.ledger.rows[0].status, 'COMPLETED');
+  }
+  assert.equal(bedroomFixture('development', '1', '2026-11-18', 'unknown'), null);
+  assert.equal(bedroomFixture('production', '1', '2026-11-18', 'partner-02'), null);
 });

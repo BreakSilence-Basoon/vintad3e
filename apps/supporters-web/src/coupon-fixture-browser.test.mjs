@@ -51,6 +51,7 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
     const send = (method,params={}) => new Promise((resolve,reject) => { const id = ++sequence; pending.set(id,{resolve,reject}); socket.send(JSON.stringify({id,method,params})); });
     closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
+    const selectFixtureYear = async () => waitFor(async () => evaluate("(()=>{if(document.querySelector('.settlement-history__year-value')?.textContent==='2026년')return true;const b=document.querySelector('[aria-label=\"이전 연도\"]');if(b&&!b.disabled)b.click();return false;})()"));
     await send('Page.navigate',{url:`${origin}/coupon`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('#coupon-staff'))"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.coupon-types'))return true;const s=document.querySelector('#coupon-staff');if(s&&!s.disabled){s.value='supporter-1';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
@@ -89,15 +90,21 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
     await send('Page.navigate',{url:`${origin}/settlements`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('#coupon-staff'))"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.settlement-history__table input:not(:disabled)'))return true;const s=document.querySelector('#coupon-staff');if(s&&!s.disabled){s.value='supporter-1';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
+    await selectFixtureYear();
+    assert.ok(await evaluate("[...document.querySelectorAll('.settlement-history__table tbody tr')].find(row=>row.cells[0].textContent==='10월').cells[1].textContent.includes('10,000원')"));
     assert.equal(await evaluate("document.querySelector('.settlement-history__table tbody input').checked"), false);
     await evaluate("document.querySelector('.settlement-history__table tbody input').click()");
     await waitFor(async () => evaluate("document.querySelector('.settlement-history__table tbody input')?.checked === true"));
     assert.ok(await evaluate("document.querySelector('.settlement-history__table tbody input').getAttribute('aria-label').startsWith('지급 완료')"));
     await evaluate('window.__beforeSettlementReload = true');
     await send('Page.reload');
-    await waitFor(async () => evaluate("window.__beforeSettlementReload !== true && document.querySelector('.settlement-history__table tbody input:not(:disabled)')?.checked === true"));
+    await waitFor(async () => evaluate("window.__beforeSettlementReload !== true && Boolean(document.querySelector('.settlement-history__table tbody input:not(:disabled)'))"));
+    await selectFixtureYear();
+    await waitFor(async () => evaluate("document.querySelector('.settlement-history__table tbody input:not(:disabled)')?.checked === true"));
     await waitFor(async () => evaluate("(()=>{const s=document.querySelector('#coupon-staff');if(document.querySelector('[data-fixture-staff=\"supporter-2\"] .settlement-history__table tbody input:not(:disabled)'))return true;if(s&&!s.disabled){s.value='supporter-2';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
+    await selectFixtureYear();
     assert.equal(await evaluate("document.querySelector('.settlement-history__table tbody input').checked"), false);
+    assert.ok(await evaluate("[...document.querySelectorAll('.settlement-history__table tbody tr')].find(row=>row.cells[0].textContent==='10월').cells[1].textContent.includes('20,000원')"));
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

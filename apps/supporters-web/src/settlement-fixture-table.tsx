@@ -5,9 +5,10 @@ import { SortToggleButton, type SortDirection } from './sort-toggle-button';
 import { SettlementPaymentCheckbox } from './settlement-payment-checkbox';
 import { koreanYear, nextKoreanYearBoundary, settlementViewerLastYear, settlementViewerMonths } from './settlement-viewer-calendar';
 import { readFixturePayouts, writeFixturePayout, type FixturePayouts } from './settlement-fixture-storage';
+import { fixturePayoutAmount } from './settlement-fixture-values';
 
 const krw = new Intl.NumberFormat('ko-KR');
-const amountFor = (staff: string, month: string) => staff === 'supporter-1' && month === '2026-10' ? 10000 : null;
+const amountFor = fixturePayoutAmount;
 function todayInKorea() {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
   const value = (type: string) => parts.find(part => part.type === type)?.value ?? '';

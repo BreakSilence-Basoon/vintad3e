@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getPartnerFixture } from './partner-fixture.ts';
+import { bedroomFixture } from './bedroom-fixture.ts';
 import { filterLedger } from './ledger-filter.ts';
 import { eventOnDay, monthEvents } from './partner-schedule.ts';
 
@@ -20,4 +21,17 @@ test('fixture requires explicit development opt-in and connects calendar to rent
   assert.equal(filterLedger(result.ledger.rows, { from: '', to: '', query: '', status: 'PENDING' }).length, 1);
   assert.equal(filterLedger(result.ledger.rows, { from: '', to: '', query: '02', status: 'PENDING' })[0].counterparty, '대관처 02');
   assert.equal(filterLedger(result.ledger.rows, { from: '', to: '', query: '02', status: 'COMPLETED' }).length, 0);
+});
+
+test('bedroom partner and settlement exist only in the opted-in development fixture', () => {
+  for (const [env, enabled, day] of [['production','1','2026-11-18'], ['development',undefined,'2026-11-18'], ['development','1','2026-02-30']] as const) assert.equal(bedroomFixture(env, enabled, day), null);
+  const fixture = bedroomFixture('development', '1', '2026-11-18');
+  assert.ok(fixture);
+  assert.equal(fixture.partner.id, 'partner-01');
+  assert.equal(fixture.ledger.kind, 'ready');
+  if (fixture.ledger.kind === 'ready') {
+    assert.equal(fixture.ledger.rows[0].counterparty, fixture.partner.name);
+    assert.equal(fixture.ledger.rows[0].status, 'PENDING');
+    assert.equal(fixture.ledger.rows[0].completedAt, null);
+  }
 });

@@ -24,6 +24,8 @@ test('DJ entry is unavailable without the development fixture', { timeout: 60000
     const response = await waitFor(async () => { const result = await fetch(`${origin}/dj`); return result.status === 404 ? result : false; });
     assert.equal(response.status, 404);
     assert.ok(!(await response.text()).includes('세무사 전달문'));
+    assert.equal((await fetch(`${origin}/proj-bedroom`)).status, 404);
+    assert.equal((await fetch(`${origin}/proj-bedroom/partner-01`)).status, 404);
   } finally {
     server.kill('SIGTERM');
     if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000)]);
@@ -66,6 +68,18 @@ test('fixture calendar links to rental ledger and detail in Chrome', { timeout: 
     await waitFor(async () => evaluate("document.querySelectorAll('.partners-ledger tbody tr').length===1 && document.querySelector('.partners-ledger tbody').textContent.includes('대관처 02')"));
     assert.ok(await evaluate("document.querySelector('.partners-ledger tbody').textContent.includes('미수납')"));
     assert.ok(await evaluate("!document.querySelector('.partners-ledger tbody').textContent.includes('100,000원')"));
+    await send('Page.navigate',{url:origin});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.partners-calendar__chip[href=\"/proj-bedroom\"]'))"));
+    await evaluate("document.querySelector('.partners-calendar__chip[href=\"/proj-bedroom\"]').click()");
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.partners-counterpart-card'))"));
+    assert.equal(await evaluate("document.querySelector('.partners-counterpart-card').getAttribute('href')"), '/proj-bedroom/partner-01');
+    await waitFor(async () => evaluate("(()=>{if(location.pathname==='/proj-bedroom/partner-01')return true;document.querySelector('.partners-counterpart-card')?.click();return false;})()"));
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.partners-settlement-terms'))"));
+    assert.ok(await evaluate("document.querySelector('.partners-counterpart-heading h1').textContent.includes('협업처 01')"));
+    assert.ok(await evaluate("document.querySelector('.partners-ledger tbody').textContent.includes('5,000원')"));
+    await evaluate("document.querySelector('.partners-settlement-terms summary').click()");
+    assert.ok(await evaluate("document.querySelector('.partners-settlement-terms').textContent.includes('판매금액의 5%')"));
+    assert.equal((await fetch(`${origin}/proj-bedroom/unknown`)).status, 404);
     await send('Page.navigate',{url:`${origin}/dj`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.partners-accountant'))"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.partners-accountant__row').length===2)return true;[...document.querySelectorAll('.partners-accountant button')].find(x=>x.textContent==='DJ 추가')?.click();return false;})()"));

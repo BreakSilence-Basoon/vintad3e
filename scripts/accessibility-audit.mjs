@@ -81,7 +81,7 @@ try {
           const focusable = await page.evaluate(() => Array.from(document.querySelectorAll('a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])')).filter(el => { const style = getComputedStyle(el); return el.getClientRects().length > 0 && style.visibility !== 'hidden' && !el.closest('[inert],[aria-hidden="true"]'); }).length);
           for (let i = 0; i < 15; i++) {
             await page.keyboard.press('Tab');
-            const current = await page.evaluate(() => { const el = document.activeElement; if (!el || el === document.body) return null; const style = getComputedStyle(el); return { tag: el.tagName, type: el.getAttribute('type'), isFocused: el.matches(':focus'), hasFocus: document.hasFocus(), id: el.id, classes: typeof el.className === 'string' ? el.className : '', outline: style.outlineStyle, outlineWidth: style.outlineWidth, shadow: style.boxShadow, visible: el.getClientRects().length > 0 }; });
+            const current = await page.evaluate(() => { const el = document.activeElement; if (!el || el === document.body) return null; const style = getComputedStyle(el); return { tag: el.tagName, type: el.getAttribute('type'), isFocused: el.matches(':focus'), focusWithin: el.matches(':focus-within'), hasFocus: document.hasFocus(), id: el.id, classes: typeof el.className === 'string' ? el.className : '', outline: style.outlineStyle, outlineWidth: style.outlineWidth, shadow: style.boxShadow, visible: el.getClientRects().length > 0 }; });
             if (current) focus.push(current);
           }
           const scroll = await page.evaluate(() => document.documentElement.scrollWidth);

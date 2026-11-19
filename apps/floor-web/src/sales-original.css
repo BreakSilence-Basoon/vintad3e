@@ -348,7 +348,7 @@
   font-weight: 800;
 }
 
-input:focus {
+input:focus-within {
   outline: 2px solid #2a5746 !important;
   outline-offset: 2px;
 }

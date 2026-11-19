@@ -1,8 +1,8 @@
 # 앱별 실행을 위한 준비
 
-[다른 앱 화면 실행하기](local-apps.md)
+[처음 실행하기](first-run.md) · [다른 앱 화면 실행하기](local-apps.md)
 
-현재 [Timetable API](../apps/timetable-api/README.md)는 일부 조회와 제한된 관리자 변경을 지원하는 실험 단계이며, 실사용할 수 있는 완성 앱은 없습니다. 실제 설치와 운영 방법은 해당 앱을 검증한 뒤 안내합니다.
+화면을 가상의 자료로 살펴보는 방법은 위 안내를 따르세요. [Timetable API](../apps/timetable-api/README.md)와 [Ledger API](../apps/ledger-api/README.md)는 별도 실험 단계입니다. 실제 가게 자료를 안전하게 처리하는 업무용 설치는 아직 제공하지 않습니다.
 
 - `apps/`: 각각의 업무 앱
 - `packages/`: 두 앱 이상이 필요로 하거나 별도 검증이 필요한 공통 기능

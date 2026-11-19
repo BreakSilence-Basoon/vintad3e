@@ -71,4 +71,4 @@ node scripts/local-api-fixture.cjs
 
 `examples/timetable/staff.json`에는 사용자가 지정한 가명 10명과 임의의 표시용 직급이 들어 있습니다. 모두 합성 데이터이며 실제 직원이나 계정과 연결하지 않습니다. 직급은 화면 표시용일 뿐 권한을 부여하지 않습니다.
 
-공개 TimeTable 직원 저장 스키마는 사업장 ID와 직원 ID만 저장하며 이름과 직급은 저장하지 않습니다. `examples/timetable/timetable-projection.mjs`는 명시한 가상 사업장 ID와 직원 ID만 변환합니다. 기존 API fixture에 이 예제는 자동으로 추가되지 않으며 실제 데이터베이스에 쓰지 않습니다. 다른 앱에서 사용하기 전에는 각 앱의 데이터 형식과 연결 방식을 따로 확인해야 합니다.
+공개 Timetable 직원 저장 형식는 사업장 ID와 직원 ID만 저장하며 이름과 직급은 저장하지 않습니다. `examples/timetable/timetable-projection.mjs`는 명시한 가상 사업장 ID와 직원 ID만 변환합니다. 기존 API fixture에 이 예제는 자동으로 추가되지 않으며 실제 데이터베이스에 쓰지 않습니다. 다른 앱에서 사용하기 전에는 각 앱의 데이터 형식과 연결 방식을 따로 확인해야 합니다.

@@ -122,7 +122,7 @@ try {
             if (current) { focus.push(current); if (current.index >= 0) reached.add(current.index); }
             if (reached.size === focusable && focusable > 0) break;
           }
-          const unreachable = await page.evaluate(indices => window.__auditTabStops.filter((el, i) => el.isConnected && !indices.includes(i)).map(el => ({ tag: el.tagName, type: el.getAttribute('type'), html: el.outerHTML.slice(0, 300) })), Array.from(reached));
+          const unreachable = await page.evaluate(indices => window.__auditTabStops.filter((el, i) => el.isConnected && !el.disabled && !indices.includes(i)).map(el => ({ tag: el.tagName, type: el.getAttribute('type'), html: el.outerHTML.slice(0, 300) })), Array.from(reached));
           const scroll = await page.evaluate(() => document.documentElement.scrollWidth);
           if (scroll > width + 1 || errors.length || audit.violations.length || unreachable.length || (focusable > 0 && !focus.length) || focus.some(item => item.outline === 'none' && item.shadow === 'none')) failed = true;
           console.log(JSON.stringify({ app: name, mode, path, width, scroll, focusable, reached: reached.size, unreachable, focusCount: focus.length, focusWithoutOutline: focus.filter(item => item.outline === 'none' && item.shadow === 'none').slice(0, 5), violations: audit.violations, incomplete: audit.incomplete.map(item => ({ id: item.id, count: item.nodes.length })), errors }));

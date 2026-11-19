@@ -26,6 +26,7 @@ test('bookmarks show the original empty state with fixtures disabled', { timeout
     assert.match(await response.text(), /저장한 게시물이 없습니다\./);
     assert.match(await (await fetch(`${origin}/meetings`)).text(), /회의 기록이 없습니다\./);
     assert.equal((await fetch(`${origin}/publications/00000000-0000-4000-8000-000000000001`)).status, 404);
+    assert.equal((await fetch(`${origin}/documents/legacy-document`)).status, 404);
     assert.equal((await fetch(`${origin}/api/publications/00000000-0000-4000-8000-000000000001/source`)).status, 404);
     assert.equal((await fetch(`${origin}/objects/00000000-0000-4000-8000-000000000003`)).status, 404);
     assert.match(await (await fetch(`${origin}/objects`)).text(), /파일이 없습니다\./);
@@ -60,6 +61,7 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
   let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(origin)).ok);
+    assert.equal((await fetch(`${origin}/documents/legacy-document`)).status, 404);
     await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
     const target = await (await fetch(`${debug}/json/new?about:blank`, {method:'PUT'})).json();
     socket = new WebSocket(target.webSocketDebuggerUrl);

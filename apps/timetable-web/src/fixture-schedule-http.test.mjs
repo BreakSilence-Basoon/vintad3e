@@ -47,12 +47,14 @@ test('development server renders schedule and paginates attendance', { timeout: 
     assert.match(html, /data-schedule-date="2026-02-08"/);
     assert.match(html, /schedule-calendar__shift--draft/);
     assert.match(html, /근무 상세 보기/);
-    const authStart = await fetch(`${origin}/auth/start`, { redirect: 'manual' });
+    const returnPath = '/?view=schedule&month=2026-02';
+    const authStart = await fetch(`${origin}/auth/start?${new URLSearchParams({ next: returnPath })}`, { redirect: 'manual' });
     assert.equal(authStart.status, 302);
     assert.equal(authStart.headers.get('location'), 'https://identity.example.invalid/authorize');
-    const authCallback = await fetch(`${origin}/auth/callback?code=example&state=example`, { redirect: 'manual', headers: { cookie: `__Host-vintad3e-login=${binding}` } });
+    const returnCookie = authStart.headers.getSetCookie().find(value => value.startsWith('__Host-vintad3e-return=')).split(';')[0];
+    const authCallback = await fetch(`${origin}/auth/callback?code=example&state=example`, { redirect: 'manual', headers: { cookie: `__Host-vintad3e-login=${binding}; ${returnCookie}` } });
     assert.equal(authCallback.status, 303);
-    assert.equal(authCallback.headers.get('location'), '/');
+    assert.equal(authCallback.headers.get('location'), returnPath);
     assert.ok(authCallback.headers.getSetCookie().some((cookie) => cookie.startsWith(`__Host-vintad3e-session=${session};`)));
     const authLogout = await fetch(`${origin}/auth/logout`, { method: 'POST', headers: { origin: 'https://app.example.invalid', cookie: `__Host-vintad3e-session=${session}` } });
     assert.equal(authLogout.status, 200);

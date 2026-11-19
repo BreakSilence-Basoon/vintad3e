@@ -1,5 +1,6 @@
 const loginName = '__Host-vintad3e-login';
 const sessionName = '__Host-vintad3e-session';
+const returnName = '__Host-vintad3e-return';
 const token = /^[A-Za-z0-9_-]{43}$/;
 const headers = { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff' };
 const fail = (status, error) => Response.json({ error }, { status, headers });
@@ -27,17 +28,48 @@ function validResponseCookie(value) {
   return Boolean(match && (token.test(match[2]) && Number(match[3]) > 0 && Number(match[3]) <= 900 || match[2] === '' && match[3] === '0'));
 }
 
+function safeReturnPath(value) {
+  if (typeof value !== 'string' || value.length > 2048 || !value.startsWith('/')) return '/';
+  let decoded = value;
+  for (let i = 0; i < 5; i++) {
+    if (/[\u0000-\u001f\u007f\\]/.test(decoded) || decoded.startsWith('//') || /%(?:2f|5c)/i.test(decoded)) return '/';
+    let next;
+    try { next = decodeURIComponent(decoded); } catch { if (i === 0) return '/'; break; }
+    if (next === decoded) break;
+    decoded = next;
+    if (i === 4) return '/';
+  }
+  try {
+    const url = new URL(value, 'https://timetable.invalid');
+    if (url.origin !== 'https://timetable.invalid' || url.pathname.startsWith('//')) return '/';
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch { return '/'; }
+}
+
+function returnTarget(header, binding) {
+  const values = (header ?? '').split(';').map(part => part.trim()).filter(part => part.startsWith(`${returnName}=`));
+  if (values.length !== 1 || !binding) return '/';
+  const encoded = values[0].slice(returnName.length + 1);
+  if (!/^[A-Za-z0-9_-]{1,3000}$/.test(encoded)) return '/';
+  try {
+    const bytes = Buffer.from(encoded, 'base64url');
+    if (bytes.toString('base64url') !== encoded) return '/';
+    const data = JSON.parse(bytes.toString('utf8'));
+    return data && data.binding === binding && typeof data.path === 'string' ? safeReturnPath(data.path) : '/';
+  } catch { return '/'; }
+}
+
 // Only the configured loopback service receives the two auth cookies; redirects are never followed server-side.
 export async function handleTimetableAuth(request, apiOrigin, action) {
   if (request.method !== 'GET' || !['start', 'callback'].includes(action)) return fail(404, 'not_found');
   const origin = loopbackOrigin(apiOrigin);
   const input = new URL(request.url);
   if (!origin) return fail(503, 'unavailable');
-  if (input.search.length > 1900 || action === 'start' && input.search) return fail(400, 'invalid_request');
+  if (input.search.length > 1900 || action === 'start' && ([...input.searchParams.keys()].some(key => key !== 'next') || input.searchParams.getAll('next').length > 1)) return fail(400, 'invalid_request');
   const cookie = selectedCookies(request.headers.get('cookie'));
   if (cookie === null) return fail(400, 'invalid_request');
   try {
-    const upstream = await fetch(`${origin}/auth/${action}${input.search}`, { method: 'GET', headers: cookie ? { cookie } : {}, redirect: 'manual', cache: 'no-store', signal: AbortSignal.timeout(5000) });
+    const upstream = await fetch(`${origin}/auth/${action}${action === 'callback' ? input.search : ''}`, { method: 'GET', headers: cookie ? { cookie } : {}, redirect: 'manual', cache: 'no-store', signal: AbortSignal.timeout(5000) });
     const cookies = upstream.headers.getSetCookie();
     if (cookies.length > 2 || cookies.some((value) => !validResponseCookie(value))) return fail(503, 'unavailable');
     const names = cookies.map((value) => value.split('=')[0]);
@@ -47,14 +79,24 @@ export async function handleTimetableAuth(request, apiOrigin, action) {
     if (action === 'start' && upstream.status === 302) {
       const location = new URL(upstream.headers.get('location'));
       if (location.protocol !== 'https:' || location.username || location.password || names.length !== 1 || names[0] !== loginName || cookies[0].startsWith(`${loginName}=;`)) return fail(503, 'unavailable');
+      if (input.searchParams.has('next')) {
+        const binding = cookies[0].slice(loginName.length + 1).split(';')[0];
+        const encoded = Buffer.from(JSON.stringify({ binding, path: safeReturnPath(input.searchParams.get('next')) })).toString('base64url');
+        output.append('set-cookie', `${returnName}=${encoded}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=300`);
+      }
       output.set('location', location.href);
       return new Response(null, { status: 302, headers: output });
     }
     if (action === 'callback' && upstream.status === 200 && cookies.length === 2 && cookies.some((value) => value.startsWith(`${loginName}=;`)) && cookies.some((value) => value.startsWith(`${sessionName}=`) && !value.startsWith(`${sessionName}=;`))) {
-      output.set('location', '/');
+      const binding = cookie?.split('; ').find(part => part.startsWith(`${loginName}=`))?.slice(loginName.length + 1);
+      output.set('location', returnTarget(request.headers.get('cookie'), binding));
+      output.append('set-cookie', `${returnName}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
       return new Response(null, { status: 303, headers: output });
     }
-    if (action === 'callback' && upstream.status === 401 && cookies.length === 1 && cookies[0].startsWith(`${loginName}=;`)) return Response.json({ error: 'login_failed' }, { status: 401, headers: output });
+    if (action === 'callback' && upstream.status === 401 && cookies.length === 1 && cookies[0].startsWith(`${loginName}=;`)) {
+      output.append('set-cookie', `${returnName}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
+      return Response.json({ error: 'login_failed' }, { status: 401, headers: output });
+    }
     return fail(503, 'unavailable');
   } catch { return fail(503, 'unavailable'); }
 }

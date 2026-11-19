@@ -81,7 +81,7 @@ try {
               let el; try { el = document.querySelector(node.target[0]); } catch {}
               const backgrounds = []; for (let cur = el; cur && backgrounds.length < 8; cur = cur.parentElement) { const style = getComputedStyle(cur); backgrounds.push({ color: style.backgroundColor, image: style.backgroundImage, opacity: style.opacity }); }
               const style = el && getComputedStyle(el);
-              return { target: node.target, html: node.html, checks: node.any.map(check => ({ id: check.id, data: check.data, message: check.message })), foreground: style?.color, fontSize: style?.fontSize, fontWeight: style?.fontWeight, rect: el ? { x: el.getBoundingClientRect().x, y: el.getBoundingClientRect().y, width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height } : null, backgrounds };
+              return { target: node.target, html: node.html, checks: node.any.map(check => ({ id: check.id, data: check.data, message: check.message })), foreground: style?.color, fontSize: style?.fontSize, fontWeight: style?.fontWeight, rect: el ? { x: el.getBoundingClientRect().x + window.scrollX, y: el.getBoundingClientRect().y + window.scrollY, width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height } : null, backgrounds };
             }) })) };
           });
           // Sample actual rendered backgrounds with text hidden, including gradients.
@@ -89,7 +89,9 @@ try {
           const undecided = audit.incomplete.flatMap(rule => rule.id === 'color-contrast' ? rule.nodes : []);
           if (undecided.length) {
             const hidden = await page.addStyleTag({ content: '* { -webkit-text-fill-color: transparent !important; text-shadow: none !important; }' });
-            const shot = await page.screenshot({ animations: 'disabled' });
+            const canCapturePage = await page.evaluate(() => document.documentElement.scrollHeight <= 15000);
+            if (canCapturePage) await page.evaluate(() => window.scrollTo(0, 0));
+            const shot = await page.screenshot({ animations: 'disabled', fullPage: canCapturePage });
             await hidden.evaluate(el => el.remove());
             const measurements = await page.evaluate(async ({ png, nodes }) => {
               const image = new Image(); image.src = `data:image/png;base64,${png}`; await image.decode();
@@ -123,9 +125,20 @@ try {
             if (reached.size === focusable && focusable > 0) break;
           }
           const unreachable = await page.evaluate(indices => window.__auditTabStops.filter((el, i) => el.isConnected && !el.disabled && !indices.includes(i)).map(el => ({ tag: el.tagName, type: el.getAttribute('type'), html: el.outerHTML.slice(0, 300) })), Array.from(reached));
+          const summaryFailures = [];
+          const summaries = page.locator('details > summary');
+          for (let i = 0, count = await summaries.count(); i < count; i++) {
+            const summary = summaries.nth(i);
+            if (!await summary.isVisible()) continue;
+            const before = await summary.evaluate(el => el.parentElement.open);
+            await summary.focus(); await page.keyboard.press('Enter');
+            const after = await summary.evaluate(el => el.parentElement.open);
+            if (before === after) summaryFailures.push(i);
+            else { await page.keyboard.press('Enter'); }
+          }
           const scroll = await page.evaluate(() => document.documentElement.scrollWidth);
-          if (scroll > width + 1 || errors.length || audit.violations.length || unreachable.length || (focusable > 0 && !focus.length) || focus.some(item => item.outline === 'none' && item.shadow === 'none')) failed = true;
-          console.log(JSON.stringify({ app: name, mode, path, width, scroll, focusable, reached: reached.size, unreachable, focusCount: focus.length, focusWithoutOutline: focus.filter(item => item.outline === 'none' && item.shadow === 'none').slice(0, 5), violations: audit.violations, incomplete: audit.incomplete.map(item => ({ id: item.id, count: item.nodes.length })), errors }));
+          if (scroll > width + 1 || errors.length || audit.violations.length || summaryFailures.length || unreachable.length || (focusable > 0 && !focus.length) || focus.some(item => item.outline === 'none' && item.shadow === 'none')) failed = true;
+          console.log(JSON.stringify({ app: name, mode, path, width, scroll, focusable, reached: reached.size, unreachable, focusCount: focus.length, summaryFailures, focusWithoutOutline: focus.filter(item => item.outline === 'none' && item.shadow === 'none').slice(0, 5), violations: audit.violations, incomplete: audit.incomplete.map(item => ({ id: item.id, count: item.nodes.length })), errors }));
           for (const rule of audit.incomplete) for (const node of rule.nodes) console.log(JSON.stringify({ record: 'incomplete-node', app: name, mode, path, width, rule: rule.id, ...node }));
         } catch (error) { failed = true; console.log(JSON.stringify({ app: name, mode, path, width, error: error.message })); }
         finally { await context.close(); }

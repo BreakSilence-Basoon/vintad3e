@@ -7,3 +7,5 @@
 여러 품목이 들어간 합성 판매는 품목별로 지정한 금액을 사용해 브리핑을 계산하고 같은 메뉴는 합산합니다. 단가가 서로 다르면 하나의 단가를 추정하지 않습니다. 실제 영수증이나 금액 배분을 추정하지 않습니다.
 
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/floor-web dev`를 실행하고 `http://127.0.0.1:3830` 또는 `http://127.0.0.1:3830/sales`를 엽니다.
+
+개발 환경에서 합성 자료 설정을 켜면 `/inventory`의 재료 현황과 메뉴별 재료를 읽기 전용으로 볼 수 있습니다. 실제 로그인·재고·저장 및 권한과 연결되지 않습니다.

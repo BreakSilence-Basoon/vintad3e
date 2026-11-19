@@ -67,6 +67,15 @@ test('fixture administrator edits, reloads and deletes attendance with required 
     await send('Page.reload');
     await waitFor(async()=>evaluate("window.__historyBeforeReload !== true && document.querySelectorAll('button.attendance-history-card').length === 6"));
     assert.equal(await evaluate("Boolean(document.querySelector('.attendance-history-card__note'))"), false);
+    await evaluate("sessionStorage.setItem('vintad3e-timetable-history-fixture','{bad');window.__historyBeforeReload=true");
+    await send('Page.reload');
+    await waitFor(async()=>evaluate("window.__historyBeforeReload !== true && document.querySelectorAll('button.attendance-history-card[data-hydrated=true]').length === 7"));
+    await evaluate("document.querySelectorAll('button.attendance-history-card')[1].click()");
+    await waitFor(async()=>evaluate("Boolean(document.querySelector('dialog[open] input[name=reason]'))"));
+    await evaluate("(()=>{const x=document.querySelector('dialog input[name=reason]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(x,'업무 메모');x.dispatchEvent(new Event('input',{bubbles:true}))})()");
+    await evaluate("document.querySelector('dialog form').requestSubmit()");
+    await waitFor(async()=>evaluate("document.querySelector('dialog [role=alert]')?.textContent.includes('출퇴근 시각을 저장하지 못했습니다')"));
+    assert.equal(await evaluate("sessionStorage.getItem('vintad3e-timetable-history-fixture')"), '{bad');
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(()=>{}),delay(3000)]);
     socket?.close();

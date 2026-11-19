@@ -10,20 +10,20 @@ const apps: Tile[] = ['Apparel', 'Timetable', 'Supporters', 'Partners', 'Library
   id: name.toLowerCase(), name, icon: `/images/neutral/${name.toLowerCase()}.svg`, tone: 'mono',
 }));
 const social: Tile[] = [
-  { id: 'instagram-official', name: 'official', accessibleName: 'Instagram official', icon: '/images/sns/instagram.svg', tone: 'sns' },
-  { id: 'instagram-store', name: 'store', accessibleName: 'Instagram store', icon: '/images/sns/instagram.svg', tone: 'sns' },
-  { id: 'tiktok-official', name: 'official', accessibleName: 'TikTok official', icon: '/images/sns/tiktok.svg', tone: 'sns' },
-  { id: 'tiktok-staff', name: 'staff', accessibleName: 'TikTok staff', icon: '/images/sns/tiktok.svg', tone: 'sns' },
-  { id: 'youtube-official', name: 'official', accessibleName: 'YouTube official', icon: '/images/sns/youtube.svg', tone: 'sns' },
+  { id: 'instagram-official', name: 'official', accessibleName: 'Instagram official', icon: '/images/neutral/service-instagram.svg', tone: 'sns' },
+  { id: 'instagram-store', name: 'store', accessibleName: 'Instagram store', icon: '/images/neutral/service-instagram.svg', tone: 'sns' },
+  { id: 'tiktok-official', name: 'official', accessibleName: 'TikTok official', icon: '/images/neutral/service-tiktok.svg', tone: 'sns' },
+  { id: 'tiktok-staff', name: 'staff', accessibleName: 'TikTok staff', icon: '/images/neutral/service-tiktok.svg', tone: 'sns' },
+  { id: 'youtube-official', name: 'official', accessibleName: 'YouTube official', icon: '/images/neutral/service-youtube.svg', tone: 'sns' },
   { id: 'shop', name: 'Shop', icon: '/images/neutral/shop.svg' },
-  { id: 'notion-homebase', name: 'Notion', accessibleName: 'Notion Homebase', icon: '/images/shortcuts/notion.png', tone: 'sns' },
+  { id: 'notion-homebase', name: 'Notion', accessibleName: 'Notion Homebase', icon: '/images/neutral/service-notion.svg', tone: 'sns' },
 ];
 const shortcuts: Tile[] = [
-  { id: 'cafe24-admin', name: '관리자센터', accessibleName: '카페24 관리자센터', icon: '/images/shortcuts/cafe24.png', tone: 'sns' },
-  { id: 'cafe24-hosting', name: '호스팅센터', accessibleName: '카페24 호스팅센터', icon: '/images/shortcuts/cafe24.png', tone: 'sns' },
-  { id: 'cafe24-developers', name: '개발자센터', accessibleName: '카페24 개발자센터', icon: '/images/shortcuts/cafe24.png', tone: 'sns' },
-  { id: 'meta-developers', name: 'Meta', accessibleName: 'Meta 개발자센터', icon: '/images/shortcuts/meta.svg', tone: 'sns' },
-  { id: 'tiktok-developers', name: 'TikTok', accessibleName: 'TikTok 개발자센터', icon: '/images/sns/tiktok.svg', tone: 'sns' },
+  { id: 'cafe24-admin', name: '관리자센터', accessibleName: '카페24 관리자센터', icon: '/images/neutral/service-cafe24.svg', tone: 'sns' },
+  { id: 'cafe24-hosting', name: '호스팅센터', accessibleName: '카페24 호스팅센터', icon: '/images/neutral/service-cafe24.svg', tone: 'sns' },
+  { id: 'cafe24-developers', name: '개발자센터', accessibleName: '카페24 개발자센터', icon: '/images/neutral/service-cafe24.svg', tone: 'sns' },
+  { id: 'meta-developers', name: 'Meta', accessibleName: 'Meta 개발자센터', icon: '/images/neutral/service-meta.svg', tone: 'sns' },
+  { id: 'tiktok-developers', name: 'TikTok', accessibleName: 'TikTok 개발자센터', icon: '/images/neutral/service-tiktok.svg', tone: 'sns' },
 ];
 function TileList({ items, labelledBy }: { items: Tile[]; labelledBy: string }) {
   return <ul className="portal-app-grid" aria-labelledby={labelledBy}>{items.map((item) => <li key={item.id} className="portal-app-grid__item">

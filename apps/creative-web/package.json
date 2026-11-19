@@ -8,7 +8,8 @@
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "test": "node --test src/creative-fixture.test.ts src/fixture-session.test.mjs src/fixture-confirmation.test.mjs src/fixture-confirmation-store.test.mjs",
-    "test:fixture-http": "node --test src/creative-fixture-http.test.mjs"
+    "test:fixture-http": "node --test src/creative-fixture-http.test.mjs",
+    "test:fixture-browser": "node --test src/interaction-browser.test.mjs"
   },
   "dependencies": {
     "@vintad3e/ui": "workspace:*",

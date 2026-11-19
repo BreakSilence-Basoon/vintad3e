@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getLibraryFixtures, searchLibraryFixtures, getFixtureSource } from './library-fixture.ts';
+import { getFixtureMeeting, MEETING_ID } from './fixture-meeting.ts';
+
+test('only the explicitly enabled development meeting exists', () => {
+  assert.equal(getFixtureMeeting('production', '1', MEETING_ID), null);
+  assert.equal(getFixtureMeeting('development', undefined, MEETING_ID), null);
+  assert.equal(getFixtureMeeting('development', '1', 'unknown'), null);
+  assert.equal(getFixtureMeeting('development', '1', MEETING_ID)?.title, '업무 회의');
+});
 
 test('documents exist only with explicit development opt-in', () => {
   assert.deepEqual(getLibraryFixtures('production', '1'), []);

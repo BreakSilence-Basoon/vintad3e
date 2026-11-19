@@ -58,7 +58,7 @@ test('original record entry and empty views do not create meetings or upload fil
     assert.equal(await evaluate("[...document.querySelectorAll('button')].find(x=>x.textContent==='회의 문서 확인').disabled"), true);
     await send('Page.navigate', { url: `${origin}/objects` });
     await waitFor(async () => evaluate("location.pathname === '/objects' && Boolean(document.querySelector('a[href=\"/objects/new\"]'))"));
-    assert.ok(await evaluate("document.querySelector('.library-empty').textContent.includes('파일이 없습니다.')"));
+    assert.equal(await evaluate("document.querySelector('.library-attachment-card__name')?.textContent"), '업무 안내.txt');
     await evaluate("document.querySelector('a[href=\"/objects/new\"]').click()");
     await waitFor(async () => evaluate("location.pathname === '/objects/new' && Boolean(document.querySelector('.library-register[data-hydrated=true]'))"));
     await evaluate("window.recordWrites=0;window.originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{const p=new URL(typeof input==='string'?input:input.url,location.href).pathname;if(p.startsWith('/api/objects')){window.recordWrites++;return Promise.reject(new Error('unexpected request'))}return window.originalFetch(input,init)}");

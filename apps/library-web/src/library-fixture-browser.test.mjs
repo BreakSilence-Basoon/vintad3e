@@ -27,6 +27,7 @@ test('bookmarks show the original empty state with fixtures disabled', { timeout
     assert.equal((await fetch(`${origin}/publications/00000000-0000-4000-8000-000000000001`)).status, 404);
     assert.equal((await fetch(`${origin}/api/publications/00000000-0000-4000-8000-000000000001/source`)).status, 404);
     assert.equal((await fetch(`${origin}/objects/00000000-0000-4000-8000-000000000003`)).status, 404);
+    assert.match(await (await fetch(`${origin}/objects`)).text(), /파일이 없습니다\./);
     assert.equal((await fetch(`${origin}/api/objects/00000000-0000-4000-8000-000000000003/source`)).status, 404);
     const legacy = await fetch(`${origin}/publications?q=${encodeURIComponent('매장 & 운영')}`, { redirect: 'manual' });
     assert.equal(legacy.status, 307);
@@ -87,7 +88,10 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     const objectPath = '/objects/00000000-0000-4000-8000-000000000003';
     assert.equal((await fetch(`${origin}${objectPath}?documentId=00000000-0000-4000-8000-000000000001`)).status, 404);
     assert.equal((await fetch(`${origin}/api/objects/unknown/source`)).status, 404);
-    await send('Page.navigate',{url:`${origin}${objectPath}`});
+    await send('Page.navigate',{url:`${origin}/objects`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.library-attachment-card'))"));
+    assert.equal(await evaluate("document.querySelector('.library-attachment-card__meta').textContent"), 'TXT · 1 KB');
+    await evaluate("document.querySelector('.library-attachment-card').click()");
     await waitFor(async () => evaluate("document.querySelector('h1')?.textContent === '업무 안내.txt'"));
     await waitFor(async () => evaluate("(()=>{const button=[...document.querySelectorAll('button')].find(x=>x.textContent==='파일 열기');button?.click();return Boolean(document.querySelector('pre.publication-content'));})()"));
     assert.equal(await evaluate("document.querySelector('pre.publication-content').textContent"), '업무를 시작하기 전에 필요한 사항을 확인합니다.');

@@ -28,10 +28,10 @@ test('apparel stock validation, saving and sales filters work with keyboard inpu
         await numbers.nth(1).fill('10'); await numbers.nth(0).fill('3');
         assert.equal(await numbers.nth(2).inputValue(), '7');
         await numbers.nth(2).fill('11');
-        await enter(page, page.locator('.shortage-save-button'));
+        await enter(page, page.locator('.shortage-table__row').first().locator('.shortage-save-button'));
         await page.locator('.admin-toast--error').filter({ hasText: '목표재고보다 클 수 없습니다' }).waitFor();
         await numbers.nth(2).fill('7');
-        await enter(page, page.locator('.shortage-save-button'));
+        await enter(page, page.locator('.shortage-table__row').first().locator('.shortage-save-button'));
         await page.locator('.admin-toast--success').filter({ hasText: '저장했습니다' }).waitFor();
         await page.reload();
         await enter(page, page.locator('.product-card__view-button').first());

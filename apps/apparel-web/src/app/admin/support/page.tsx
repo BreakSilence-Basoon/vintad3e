@@ -78,7 +78,7 @@ const dictionaryEntries: SupportDictionaryEntry[] = [
     category: '상품/옵션',
     term: '디자인',
     meaning:
-      '[Mac Miller], [Frank Ocean]처럼 여러 옵션 품목을 묶는 상품의 상위 단위입니다. 디자인 하나 안에 색상과 사이즈가 여러 개 들어갈 수 있습니다.',
+      '[아티스트 A], [아티스트 B]처럼 여러 옵션 품목을 묶는 상품의 상위 단위입니다. 디자인 하나 안에 색상과 사이즈가 여러 개 들어갈 수 있습니다.',
   },
   {
     category: '상품/옵션',
@@ -120,7 +120,7 @@ const dictionaryEntries: SupportDictionaryEntry[] = [
     category: '상품/옵션',
     term: '시리즈',
     meaning:
-      '같은 주제나 아티스트로 묶인 디자인 그룹입니다. [Mac Miller] 관련 디자인들이 여러 개라면 하나의 시리즈로 묶을 수 있습니다.',
+      '같은 주제나 아티스트로 묶인 디자인 그룹입니다. [아티스트 A] 관련 디자인들이 여러 개라면 하나의 시리즈로 묶을 수 있습니다.',
   },
   {
     category: '상품/옵션',

@@ -19,6 +19,9 @@ test('synthetic schedule edits require a memo and survive reload and deletion', 
   let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(origin)).ok); await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
+    const legacy = await fetch(`${origin}/admin/schedule?month=2026-02`, { redirect: 'manual' });
+    assert.equal(legacy.status, 307);
+    assert.equal(legacy.headers.get('location'), '/?view=schedule&month=2026-02');
     const target = await (await fetch(`${debug}/json/new?about:blank`, { method:'PUT' })).json(); socket = new WebSocket(target.webSocketDebuggerUrl);
     await new Promise((resolve,reject) => { socket.addEventListener('open',resolve,{once:true}); socket.addEventListener('error',reject,{once:true}); });
     let sequence=0; const pending = new Map();

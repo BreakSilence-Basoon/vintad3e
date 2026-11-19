@@ -103,7 +103,11 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     assert.equal(await evaluate("document.querySelector('.audit-filter-bar [name=keyword]').value"), '셔츠');
     await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 1"));
     assert.ok(await evaluate("document.querySelector('.sales-audit-card').textContent.includes('42,000 KRW')"));
-    await waitFor(async () => evaluate("(()=>{if(document.querySelector('.admin-toast--error')?.textContent.includes('Toss 동기화 실행에 실패했습니다.'))return true;[...document.querySelectorAll('button')].find(x=>x.textContent==='수동 갱신')?.click();return false;})()"));
+    await waitFor(async () => evaluate("(()=>{if(document.querySelector('.admin-toast--success')?.textContent.includes('Toss 동기화를 시작했습니다.'))return true;[...document.querySelectorAll('button')].find(x=>x.textContent==='수동 갱신')?.click();return false;})()"));
+    await send('Page.navigate',{url:`${origin}/admin/sales?range=all`});
+    await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 3 && document.querySelector('.sales-history-page')?.textContent.includes('가방')"));
+    await evaluate("[...document.querySelectorAll('button')].find(x=>x.textContent==='수동 갱신')?.click()");
+    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card').length"), 3);
     await waitFor(async () => evaluate("(()=>{if([...document.querySelectorAll('.admin-toast--error')].some(x=>x.textContent.includes('교차 검증 실행에 실패했습니다.')))return true;[...document.querySelectorAll('button')].find(x=>x.textContent==='교차 검증 즉시 실행')?.click();return false;})()"));
     await send('Page.navigate',{url:`${origin}/admin/support`});
     await waitFor(async () => evaluate("document.querySelectorAll('.support-results tbody tr').length > 30"));

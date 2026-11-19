@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3826",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/inventory-collection.test.ts src/inventory-fixture.test.ts src/inventory-stock.test.ts src/inventory-fixture-session.test.ts src/audit-filters.test.ts src/sales-overview-fixture.test.ts src/fixture-session.test.mjs src/fixture-confirmation.test.mjs",
+    "test": "node --test src/inventory-collection.test.ts src/inventory-fixture.test.ts src/inventory-stock.test.ts src/inventory-fixture-session.test.ts src/audit-filters.test.ts src/sales-overview-fixture.test.ts src/fixture-session.test.mjs src/fixture-confirmation.test.mjs src/sales-fixture-sync.test.ts",
     "test:fixture-http": "node --test src/inventory-fixture-http.test.mjs",
     "test:fixture-browser": "node --test --test-concurrency=1 src/inventory-stock-browser.test.mjs src/sales-overview-browser.test.mjs"
   },

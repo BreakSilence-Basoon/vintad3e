@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getSalesOverviewFixture } from './sales-overview-fixture.ts';
+import { getFixtureSales } from './sales-fixture.ts';
 
 test('overview uses only opted-in synthetic sales and bounded ranges', () => {
   const now = new Date('2026-11-19T12:00:00.000Z');
@@ -18,4 +19,19 @@ test('overview uses only opted-in synthetic sales and bounded ranges', () => {
   assert.equal(narrow.totals.storeRevenue, 8000);
   assert.equal(narrow.totals.onlineRevenue, 60000);
   assert.equal(narrow.grain, 'day');
+});
+
+test('the synthetic POS sale has the same amount and Seoul day in sales and statistics', () => {
+  for (const value of ['2026-11-18T14:59:59.999Z', '2026-11-18T15:00:00.000Z', '2026-11-18T15:00:00.001Z', '2026-11-19T12:00:00.000Z']) {
+    const now = new Date(value), sale = getFixtureSales('development', '1', now).find(item => item.id === 'sale-1');
+    const overview = getSalesOverviewFixture('development', '1', now)!;
+    const design = overview.storeApparelByDesign.find(item => item.designName === '셔츠');
+    assert.equal(design?.revenue ?? 0, sale?.amount ?? 0);
+    if (sale) {
+      const hour = new Date(Date.parse(sale.soldAt) + 9 * 3600000).toISOString().slice(0, 13);
+      const detailed = getSalesOverviewFixture('development', '1', now, new Date(now.getTime() - 86400000).toISOString(), now.toISOString())!;
+      const slot = detailed.series.find(item => item.bucket === hour);
+      assert.equal(slot?.storeRevenue, sale.amount);
+    }
+  }
 });

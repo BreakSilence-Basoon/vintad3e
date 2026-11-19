@@ -62,3 +62,15 @@ test('only inventory-tracked options match, and every chosen option must match',
   assert.equal(pick({ target: 'MEN' }), false);
   assert.equal(pick({}, { ...variant, tracksInventory: false }), false);
 });
+import { parseSalesFilters } from './sales-filters.ts';
+
+test('sales filters accept original options and bound invalid input', () => {
+  const filters = parseSalesFilters({ range: 'custom', from: '2026-01-01', to: 'bad', source: 'pos', status: 'invalid', sort: 'asc', keyword: `  ${'a'.repeat(90)}  ` });
+  assert.equal(filters.range, 'custom');
+  assert.equal(filters.from, '2026-01-01');
+  assert.equal(filters.to, '');
+  assert.equal(filters.source, 'pos');
+  assert.equal(filters.status, 'all');
+  assert.equal(filters.sortDirection, 'asc');
+  assert.equal(filters.keyword.length, 80);
+});

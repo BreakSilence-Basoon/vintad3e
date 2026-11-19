@@ -39,6 +39,9 @@ export function fixtureSession(cookie, host, env, now = Date.now()) {
   const token = readToken(cookie); prune(now);
   return token !== null && sessions.has(token);
 }
+export function fixtureSessionKey(cookie, host, env, now = Date.now()) {
+  return fixtureSession(cookie, host, env, now) ? readToken(cookie) : null;
+}
 export function handleFixtureSession(request, action, env, now = Date.now(), next = '/') {
   const origin = fixtureOrigin(env);
   if (!origin || request.method !== 'POST' || !['login', 'logout'].includes(action)) return new Response(null, { status: 404, headers: { 'cache-control': 'no-store' } });

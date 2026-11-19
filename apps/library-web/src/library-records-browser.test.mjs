@@ -47,6 +47,15 @@ test('original record entry and empty views do not create meetings or upload fil
     await evaluate("document.querySelector('section[data-hydrated=true] button').click()");
     await waitFor(async () => evaluate("document.querySelector('[role=alert]')?.textContent === '처리하지 못했습니다. 다시 시도해 주세요.'"));
     assert.equal(await evaluate('window.recordWrites'), 0);
+    assert.equal((await fetch(`${origin}/meetings/unknown`)).status, 404);
+    await send('Page.navigate', { url: `${origin}/meetings/00000000-0000-4000-8000-000000000004` });
+    await waitFor(async () => evaluate("document.querySelector('h1')?.textContent === '업무 회의' && document.querySelectorAll('.library-register[data-hydrated=true]').length === 2"));
+    assert.deepEqual(await evaluate("[...document.querySelectorAll('h2')].map(x=>x.textContent)"), ['녹화·녹음 첨부', '회의 문서 등록']);
+    assert.equal(await evaluate("[...document.querySelectorAll('button')].find(x=>x.textContent==='회의에 첨부').disabled"), true);
+    assert.equal(await evaluate("[...document.querySelectorAll('button')].find(x=>x.textContent==='회의 문서 확인').disabled"), true);
+    await evaluate("(()=>{const x=document.querySelector('select');x.value='CORRECTED';x.dispatchEvent(new Event('change',{bubbles:true}));})()");
+    await waitFor(async () => evaluate("[...document.querySelectorAll('label')].some(x=>x.textContent.includes('근거 문서'))"));
+    assert.equal(await evaluate("[...document.querySelectorAll('button')].find(x=>x.textContent==='회의 문서 확인').disabled"), true);
     await send('Page.navigate', { url: `${origin}/objects` });
     await waitFor(async () => evaluate("location.pathname === '/objects' && Boolean(document.querySelector('a[href=\"/objects/new\"]'))"));
     assert.ok(await evaluate("document.querySelector('.library-empty').textContent.includes('파일이 없습니다.')"));

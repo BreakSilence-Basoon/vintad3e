@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { fixtureHistory } from './fixture-history.ts';
 import { fixtureEmployeeId, fixtureHistoryDay, historyNotInFuture, historyWithinShiftWindow, parseHistoryEdits, selectHistory } from './fixture-history-admin.ts';
+import { linkedAttendance, linkedAttendanceWithinWindow, linkedEmployees } from './fixture-linked-attendance.ts';
 
 const now = Date.parse('2026-11-18T09:00:00.000Z');
 const filters = { employee: 'all', from: '', to: '', range: 'all' as const, sort: 'desc' as const };
@@ -41,4 +42,16 @@ test('synthetic corrections reject future attendance just like the source', () =
   assert.equal(historyNotInFuture('2026-11-17T08:00:01.000Z', null, now), false);
   assert.equal(historyNotInFuture('2026-11-17T00:00:00.000Z', '2026-11-17T08:00:01.000Z', now), false);
   assert.equal(historyNotInFuture('invalid', null, now), false);
+});
+
+test('schedule attendance appears for the matching synthetic employee and uses the actual shift window', () => {
+  const shift = { startInput: '2026-11-08T09:30', endInput: '2026-11-08T18:00', note: '근무', attendance: { startsAt: '2026-11-08T00:45:00.000Z', endsAt: '2026-11-08T09:00:00.000Z' } };
+  const rows = linkedAttendance({ '2026-11-08-employee-1': shift, '2026-11-18-employee-2': null });
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].employeeName, '직원 01');
+  assert.equal(selectHistory([...base, ...rows], {}, { ...filters, employee: linkedEmployees[0].id }, now).length, 1);
+  assert.equal(selectHistory([...base, ...rows], {}, { ...filters, employee: linkedEmployees[1].id }, now).length, 0);
+  assert.equal(linkedAttendanceWithinWindow(shift.startInput, shift.endInput, '2026-11-07T18:30:00.000Z', '2026-11-08T21:00:00.000Z'), true);
+  assert.equal(linkedAttendanceWithinWindow(shift.startInput, shift.endInput, '2026-11-07T18:29:00.000Z', null), false);
+  assert.deepEqual(linkedAttendance({ '2026-11-08-employee-1': { ...shift, attendance: null } }), []);
 });

@@ -8,6 +8,8 @@ import { toSeoulDateTimeInput } from './date-time';
 import { buildHistoryHref } from './history-filters';
 import { fixtureHistoryDay, historyNotInFuture, historyWithinShiftWindow, parseHistoryEdits, selectHistory, type HistoryEdits, type HistoryRecord } from './fixture-history-admin';
 import type { AttendanceHistoryFilters } from './attendance-history-filter';
+import { fixtureScheduleChanged, linkedAttendance, linkedAttendanceWithinWindow } from './fixture-linked-attendance';
+import { readScheduleOverrides, writeScheduleOverride, type ScheduleOverrides } from './fixture-schedule-storage';
 
 const slot = 'vintad3e-timetable-history-fixture';
 const memoRequired = '수정하거나 삭제하려면 메모를 작성해주세요.';
@@ -33,7 +35,7 @@ function HistoryEditor({ record, originalStart, onClose, onSave }: { record: His
     if (!startsAt || end && !endsAt) { setError('정정할 출퇴근 시각이 필요합니다.'); return; }
     if (endsAt && endsAt <= startsAt) { setError('퇴근 시각은 출근 시각보다 늦어야 합니다.'); return; }
     if (!historyNotInFuture(startsAt, endsAt, Date.now())) { setError('아직 지나지 않은 미래 시각으로 출퇴근 기록을 정정할 수 없습니다.'); return; }
-    if (!historyWithinShiftWindow(originalStart, startsAt, endsAt)) { setError('출퇴근 시각은 예정 근무의 허용 범위 안에서만 입력할 수 있습니다.'); return; }
+    if (record.shiftStartInput && record.shiftEndInput ? !linkedAttendanceWithinWindow(record.shiftStartInput, record.shiftEndInput, startsAt, endsAt) : !historyWithinShiftWindow(originalStart, startsAt, endsAt)) { setError('출퇴근 시각은 예정 근무의 허용 범위 안에서만 입력할 수 있습니다.'); return; }
     if (record.endsAt && !endsAt && !confirmed) return;
     const normalizedNote = note.trim();
     if (startsAt === record.startsAt && endsAt === record.endsAt && normalizedNote === (record.note ?? '')) { setError('변경된 출퇴근 시각이 없습니다.'); return; }
@@ -41,7 +43,7 @@ function HistoryEditor({ record, originalStart, onClose, onSave }: { record: His
     onClose();
   }
   return <dialog ref={ref} className="attendance-history-editor" aria-labelledby="attendance-history-editor-title" data-slide-swipe-ignore onCancel={event => { event.preventDefault(); onClose(); }}><div className="attendance-history-editor__panel">
-    <header className="attendance-history-editor__header"><h2 id="attendance-history-editor-title">직원</h2><button type="button" className="attendance-history-editor__close" aria-label="출퇴근 시각 입력 창 닫기" onClick={onClose}>×</button></header>
+    <header className="attendance-history-editor__header"><h2 id="attendance-history-editor-title">{record.employeeName ?? '직원'}</h2><button type="button" className="attendance-history-editor__close" aria-label="출퇴근 시각 입력 창 닫기" onClick={onClose}>×</button></header>
     <form autoComplete="off" className="attendance-history-editor__form" onSubmit={event => { event.preventDefault(); save(); }}>
       <div className="attendance-history-editor__date-time-row"><AttendanceDateTimeField label="출근" name="checkInAt" value={start} required onChange={setStart} /><AttendanceDateTimeField label="퇴근" name="checkOutAt" value={end} onChange={setEnd} /></div>
       {record.endsAt && !end ? <label className="attendance-history-editor__confirmation"><input type="checkbox" checked={confirmed} required onChange={event => setConfirmed(event.target.checked)} />기존 퇴근 기록을 삭제하고 출근 중 상태로 되돌립니다.</label> : null}
@@ -56,12 +58,23 @@ export function FixtureHistoryAdmin({ base, filters, now, page }: { base: Histor
   const [edits, setEdits] = useState<HistoryEdits>({});
   const [loaded, setLoaded] = useState(false);
   const [selected, setSelected] = useState<HistoryRecord | null>(null);
+  const [schedule, setSchedule] = useState<ScheduleOverrides | null>(null);
   useEffect(() => { try { setEdits(parseHistoryEdits(sessionStorage.getItem(slot) ?? '{}', day)); } catch { setEdits({}); } setLoaded(true); }, [day]);
-  const records = selectHistory(base, edits, filters, now), visible = records.slice(0, page * 10);
+  useEffect(() => { const reload = () => { try { setSchedule(readScheduleOverrides(sessionStorage)); } catch { setSchedule(null); } }; reload(); window.addEventListener(fixtureScheduleChanged, reload); return () => window.removeEventListener(fixtureScheduleChanged, reload); }, []);
+  const records = selectHistory([...base, ...linkedAttendance(schedule ?? {})], edits, filters, now), visible = records.slice(0, page * 10);
   function save(value: HistoryRecord | null) {
     if (!selected) return false;
+    if (selected.id.startsWith('schedule:')) {
+      try {
+        const id = selected.id.slice('schedule:'.length), current = readScheduleOverrides(sessionStorage), shift = current?.[id];
+        if (!shift?.attendance || shift.attendance.startsAt !== selected.startsAt || shift.attendance.endsAt !== selected.endsAt) return false;
+        const updated = writeScheduleOverride(sessionStorage, id, { ...shift, attendance: value === null ? null : { startsAt: value.startsAt, endsAt: value.endsAt }, note: value?.note ?? shift.note });
+        if (!updated) return false;
+        setSchedule(updated); window.dispatchEvent(new Event(fixtureScheduleChanged)); return true;
+      } catch { return false; }
+    }
     const next = { ...edits, [selected.id]: value === null ? null : { startsAt: value.startsAt, endsAt: value.endsAt, note: value.note ?? '' } };
     try { const encoded = JSON.stringify({ day, edits: next }); if (!Object.hasOwn(parseHistoryEdits(encoded, day), selected.id)) return false; sessionStorage.setItem(slot, encoded); setEdits(next); return true; } catch { return false; }
   }
-  return <><FixtureHistoryList records={visible} onSelect={loaded ? setSelected : undefined} /><AttendanceHistoryPager href={buildHistoryHref(filters, page + 1, true)} totalCount={records.length} visibleCount={visible.length} />{selected ? <HistoryEditor key={selected.id} record={selected} originalStart={base.find(item => item.id === selected.id)!.startsAt} onClose={() => setSelected(null)} onSave={save} /> : null}</>;
+  return <><FixtureHistoryList records={visible} onSelect={loaded ? setSelected : undefined} /><AttendanceHistoryPager href={buildHistoryHref(filters, page + 1, true)} totalCount={records.length} visibleCount={visible.length} />{selected ? <HistoryEditor key={selected.id} record={selected} originalStart={base.find(item => item.id === selected.id)?.startsAt ?? selected.startsAt} onClose={() => setSelected(null)} onSave={save} /> : null}</>;
 }

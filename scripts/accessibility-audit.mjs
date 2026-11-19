@@ -85,7 +85,7 @@ try {
             if (current) focus.push(current);
           }
           const scroll = await page.evaluate(() => document.documentElement.scrollWidth);
-          if (scroll > width + 1 || errors.length || audit.violations.length || (focusable > 0 && !focus.length)) failed = true;
+          if (scroll > width + 1 || errors.length || audit.violations.length || (focusable > 0 && !focus.length) || focus.some(item => item.outline === 'none' && item.shadow === 'none')) failed = true;
           console.log(JSON.stringify({ app: name, mode, path, width, scroll, focusable, focusCount: focus.length, focusWithoutOutline: focus.filter(item => item.outline === 'none' && item.shadow === 'none').slice(0, 5), violations: audit.violations, incomplete: audit.incomplete, errors }));
         } catch (error) { failed = true; console.log(JSON.stringify({ app: name, mode, path, width, error: error.message })); }
         finally { await context.close(); }

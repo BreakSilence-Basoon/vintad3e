@@ -7,7 +7,7 @@ import { notFound, redirect } from 'next/navigation';
 
 type Tile = { id: string; name: string; icon: string | null; tone?: 'mono' | 'sns'; accessibleName?: string; href?: string; restIcon?: string };
 const apps: Tile[] = ['Apparel', 'Timetable', 'Supporters', 'Partners', 'Library', 'Floor', 'Ledger', 'Creative', 'Admin', 'Catalog'].map((name) => ({
-  id: name.toLowerCase(), name, icon: name === 'Catalog' ? null : `/images/app-icons/${name.toLowerCase()}.png`, tone: 'mono',
+  id: name.toLowerCase(), name, icon: `/images/neutral/${name.toLowerCase()}.svg`, tone: 'mono',
 }));
 const social: Tile[] = [
   { id: 'instagram-official', name: 'official', accessibleName: 'Instagram official', icon: '/images/sns/instagram.svg', tone: 'sns' },
@@ -15,7 +15,7 @@ const social: Tile[] = [
   { id: 'tiktok-official', name: 'official', accessibleName: 'TikTok official', icon: '/images/sns/tiktok.svg', tone: 'sns' },
   { id: 'tiktok-staff', name: 'staff', accessibleName: 'TikTok staff', icon: '/images/sns/tiktok.svg', tone: 'sns' },
   { id: 'youtube-official', name: 'official', accessibleName: 'YouTube official', icon: '/images/sns/youtube.svg', tone: 'sns' },
-  { id: 'shop', name: 'Shop', icon: '/images/app-icons/shop.png' },
+  { id: 'shop', name: 'Shop', icon: '/images/neutral/shop.svg' },
   { id: 'notion-homebase', name: 'Notion', accessibleName: 'Notion Homebase', icon: '/images/shortcuts/notion.png', tone: 'sns' },
 ];
 const shortcuts: Tile[] = [
@@ -46,7 +46,7 @@ export default async function Page() {
     if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect('/sign-in');
   }
   const links = fixturePortalLinks({ nodeEnv: process.env.NODE_ENV, enabled: process.env.VINTAD3E_PORTAL_FIXTURE, grants: origin ? ['timetable'] : [] });
-  const visibleApps = apps.map((app) => app.id === 'timetable' && links.timetable ? { ...app, href: links.timetable, restIcon: '/images/app-icons/timetable-mono.png' } : app);
+  const visibleApps = apps.map((app) => app.id === 'timetable' && links.timetable ? { ...app, href: links.timetable, restIcon: '/images/neutral/timetable.svg' } : app);
   return <main className="portal-home">
     <h1 className="sr-only">빈타제</h1>
     <div className="portal-home__apps"><PortalCarousel pages={[
@@ -55,7 +55,7 @@ export default async function Page() {
       { id: 'admin-shortcuts', label: '관리 바로가기', content: <><h2 id="admin-shortcuts-title" className="sr-only">관리 바로가기</h2><TileList items={shortcuts} labelledBy="admin-shortcuts-title" /></> },
     ]} /></div>
     <div className="portal-home__art"><div className="portal-home__art-frame">
-      <Image src="/images/login-background.png" alt="" width={1830} height={1220} unoptimized priority className="portal-home__art-image" />
+      <Image src="/images/neutral/background.svg" alt="" width={1830} height={1220} unoptimized priority className="portal-home__art-image" />
       <form className="portal-home__signout" action={origin ? '/api/fixture/logout' : undefined} method={origin ? 'post' : undefined}><button className="staff-signin-button" type={origin ? 'submit' : 'button'}><span className="form-submit-button__content"><span className="form-submit-button__measure" aria-hidden="true">로그아웃</span><span className="form-submit-button__measure" aria-hidden="true">로그아웃 중…</span><span className="form-submit-button__visible">로그아웃</span></span></button></form>
     </div></div>
   </main>;

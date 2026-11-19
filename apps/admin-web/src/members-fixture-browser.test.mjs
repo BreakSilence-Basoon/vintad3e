@@ -43,13 +43,14 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     assert.equal(await evaluate("document.querySelectorAll('.home-matrix a').length"),0);
     await send('Page.navigate',{url:`${origin}/members`});
     await waitFor(async () => evaluate("document.querySelector('.staff-table tbody')?.textContent.includes('staff01@example.invalid')"));
-    assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody tr').length"),1);
-    assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody a').length"),1);
+    assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody tr').length"),2);
+    assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody a').length"),2);
     await evaluate("document.querySelector('.staff-table tbody a').click()");
     await waitFor(async () => evaluate("document.querySelector('.staff-console')?.textContent.includes('staff01@example.invalid') && document.querySelector('.staff-console')?.textContent.includes('Portal')"));
     assert.ok(await evaluate("document.querySelector('.staff-console').textContent.includes('크루')"));
     await evaluate("document.querySelector('.admin-actions a').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('.permissions-matrix'))"));
+    assert.ok(await evaluate("document.querySelector('.permissions-matrix tbody').textContent.includes('관리자 01') && document.querySelector('.permissions-matrix tbody').textContent.includes('어드민')"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.permissions-matrix tbody')?.textContent.includes('직원 01'))return true;const s=document.querySelector('select');if(s&&!s.disabled){s.value='crew';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
     assert.ok(await evaluate("document.querySelector('.permissions-matrix tbody').textContent.includes('크루')"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.permissions-matrix tbody')?.textContent.includes('외부 구성원 01'))return true;const s=document.querySelector('select');if(s&&!s.disabled){s.value='guest';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
@@ -57,6 +58,7 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     await send('Page.navigate',{url:`${origin}/permissions/apps?app=partners`});
     await waitFor(async () => evaluate("document.querySelectorAll('.staff-table')[1]?.textContent.includes('외부 구성원 01')"));
     assert.ok(await evaluate("document.querySelectorAll('.staff-table')[1].textContent.includes('게스트')"));
+    assert.ok(await evaluate("document.querySelectorAll('.staff-table')[1].textContent.includes('관리자 01') && document.querySelectorAll('.staff-table')[1].textContent.includes('어드민')"));
     assert.ok(await evaluate("document.querySelector('.preview-menu-permissions').textContent.includes('대관')"));
     assert.deepEqual(await evaluate("[...document.querySelector('.preview-menu-permissions tbody tr:first-child').cells].map(cell=>cell.textContent)"), ['DJ', '전체', '없음', '없음']);
     assert.deepEqual(await evaluate("[...document.querySelector('.preview-menu-permissions tbody tr:last-child').cells].map(cell=>cell.textContent)"), ['협업처', '전체', '없음', '읽기만']);

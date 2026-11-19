@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
-import { fixtureOrigin, fixtureSession } from '../../fixture-session.mjs';
+import { fixtureNext, fixtureOrigin, fixtureSession } from '../../fixture-session.mjs';
 import './portal-button.css';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +13,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
   const host = requestHeaders.get('host');
   if (host !== new URL(origin).host) notFound();
   const value = (await searchParams).next;
-  const next = value === '/confirmations/proposal-01' ? value : '/';
+  const next = fixtureNext(Array.isArray(value) ? value[0] : value);
   if (fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect(next);
   return <div className="public-login-frame"><main className="login-screen"><section className="login-screen__content" aria-label="Library 로그인"><div className="login-screen__workspace">
     <a href="http://127.0.0.1:3825/" className="login-portal-button" aria-label="포털로 돌아가기"><span className="login-portal-button__art" aria-hidden="true">빈타제</span><span className="login-portal-button__overlay" aria-hidden="true">포털로 돌아가기</span></a>

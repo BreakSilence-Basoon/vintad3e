@@ -4,6 +4,8 @@ import { useState, useSyncExternalStore } from 'react';
 import { Button, Input, Label } from '@vintad3e/ui/components';
 import { useRouter } from 'next/navigation';
 import { addSyntheticMeeting } from './fixture-meeting-storage';
+import { fixtureUpload } from './fixture-upload-spec.mjs';
+import Link from 'next/link';
 
 const subscribe = () => () => {};
 const hydratedSnapshot = () => true;
@@ -19,13 +21,37 @@ export function CreateMeetingForm({ fixture = false }: { fixture?: boolean }) {
   </section>;
 }
 
-export function ObjectUploadForm() {
-  const [selected, setSelected] = useState(false);
+export function ObjectUploadForm({ fixture = false }: { fixture?: boolean }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [stage, setStage] = useState<'select' | 'proposal' | 'loaded' | 'reviewed' | 'confirmed' | 'approved' | 'uploaded'>('select');
   const [error, setError] = useState(false);
+  const [busy, setBusy] = useState(false);
   const hydrated = useSyncExternalStore(subscribe, hydratedSnapshot, serverSnapshot);
-  return <section className="library-register" aria-label="파일 올리기" aria-busy={false} data-hydrated={hydrated}>
-    <div className="library-field"><Label htmlFor="library-object-file" appearance="native">파일</Label><Input id="library-object-file" appearance="native" type="file" onChange={event => setSelected(Boolean(event.target.files?.[0]))} /></div>
-    <Button profile="library" type="button" disabled={!selected} onClick={() => setError(true)}>업로드 내용 확인</Button>
+  async function prepare() {
+    if (!fixture || !file || file.name !== fixtureUpload.filename || file.size !== new TextEncoder().encode(fixtureUpload.body).length) { setError(true); return; }
+    setBusy(true); setError(false);
+    try { if (await file.text() !== fixtureUpload.body) throw new Error('invalid'); setStage('proposal'); } catch { setError(true); } finally { setBusy(false); }
+  }
+  async function upload() {
+    if (!file || busy) return;
+    setBusy(true); setError(false);
+    try {
+      const response = await fetch('/api/fixture/upload', { method: 'POST', headers: { 'content-type': 'application/octet-stream' }, body: file });
+      const result = response.ok ? await response.json() : null;
+      if (result?.id !== fixtureUpload.id) throw new Error('unavailable');
+      setStage('uploaded');
+    } catch { setError(true); } finally { setBusy(false); }
+  }
+  return <section className="library-register" aria-label="파일 올리기" aria-busy={busy} data-hydrated={hydrated}>
+    <div className="library-field"><Label htmlFor="library-object-file" appearance="native">파일</Label><Input id="library-object-file" appearance="native" type="file" disabled={busy || stage !== 'select'} onChange={event => { setFile(event.target.files?.[0] ?? null); setError(false); }} /></div>
+    {stage === 'select' && <Button profile="library" type="button" disabled={!file || busy} onClick={() => void prepare()}>업로드 내용 확인</Button>}
+    {stage === 'proposal' && <Button profile="library" type="button" onClick={() => setStage('loaded')}>제안 불러오기</Button>}
+    {['loaded', 'reviewed', 'confirmed'].includes(stage) && <section className="staff-section" aria-labelledby="fixture-upload-summary"><h2 id="fixture-upload-summary">제안 내용</h2><dl><dt>앱</dt><dd>Library</dd><dt>작업</dt><dd>파일 올리기</dd><dt>대상</dt><dd>{fixtureUpload.filename}</dd></dl></section>}
+    {stage === 'loaded' && <Button profile="library" type="button" onClick={() => setStage('reviewed')}>제안 검토</Button>}
+    {stage === 'reviewed' && <Button profile="library" type="button" onClick={() => setStage('confirmed')}>이 변경 확인</Button>}
+    {stage === 'confirmed' && <Button profile="library" type="button" onClick={() => setStage('approved')}>업로드 승인</Button>}
+    {stage === 'approved' && <Button profile="library" type="button" disabled={busy} onClick={() => void upload()}>파일 올리기</Button>}
+    {stage === 'uploaded' && <><p role="status">파일을 올렸습니다.</p><Link href={`/objects/${fixtureUpload.id}`}>파일 열기</Link></>}
     {error && <p role="alert">처리하지 못했습니다. 다시 시도해 주세요.</p>}
   </section>;
 }

@@ -17,11 +17,11 @@ async function waitFor(fn) {
   throw new Error('Timed out waiting for browser or server');
 }
 
-test('synthetic meeting creation stays in the tab and file upload remains disconnected', { timeout: 90000 }, async () => {
+test('synthetic meeting stays in the tab and arbitrary file upload remains disconnected', { timeout: 90000 }, async () => {
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-library-records-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { env: { ...process.env, NODE_ENV: 'development', VINTAD3E_LIBRARY_FIXTURE: '1' }, stdio: 'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { env: { ...process.env, NODE_ENV: 'development', VINTAD3E_LIBRARY_FIXTURE: '1', VINTAD3E_LIBRARY_FIXTURE_ORIGIN: origin }, stdio: 'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new', '--no-sandbox', '--disable-dev-shm-usage', `--user-data-dir=${profile}`, `--remote-debugging-port=${debuggerPort}`, 'about:blank'], { stdio: 'ignore' });
   let socket, closeBrowser;
   try {
@@ -63,6 +63,7 @@ test('synthetic meeting creation stays in the tab and file upload remains discon
     await send('Page.navigate', { url: `${origin}/objects` });
     await waitFor(async () => evaluate("location.pathname === '/objects' && Boolean(document.querySelector('a[href=\"/objects/new\"]'))"));
     assert.equal(await evaluate("document.querySelector('.library-attachment-card__name')?.textContent"), '업무 안내.txt');
+    await evaluate("fetch('/api/fixture/login',{method:'POST'}).then(response=>{if(!response.ok)throw Error('login failed')})");
     await evaluate("document.querySelector('a[href=\"/objects/new\"]').click()");
     await waitFor(async () => evaluate("location.pathname === '/objects/new' && Boolean(document.querySelector('.library-register[data-hydrated=true]'))"));
     await evaluate("window.recordWrites=0;window.originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{const p=new URL(typeof input==='string'?input:input.url,location.href).pathname;if(p.startsWith('/api/objects')){window.recordWrites++;return Promise.reject(new Error('unexpected request'))}return window.originalFetch(input,init)}");
@@ -72,6 +73,15 @@ test('synthetic meeting creation stays in the tab and file upload remains discon
     await evaluate("document.querySelector('.library-register button').click()");
     await waitFor(async () => evaluate("document.querySelector('[role=alert]')?.textContent === '처리하지 못했습니다. 다시 시도해 주세요.'"));
     assert.equal(await evaluate('window.recordWrites'), 0);
+    await evaluate("(()=>{const x=document.querySelector('#library-object-file'), files=new DataTransfer();files.items.add(new File(['업무를 시작하기 전에 필요한 사항을 확인합니다.'],'가게 안내.txt',{type:'text/plain'}));x.files=files.files;x.dispatchEvent(new Event('change',{bubbles:true}));})()");
+    for (const [label, next] of [['업로드 내용 확인','제안 불러오기'], ['제안 불러오기','제안 검토'], ['제안 검토','이 변경 확인'], ['이 변경 확인','업로드 승인'], ['업로드 승인','파일 올리기']]) {
+      await evaluate(`Array.from(document.querySelectorAll('button')).find(item=>item.textContent===${JSON.stringify(label)}).click()`);
+      await waitFor(async () => evaluate(`Array.from(document.querySelectorAll('button')).some(item=>item.textContent===${JSON.stringify(next)})`));
+    }
+    await evaluate("Array.from(document.querySelectorAll('button')).find(item=>item.textContent==='파일 올리기').click()");
+    await waitFor(async () => evaluate("document.querySelector('a[href=\"/objects/00000000-0000-4000-8000-000000000009\"]')?.textContent === '파일 열기'"));
+    await evaluate("document.querySelector('a[href=\"/objects/00000000-0000-4000-8000-000000000009\"]').click()");
+    await waitFor(async () => evaluate("location.pathname === '/objects/00000000-0000-4000-8000-000000000009' && document.querySelector('h1')?.textContent === '가게 안내.txt'"));
     for (const [kind, id, title, expected] of [
       ['objects', '00000000-0000-4000-8000-000000000005', '파일', '업무를 시작하기 전에 필요한 사항을 확인합니다.'],
       ['documents', '00000000-0000-4000-8000-000000000006', '문서', '함께 일하는 사람에게 필요한 내용을 전달합니다.'],

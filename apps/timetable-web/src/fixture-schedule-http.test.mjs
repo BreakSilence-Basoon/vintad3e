@@ -159,6 +159,16 @@ test('development server renders schedule and paginates attendance', { timeout: 
     assert.ok(await evaluate("document.querySelector('dialog[open] input[aria-label=\"예정 시작\"]').value.startsWith('2026-02-18')"));
     await evaluate("document.querySelector('dialog[open] [aria-label=\"일정 입력 창 닫기\"]').click()");
     await waitFor(async () => evaluate("!document.querySelector('dialog[open]')"));
+    await send('Page.navigate',{url:`${origin}/access-denied`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.state-panel form button'))"));
+    await evaluate("document.querySelector('.state-panel form').addEventListener('submit', event=>event.preventDefault())");
+    await evaluate("window.__logoutCalls=0;window.fetch=async()=>{window.__logoutCalls++;return new Response(null,{status:403})}");
+    await waitFor(async () => evaluate("(()=>{if(window.__logoutCalls>0)return true;document.querySelector('.state-panel form button')?.click();return false;})()"));
+    assert.equal(await evaluate("location.pathname"), '/access-denied');
+    await waitFor(async () => evaluate("!document.querySelector('.state-panel form button').disabled"));
+    await evaluate("window.fetch=async()=>new Response(null,{status:200})");
+    await evaluate("document.querySelector('.state-panel form button').click()");
+    await waitFor(async () => evaluate("location.pathname==='/sign-in'"));
   } finally {
     auth.closeAllConnections();
     await new Promise(resolve => auth.close(resolve));

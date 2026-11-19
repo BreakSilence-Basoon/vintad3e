@@ -9,7 +9,7 @@ export function SignOutButton() {
     setPending(true);
     try {
       const response = await fetch('/auth/logout', { method: 'POST' });
-      if (response.ok) { window.location.assign('/auth/start'); return; }
+      if (response.ok) { window.location.assign('/sign-in'); return; }
     } catch { /* Keep the user on the existing screen on network failure. */ }
     setPending(false);
   }

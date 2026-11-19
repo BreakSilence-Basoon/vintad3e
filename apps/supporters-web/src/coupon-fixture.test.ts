@@ -21,3 +21,13 @@ test('coupon fixture links use a reserved non-operational domain', () => {
   assert.equal(url.searchParams.get('lang'), 'ja');
   assert.equal(new URL(fixtureCouponLink('korea', null)).searchParams.has('lang'), false);
 });
+import { getSnsFixturePosts } from './sns-fixture-posts.ts';
+
+test('SNS posts are restricted to opted-in synthetic accounts and links', () => {
+  assert.deepEqual(getSnsFixturePosts('production', '1', 'instagram', 'supporter-1'), []);
+  assert.deepEqual(getSnsFixturePosts('development', undefined, 'instagram', 'supporter-1'), []);
+  assert.deepEqual(getSnsFixturePosts('development', '1', 'instagram', 'unknown'), []);
+  const posts = getSnsFixturePosts('development', '1', 'tiktok', 'supporter-1');
+  assert.equal(posts.length, 2);
+  assert.ok(posts.every(post => new URL(post.postUrl!).hostname === 'example.invalid'));
+});

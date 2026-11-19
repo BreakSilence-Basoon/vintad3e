@@ -70,7 +70,12 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
       await waitFor(async () => evaluate("Boolean(document.querySelector('#coupon-staff'))"));
       await waitFor(async () => evaluate("(()=>{if(document.querySelector('[role=table]'))return true;const s=document.querySelector('#coupon-staff');if(s&&!s.disabled){s.value='supporter-1';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
       assert.equal(await evaluate("document.querySelector('[role=table]').getAttribute('aria-label')"), `${platform} 게시물 성과`);
-      assert.equal(await evaluate("document.querySelector('.gtm-sns-performance-table__empty strong').textContent"), '아직 수집된 게시물이 없습니다.');
+      assert.equal(await evaluate("document.querySelectorAll('.gtm-sns-performance-table__row').length"), 2);
+      assert.equal(await evaluate("document.querySelector('.gtm-sns-performance-table__row .register-toggle-button').getAttribute('aria-pressed')"), 'true');
+      assert.equal(await evaluate("document.querySelector('.gtm-sns-performance-table__row .register-toggle-button').disabled"), true);
+      assert.equal(await evaluate("new URL(document.querySelector('.gtm-sns-performance-table__row a').href).hostname"), 'example.invalid');
+      await evaluate("document.querySelector('[title=\"게시일 오름차순으로 정렬\"]').click()");
+      await waitFor(async () => evaluate("document.querySelector('.gtm-sns-performance-table__row .register-toggle-button')?.getAttribute('aria-pressed') === 'false'"));
       assert.equal(await evaluate("document.querySelector('.gtm-sync-basis').textContent"), `${platform} 동기화 기록 없음`);
       await evaluate("document.querySelector('.gtm-sns-score-toggle').click()");
       assert.equal(await evaluate("document.querySelector('.gtm-sns-score-toggle').getAttribute('aria-expanded')"), 'true');

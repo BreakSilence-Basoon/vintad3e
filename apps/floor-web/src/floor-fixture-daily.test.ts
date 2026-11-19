@@ -6,9 +6,11 @@ test('daily brief computes only opted-in POS sales and comparisons', () => {
   const day = fixtureFloorDaily('development', '1', now);
   assert.equal(day.businessDate, '2026-11-18');
   assert.equal(day.totals.fnbNet, 12000);
-  assert.equal(day.totals.fnbQuantity, 2);
+  assert.equal(day.totals.fnbQuantity, 3);
   assert.equal(day.comparisons.previousDay.totals.fnbNet, 0);
   assert.equal(day.menus[0].productName, '드립 커피');
+  assert.deepEqual(day.menus.map(item => [item.productName, item.net, item.listUnitPrice]), [['드립 커피', 10000, 5000], ['차', 2000, 2000]]);
+  assert.equal(day.menus.reduce((sum, item) => sum + item.net, 0), day.totals.fnbNet);
   assert.equal(fixtureFloorDaily('production', '1', now).totals.fnbNet, 0);
   assert.equal(fixtureFloorDaily('development', undefined, now).menus.length, 0);
 });

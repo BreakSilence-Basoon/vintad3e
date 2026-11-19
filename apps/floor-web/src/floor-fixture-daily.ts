@@ -21,7 +21,7 @@ export function fixtureFloorDaily(env: string | undefined, enabled: string | und
   const rows = rowsForDate(sales, date);
   const aggregate = totals(rows);
   const comparison = (offset: number): Comparison => { const value = shift(date, offset); return { businessDate: value, weekday: weekday(value), totals: totals(rowsForDate(sales, value)) }; };
-  const menus = rows.flatMap(sale => sale.items.map(item => ({ productName: item.name, category: '음료', quantity: item.quantity, net: sale.netAmountValue, listUnitPrice: sale.netAmountValue / item.quantity })));
+  const menus = rows.flatMap(sale => sale.items.map(item => ({ productName: item.name, category: '음료', quantity: item.quantity, net: item.netAmountValue, listUnitPrice: item.listUnitPrice })));
   const hours = [17,18,19,20,21,22,23,0,1,2,3,4].map(hour => { const matching = rows.filter(sale => new Date(new Date(sale.soldAt).getTime() + 9 * 3600000).getUTCHours() === hour); const current = totals(matching); return { hour, fnbNet: current.fnbNet, fnbQuantity: current.fnbQuantity, orderCount: current.fnbOrderCount }; });
   return { businessDate: date, weekday: weekday(date), range: { from: date, to: date }, latestBusinessDate, lastSoldAt: sales[0]?.soldAt ?? null, lastSyncedAt: null, totals: aggregate, comparisons: { previousDay: comparison(-1), lastWeekSameDay: comparison(-7) }, categories: menus.length ? [{ category: '음료', quantity: aggregate.fnbQuantity, net: aggregate.fnbNet }] : [], menus, hours };
 }

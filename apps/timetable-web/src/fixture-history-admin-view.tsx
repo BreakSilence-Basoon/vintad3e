@@ -35,8 +35,9 @@ function HistoryEditor({ record, originalStart, onClose, onSave }: { record: His
     if (!historyNotInFuture(startsAt, endsAt, Date.now())) { setError('아직 지나지 않은 미래 시각으로 출퇴근 기록을 정정할 수 없습니다.'); return; }
     if (!historyWithinShiftWindow(originalStart, startsAt, endsAt)) { setError('출퇴근 시각은 예정 근무의 허용 범위 안에서만 입력할 수 있습니다.'); return; }
     if (record.endsAt && !endsAt && !confirmed) return;
-    if (startsAt === record.startsAt && endsAt === record.endsAt) { setError('변경된 출퇴근 시각이 없습니다.'); return; }
-    if (!onSave({ ...record, startsAt, endsAt, note })) { setError('출퇴근 시각을 저장하지 못했습니다.'); return; }
+    const normalizedNote = note.trim();
+    if (startsAt === record.startsAt && endsAt === record.endsAt && normalizedNote === (record.note ?? '')) { setError('변경된 출퇴근 시각이 없습니다.'); return; }
+    if (!onSave({ ...record, startsAt, endsAt, note: normalizedNote })) { setError('출퇴근 시각을 저장하지 못했습니다.'); return; }
     onClose();
   }
   return <dialog ref={ref} className="attendance-history-editor" aria-labelledby="attendance-history-editor-title" data-slide-swipe-ignore onCancel={event => { event.preventDefault(); onClose(); }}><div className="attendance-history-editor__panel">

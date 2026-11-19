@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { guideEnabled } from './fixture-guide';
-import { BedroomFixtureControls } from './bedroom-fixture-controls';
+import { BedroomFixtureControls, BedroomFixtureCopy } from './bedroom-fixture-controls';
 import { BedroomFixtureGallery } from './bedroom-fixture-gallery';
 
 const copy = {
@@ -9,18 +9,26 @@ const copy = {
   ja: { brief: 'アーティスト向けブリーフ', contents: '目次', skip: '本文へスキップ', top: 'ページの先頭へ', sections: ['빈타제について', 'proj. bedroomについて', '展示構成', '展示の流れ', '空間とビジュアル', 'グラフィックアーカイブ', '参加アーティストへのお願い', '提供するもの', '空間情報', '販売と精算', '精算のご案内', 'プロジェクトのビジョン'], paragraphs: ['作品とその物語を共に紹介する空間です。', '作家と来場者をつなぐ展示を作ります。', '作品の構成と展示期間を一緒に決めます。', '準備から終了までの予定を確認します。', '作品に合う空間を準備します。', '作品を記録し、その物語を伝えます。', '展示に必要な作品と資料を確認します。', '展示運営に必要な内容を相談します。', '空間の構成と設営位置を確認します。', '販売と精算の条件を事前に決めます。', '販売内容と支払い日程を確認します。', '作品をより多くの人に届けます。'], revenue: '売上の分配', artist: 'アーティスト', partner: '빈타제', schedule: ['作品と展示の方向を確認します。', '展示の準備と設営を行います。', '展示終了後に精算します。'] },
 } as const;
 
+const details = {
+  ko: [['의류', '작품과 어울리는 의류를 함께 선보입니다.'], ['음악', '공간에 어울리는 음악을 준비합니다.'], ['음료·음식', '전시와 어울리는 자리를 준비합니다.'], ['전시', '작품을 소개하는 전시를 함께 만듭니다.'], ['전시 작품', '전시에 필요한 작품을 함께 정합니다.'], ['그래픽', '전시에 사용할 그래픽을 준비합니다.'], ['인터뷰 및 사진', '작품을 소개할 자료를 함께 준비합니다.']],
+  en: [['Clothing', 'We share clothing that complements the work.'], ['Music', 'We prepare music for the space.'], ['Food and drinks', 'We prepare a gathering for the exhibition.'], ['Exhibition', 'We create an exhibition together.'], ['Exhibition works', 'We agree on the works for the exhibition.'], ['Graphics', 'We prepare graphics for the exhibition.'], ['Interview and photos', 'We prepare material to introduce the work.']],
+  ja: [['衣類', '作品に合う衣類を一緒に紹介します。'], ['音楽', '空間に合う音楽を準備します。'], ['飲食', '展示に合う場を準備します。'], ['展示', '作品を紹介する展示を一緒に作ります。'], ['展示作品', '展示に必要な作品を一緒に決めます。'], ['グラフィック', '展示に使うグラフィックを準備します。'], ['インタビューと写真', '作品を紹介する資料を一緒に準備します。']],
+} as const;
+
 export function BedroomFixtureGuide({ language }: { language: string }) {
   if (!guideEnabled(process.env.NODE_ENV, process.env.VINTAD3E_PARTNERS_FIXTURE) || !Object.hasOwn(copy, language)) notFound();
   const lang = language as keyof typeof copy;
   const text = copy[lang];
+  const markdown = [`# proj.bedroom`, ...text.sections.flatMap((heading, index) => [`## ${heading}`, text.paragraphs[index], ...(index === 0 ? details[lang].slice(0, 4).map(([title, body]) => `- ${title}: ${body}`) : index === 6 ? details[lang].slice(4).map(([title, body]) => `- ${title}: ${body}`) : []), ...(index === 3 ? text.schedule.map((item, step) => `${step + 1}. ${item}`) : []), ...(index === 9 ? [`${text.revenue}: ${text.artist} 60% / ${text.partner} 40%`] : [])])].join('\n\n');
   return <div className="bedroom-guide" lang={lang} id="bedroom-top"><a className="bedroom-skip" href="#bedroom-content">{text.skip}</a>
     <main id="bedroom-content" tabIndex={-1}><div className="bedroom-title"><h1>proj.bedroom</h1><div className="bedroom-title-meta"><p>{text.brief}</p></div></div>
       <div className="bedroom-reading"><div className="bedroom-article"><details className="bedroom-mobile-contents"><summary>{text.contents}</summary><nav><ol>{text.sections.map((heading, index) => <li key={heading}><a href={`#section-${index + 1}`}>{heading}</a></li>)}</ol></nav></details>
         <article aria-label={text.brief}>{text.sections.map((heading, index) => <section key={heading} aria-labelledby={`section-${index + 1}`}><h2 id={`section-${index + 1}`}>{heading}</h2><p>{text.paragraphs[index]}</p>
+          {(index === 0 || index === 6) && details[lang].slice(index === 0 ? 0 : 4, index === 0 ? 4 : 7).map(([title, body], detailIndex) => <details className="bedroom-intro-toggle" id={`guide-disclosure-${index === 0 ? detailIndex : detailIndex + 4}`} key={title}><summary>{title}<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m6 9 6 6 6-6" /></svg></summary><p>{body}</p></details>)}
           {(index === 7 || index === 8) && <BedroomFixtureGallery language={lang} count={index === 7 ? 1 : 10} />}
           {index === 3 && <ol className="bedroom-schedule">{text.schedule.map((item, step) => <li key={item}><span className="bedroom-schedule-time">{step + 1}</span><ul className="bedroom-schedule-tasks"><li>{item}</li></ul></li>)}</ol>}
           {index === 9 && <div className="bedroom-revenue"><div className="bedroom-revenue-bar"><div><span>{text.artist}</span><strong>60<small>%</small></strong></div><div><span>{text.partner}</span><strong>40<small>%</small></strong></div></div><p className="bedroom-revenue-label">{text.revenue}</p></div>}
         </section>)}</article></div></div></main>
-    <footer className="public-footer bedroom-footer"><div className="public-footer__inner"><p className="public-footer__copyright">© 2026 빈타제</p></div></footer><BedroomFixtureControls language={lang} label={lang === 'ko' ? '언어 선택' : lang === 'ja' ? '言語を選択' : 'Select language'} top={text.top} />
+    <footer className="public-footer bedroom-footer"><div className="public-footer__inner"><p className="public-footer__copyright">© 2026 빈타제</p><BedroomFixtureCopy language={lang} markdown={markdown} /></div></footer><BedroomFixtureControls language={lang} label={lang === 'ko' ? '언어 선택' : lang === 'ja' ? '言語を選択' : 'Select language'} top={text.top} />
   </div>;
 }

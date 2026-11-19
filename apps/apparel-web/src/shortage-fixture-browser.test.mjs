@@ -23,6 +23,7 @@ test('shortage entry is unavailable without the development fixture', { timeout:
   try {
     const response = await waitFor(async () => { const result = await fetch(`${origin}/admin/inventory/shortages`); return result.status === 404 ? result : false; });
     assert.equal(response.status, 404);
+    assert.equal((await fetch(`${origin}/admin/inventory/graphics/TSHIRT-001`)).status, 404);
   } finally {
     server.kill('SIGTERM');
     if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000)]);
@@ -64,6 +65,18 @@ test('shortage edits persist only in fixture stock and appear in product detail'
     await waitFor(async () => evaluate("window.__beforeShortageReload !== true && document.querySelector('[data-hydrated=true] .shortage-table__row input[type=number]')?.value === '3'"));
     assert.equal(await evaluate("document.querySelector('.shortage-table__row').querySelectorAll('input[type=number]')[1].value"), '10');
     assert.equal(await evaluate("document.querySelector('.shortage-table__row').querySelectorAll('input[type=number]')[2].value"), '7');
+    await evaluate("(()=>{const slot='vintad3e-apparel-fixture-stock';const rows=JSON.parse(sessionStorage.getItem(slot));rows['basic:hanam:TSHIRT-001-BK-M']={tracking:true,onHand:1,target:6,shortage:5};sessionStorage.setItem(slot,JSON.stringify(rows))})()");
+    assert.equal((await fetch(`${origin}/admin/inventory/graphics/UNKNOWN`)).status, 404);
+    await send('Page.navigate',{url:`${origin}/admin/inventory/graphics/TSHIRT-001`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.console-page[data-hydrated=true] .shortage-editor'))"));
+    await evaluate("window.stockWrites=0;window.originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{const path=new URL(typeof input==='string'?input:input.url,location.href).pathname;if(path.startsWith('/api/admin/')){window.stockWrites++;return Promise.reject(new Error('unexpected request'));}return window.originalFetch(input,init)}");
+    assert.equal(await evaluate("document.querySelector('.console-page h1').textContent"), '반팔 티셔츠');
+    assert.deepEqual(await evaluate("[...document.querySelectorAll('.console-page__summary strong')].map(x=>x.textContent)"), ['7', '1', '2']);
+    await waitFor(async () => evaluate("document.querySelector('.shortage-table__row input[type=number]')?.value === '3'"));
+    assert.equal(await evaluate("document.querySelector('.shortage-table__row').querySelectorAll('input[type=number]')[2].value"), '7');
+    await evaluate("document.querySelector('.shortage-table__row .shortage-save-button').click()");
+    await waitFor(async () => evaluate("document.querySelector('.admin-toast--success')?.textContent.includes('저장했습니다.')"));
+    assert.equal(await evaluate('window.stockWrites'), 0);
     await send('Page.navigate',{url:`${origin}/admin/products`});
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.shortage-table__row'))return true;document.querySelector('.product-card__view-button')?.click();return false;})()"));
     await waitFor(async () => evaluate("document.querySelector('.shortage-table__row input[type=number]')?.value === '3'"));

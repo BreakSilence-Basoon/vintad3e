@@ -6,4 +6,6 @@
 
 같은 설정을 사용하면 `/sign-in`에서 로컬 합성 세션을 만들 수 있습니다. 세션은 개발 환경의 루프백 주소에서만 동작하며 실제 인증이나 업무 권한을 제공하지 않습니다.
 
+같은 설정의 `/confirmations/proposal-01`에서는 합성 변경 제안의 불러오기·검토·확인을 볼 수 있습니다. 이 단계는 현재 화면의 메모리에만 있으며 새로고침하면 사라지고 실제 제안·승인·Codex 실행에는 영향을 주지 않습니다. 다른 제안 번호는 제공하지 않습니다.
+
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/creative-web dev`를 실행하고 `http://127.0.0.1:3831`을 엽니다.

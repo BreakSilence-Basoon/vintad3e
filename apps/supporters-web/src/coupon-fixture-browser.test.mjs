@@ -1,3 +1,4 @@
+import './sns-fixture-self-browser.test.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:net';
@@ -19,7 +20,7 @@ async function waitFor(fn) {
 
 test('SNS pages retain the original empty state without fixtures', { timeout: 60000 }, async () => {
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_SUPPORTERS_FIXTURE:''}, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_SUPPORTERS_FIXTURE:'',VINTAD3E_SUPPORTERS_FIXTURE_SELF:'1'}, stdio:'ignore' });
   try {
     for (const [path, platform] of [['instagram', 'Instagram'], ['tiktok', 'TikTok']]) {
       const response = await waitFor(async () => { const result = await fetch(`${origin}/${path}`); return result.ok ? result : false; });
@@ -36,7 +37,7 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-supporters-browser-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_SUPPORTERS_FIXTURE:'1'}, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_SUPPORTERS_FIXTURE:'1',VINTAD3E_SUPPORTERS_FIXTURE_SELF:''}, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {

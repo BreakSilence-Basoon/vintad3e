@@ -4,7 +4,7 @@ import { SortToggleButton } from './sort-toggle-button';
 
 export function FixtureFormulaDictionary({ amount, rate }: { amount: string; rate: string }) {
   const [query, setQuery] = useState(''), [tab, setTab] = useState('전체'), [sort, setSort] = useState<'symbol' | 'term'>('symbol'), [ascending, setAscending] = useState(true);
-  const rows = useMemo(() => [{ symbol: 'A', term: '기준 금액', meaning: '정산의 기준이 되는 금액', definition: amount, category: '기초값' }, { symbol: 'R', term: '적용 비율', meaning: '기준 금액에 적용하는 비율', definition: rate, category: '기초값' }], [amount, rate]);
+  const rows = useMemo(() => [{ symbol: 'amount', term: '기준 금액', meaning: '계산에 사용하는 금액', definition: amount, category: '기초값' }, { symbol: 'rate', term: '설정 값', meaning: '계산에 사용하는 설정 값', definition: rate, category: '기초값' }], [amount, rate]);
   const searched = rows.filter(row => `${row.symbol} ${row.term} ${row.meaning}`.toLocaleLowerCase('ko-KR').includes(query.trim().toLocaleLowerCase('ko-KR')));
   const visible = searched.filter(row => tab === '전체' || row.category === tab).sort((a, b) => a[sort].localeCompare(b[sort], 'ko-KR') * (ascending ? 1 : -1));
   function toggle(key: 'symbol' | 'term') { if (key === sort) setAscending(value => !value); else { setSort(key); setAscending(true); } }

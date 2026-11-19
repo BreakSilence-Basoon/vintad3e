@@ -38,7 +38,7 @@ test('development server renders schedule and paginates attendance', { timeout: 
   const port = server.address().port; await new Promise(resolve => server.close(resolve));
   const origin = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
-    cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '1', VINTAD3E_TIMETABLE_API_ORIGIN: authOrigin }, stdio: ['ignore', 'pipe', 'pipe'],
+    cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '1', VINTAD3E_TIMETABLE_FIXTURE_ADMIN: '', VINTAD3E_TIMETABLE_API_ORIGIN: authOrigin }, stdio: ['ignore', 'pipe', 'pipe'],
   });
   let serverOutput = '';
   for (const stream of [child.stdout, child.stderr]) stream.on('data', chunk => { serverOutput = (serverOutput + chunk.toString()).slice(-12000); });
@@ -51,6 +51,7 @@ test('development server renders schedule and paginates attendance', { timeout: 
       await delay(300);
     }
     assert.equal(response?.status, 200);
+    assert.equal((await fetch(`${origin}/admin/schedule?month=2026-02`, { redirect: 'manual' })).status, 404);
     const html = await response.text();
     assert.match(html, /data-schedule-date="2026-02-08"/);
     assert.match(html, /schedule-calendar__shift--draft/);

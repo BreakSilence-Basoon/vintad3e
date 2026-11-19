@@ -1,0 +1,11 @@
+.state-page {
+  min-height: 0;
+  flex: 1 0 auto;
+  padding: var(--page-gutter);
+  display: grid;
+  place-items: center;
+}
+.state-page .state-panel h1 {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
+}

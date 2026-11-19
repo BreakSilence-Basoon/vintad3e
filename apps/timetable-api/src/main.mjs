@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { createLocalJWKSet } from 'jose';
 import { createAccessTokenVerifier } from '@vintad3e/access-token';
-import { createHistoryHandler, createOwnHistoryHandler, createOwnScheduleHandler } from '@vintad3e/timetable-read-api';
+import { createHistoryHandler, createOwnAccessHandler, createOwnHistoryHandler, createOwnScheduleHandler } from '@vintad3e/timetable-read-api';
 import { createTimetableStore } from '@vintad3e/timetable-store';
 import { createLoopbackServer } from './server.mjs';
 import { createAdminHandler } from './admin-handler.mjs';
@@ -55,6 +55,7 @@ export function prepareService(env, { browserAuth = null } = {}) {
     const store = createTimetableStore(db);
     const read = createHistoryHandler({ ...store, verifyAuthorization });
     const readOwn = createOwnHistoryHandler({ ...store, verifyAuthorization });
+    const readAccess = createOwnAccessHandler({ ...store, verifyAuthorization });
     const readSchedule = createOwnScheduleHandler({ ...store, verifyAuthorization });
     const version = db.prepare('PRAGMA user_version').get().user_version;
     if (version >= 13 && db.prepare('SELECT status FROM recovery_guard WHERE id = 1').get()?.status === 'pending') throw new Error('Recovery authority review required');
@@ -71,6 +72,7 @@ export function prepareService(env, { browserAuth = null } = {}) {
         request = authorized.request;
       }
       if (new URL(request.url).pathname === '/v1/me/history') return readOwn(request);
+      if (new URL(request.url).pathname === '/v1/me/access') return readAccess(request);
       if (new URL(request.url).pathname === '/v1/me/shifts') return readSchedule(request);
       if (request.method === 'GET' && listSchedules && new URL(request.url).pathname === '/v1/admin/shifts') return listSchedules(request);
       if (request.method === 'GET' && listStaff && new URL(request.url).pathname === '/v1/admin/staff') return listStaff(request);

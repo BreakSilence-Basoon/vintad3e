@@ -10,9 +10,9 @@ function sessionCookie(header) {
   return parts[0].slice(cookieName.length + 1);
 }
 export async function handleTimetableRequest(request, resource, apiOrigin) {
-  if (request.method !== 'GET' || !['history', 'shifts'].includes(resource)) return reply(404, { error: 'not_found' });
+  if (request.method !== 'GET' || !['access', 'history', 'shifts'].includes(resource)) return reply(404, { error: 'not_found' });
   const url = new URL(request.url);
-  const allowed = resource === 'shifts' ? ['from', 'to', 'cursor', 'include'] : ['cursor'];
+  const allowed = resource === 'shifts' ? ['from', 'to', 'cursor', 'include'] : resource === 'history' ? ['cursor'] : [];
   if ([...url.searchParams.keys()].some((key) => !allowed.includes(key)) || allowed.some((key) => url.searchParams.getAll(key).length > 1) || url.searchParams.has('include') && url.searchParams.get('include') !== 'attendance') return reply(400, { error: 'invalid_request' });
   const result = await readTimetable({ apiOrigin, sessionValue: sessionCookie(request.headers.get('cookie')), resource,
     from: url.searchParams.get('from'), to: url.searchParams.get('to'), nextCursor: url.searchParams.get('cursor') ?? undefined, includeAttendance: url.searchParams.get('include') === 'attendance' });

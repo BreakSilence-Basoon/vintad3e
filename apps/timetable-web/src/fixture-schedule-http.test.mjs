@@ -23,6 +23,9 @@ test('development server renders schedule and paginates attendance', { timeout: 
       response.writeHead(200, { 'set-cookie': ['__Host-vintad3e-login=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0', `__Host-vintad3e-session=${session}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=900`] });
     } else if (request.url === '/auth/logout' && request.method === 'POST' && request.headers.cookie === `__Host-vintad3e-session=${session}` && request.headers.origin === 'https://app.example.invalid') {
       response.writeHead(200, { 'set-cookie': '__Host-vintad3e-session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0' });
+    } else if (request.url === '/v1/me/access' && request.headers.cookie === `__Host-vintad3e-session=${session}`) {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ role: 'VIEWER', privateField: 'omit' })); return;
     } else response.writeHead(400);
     response.end();
   });
@@ -56,6 +59,10 @@ test('development server renders schedule and paginates attendance', { timeout: 
     assert.equal(authCallback.status, 303);
     assert.equal(authCallback.headers.get('location'), returnPath);
     assert.ok(authCallback.headers.getSetCookie().some((cookie) => cookie.startsWith(`__Host-vintad3e-session=${session};`)));
+    const accessResponse = await fetch(`${origin}/api/timetable/access`, { headers: { cookie: `__Host-vintad3e-session=${session}` } });
+    assert.equal(accessResponse.status, 200);
+    assert.equal(accessResponse.headers.get('cache-control'), 'private, no-store');
+    assert.deepEqual(await accessResponse.json(), { role: 'VIEWER' });
     const authLogout = await fetch(`${origin}/auth/logout`, { method: 'POST', headers: { origin: 'https://app.example.invalid', cookie: `__Host-vintad3e-session=${session}` } });
     assert.equal(authLogout.status, 200);
     assert.match(authLogout.headers.getSetCookie()[0], /^__Host-vintad3e-session=; .*Max-Age=0$/);

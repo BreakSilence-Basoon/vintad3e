@@ -20,6 +20,24 @@ function parseCursor(value) {
 }
 const makeCursor = (record) => Buffer.from(JSON.stringify([record.startsAt, record.id])).toString('base64url');
 
+// Role is current membership data; it does not grant write scope or imply that writes are enabled.
+export function createOwnAccessHandler({ verifyAuthorization, findOwnAccess } = {}) {
+  if (typeof verifyAuthorization !== 'function' || typeof findOwnAccess !== 'function') throw new Error('Trusted authentication and data adapters are required');
+  return async function handle(request) {
+    try {
+      const url = new URL(request.url);
+      if (request.method !== 'GET' || url.pathname !== '/v1/me/access') return reply(404, { error: 'not_found' });
+      const identity = await verifyAuthorization(request.headers.get('authorization'));
+      if (!identity || !identityPart(identity.issuer) || !identityPart(identity.subject)) return reply(401, { error: 'unauthorized' }, { 'WWW-Authenticate': 'Bearer' });
+      if (url.search) return reply(400, { error: 'invalid_request' });
+      const role = await findOwnAccess(identity.issuer, identity.subject, identity.issuedAt);
+      if (role === null) return reply(404, { error: 'not_found' });
+      if (!['VIEWER', 'ADMIN'].includes(role)) throw new Error('Invalid stored role');
+      return reply(200, { role });
+    } catch { return reply(503, { error: 'unavailable' }); }
+  };
+}
+
 // These functions are server-owned adapters, not values from request headers.
 export function createHistoryHandler({ verifyAuthorization, findAccessAndHistory } = {}) {
   if (![verifyAuthorization, findAccessAndHistory].every((value) => typeof value === 'function')) {

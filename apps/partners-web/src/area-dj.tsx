@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
-import { DjAccountantMessage } from '../../dj-accountant-form';
-import { SettlementLedger } from '../../settlement-ledger';
-import { getDjFixture } from '../../partner-fixture';
-import { seoulDate } from '../../partner-schedule';
+import { DjAccountantMessage } from './dj-accountant-form';
+import { SettlementLedger } from './settlement-ledger';
+import { getDjFixture } from './partner-fixture';
+import { seoulDate } from './partner-schedule';
 
 export const dynamic = 'force-dynamic';
 export default function Page() {

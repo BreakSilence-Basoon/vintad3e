@@ -1,0 +1,15 @@
+'use client';
+import { useMemo, useState } from 'react';
+import { SortToggleButton } from './sort-toggle-button';
+
+export function FixtureFormulaDictionary({ amount, rate }: { amount: string; rate: string }) {
+  const [query, setQuery] = useState(''), [tab, setTab] = useState('전체'), [sort, setSort] = useState<'symbol' | 'term'>('symbol'), [ascending, setAscending] = useState(true);
+  const rows = useMemo(() => [{ symbol: 'A', term: '기준 금액', meaning: '정산의 기준이 되는 금액', definition: amount, category: '기초값' }, { symbol: 'R', term: '적용 비율', meaning: '기준 금액에 적용하는 비율', definition: rate, category: '기초값' }], [amount, rate]);
+  const searched = rows.filter(row => `${row.symbol} ${row.term} ${row.meaning}`.toLocaleLowerCase('ko-KR').includes(query.trim().toLocaleLowerCase('ko-KR')));
+  const visible = searched.filter(row => tab === '전체' || row.category === tab).sort((a, b) => a[sort].localeCompare(b[sort], 'ko-KR') * (ascending ? 1 : -1));
+  function toggle(key: 'symbol' | 'term') { if (key === sort) setAscending(value => !value); else { setSort(key); setAscending(true); } }
+  return <section className="support-dictionary formula-concept-dictionary" aria-label="정산 공식 기호 검색"><div className="support-search"><div className="support-search__control"><input id="formula-concept-search" aria-label="정산 공식 기호 검색" type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="모르는 개념을 검색해보세요!" /></div></div>
+    <div className="support-tabs" role="tablist" aria-label="정산 공식 분류">{['전체', '기초값', '성과보너스', '판매보상'].map(value => <button key={value} type="button" className={tab === value ? 'is-active' : undefined} role="tab" aria-selected={tab === value} onClick={() => setTab(value)}><span>{value}</span><small>{value === '전체' ? searched.length : searched.filter(row => row.category === value).length}</small></button>)}</div>
+    <div className="support-results formula-concept-results"><table className="support-results__table formula-concepts-table"><thead><tr><th aria-sort={sort === 'symbol' ? ascending ? 'ascending' : 'descending' : 'none'}><SortToggleButton label="기호" direction={sort === 'symbol' && !ascending ? 'desc' : 'asc'} active={sort === 'symbol'} className="sort-toggle-button--table" onClick={() => toggle('symbol')} /></th><th aria-sort={sort === 'term' ? ascending ? 'ascending' : 'descending' : 'none'}><SortToggleButton label="개념" direction={sort === 'term' && !ascending ? 'desc' : 'asc'} active={sort === 'term'} className="sort-toggle-button--table" onClick={() => toggle('term')} /></th><th><span className="support-results__heading">의미</span></th><th><span className="support-results__heading">수식</span></th></tr></thead><tbody>{visible.length ? visible.map(row => <tr key={row.symbol}><td><code className="formula-concepts-table__symbol">{row.symbol}</code></td><td><strong className="formula-concepts-table__term">{row.term}</strong></td><td>{row.meaning}</td><td><span className="formula-concepts-table__definition">{row.definition}</span></td></tr>) : <tr><td colSpan={4}>검색 결과가 없습니다. 다른 표현으로 다시 찾아보세요.</td></tr>}</tbody></table></div>
+  </section>;
+}

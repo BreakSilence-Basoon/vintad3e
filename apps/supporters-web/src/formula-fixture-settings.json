@@ -1,0 +1,4 @@
+{
+  "amount": 123400,
+  "formula": { "method": "rate", "numerator": 375, "denominator": 10000 }
+}

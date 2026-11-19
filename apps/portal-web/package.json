@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3825",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/fixture-links.test.mjs src/fixture-session.test.mjs src/fixture-confirmation.test.mjs",
+    "test": "node --test src/fixture-links.test.mjs src/fixture-session.test.mjs src/fixture-confirmation.test.mjs src/fixture-confirmation-store.test.mjs",
     "test:fixture-http": "node --test test/fixture-http.test.mjs"
   },
   "dependencies": {

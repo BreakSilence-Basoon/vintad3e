@@ -20,4 +20,4 @@ Instagram과 TikTok은 원본에서 관리자에게 연결된 서포터즈가 �
 
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/supporters-web dev`를 실행하고 `http://127.0.0.1:3827/coupon`을 엽니다.
 
-개발 환경에서 `VINTAD3E_SUPPORTERS_FIXTURE=1`과 `VINTAD3E_SUPPORTERS_FIXTURE_SELF=1`을 함께 설정하면 본인 화면의 합성 게시물 등록·해제와 합성 연결 상태를 조작할 수 있습니다. 상태는 현재 브라우저 탭의 세션 저장소에만 남고 실제 SNS 계정·로그인·권한·공식 API에는 연결되지 않습니다. 수동 갱신은 실제 SNS에 요청하지 않습니다.
+개발 환경에서 `VINTAD3E_SUPPORTERS_FIXTURE=1`과 `VINTAD3E_SUPPORTERS_FIXTURE_SELF=1`을 함께 설정하면 본인 화면의 합성 게시물 등록·해제와 합성 연결 상태를 조작할 수 있습니다. 수동 갱신은 해당 플랫폼의 첫 합성 게시물 조회 수에 정해진 값을 반영합니다. 상태는 현재 브라우저 탭의 세션 저장소에만 남고 실제 SNS 계정·로그인·권한·공식 API에는 연결되지 않습니다. 수동 갱신은 실제 SNS에 요청하지 않습니다.

@@ -8,4 +8,6 @@ Node.js 24와 Corepack을 준비한 뒤 저장소 루트에서 `corepack pnpm in
 
 가상 세션은 30분 후 만료되는 메모리 전용 임의 값이며, 로컬 HTTP에서만 쓸 수 있는 별도 HttpOnly·SameSite=Strict 쿠키를 사용합니다. 로그인과 로그아웃 요청은 설정된 `127.0.0.1` 출처를 확인합니다. 다른 포트로 개발 서버를 실행한다면 `VINTAD3E_PORTAL_FIXTURE_ORIGIN`을 해당 `http://127.0.0.1:<포트>` 출처로 지정해야 합니다. 실제 사용자·비밀번호·토큰을 이 기능에 넣지 마세요.
 
+`/about`은 공개용 소개이며 `/auth/session-resume`은 유효한 합성 세션을 안전한 내부 경로로 돌려보냅니다. 세션이 없을 때 로그인하면 홈으로 이동합니다.
+
 앱과 Shop 타일에는 이 저장소에서 직접 그린 중립 SVG 아이콘을 사용합니다. 가게의 아이콘으로 바꾸려면 `apps/portal-web/public/images/neutral/`에서 해당 앱 이름의 SVG 파일을 같은 파일명으로 교체하고 개발 서버를 새로고침하세요. 사용 권한을 가진 이미지만 넣으세요. 하단 배경은 `background.svg`를 같은 방식으로 교체할 수 있습니다.

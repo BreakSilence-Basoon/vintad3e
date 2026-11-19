@@ -31,12 +31,12 @@ test('library keyboard actions validate inputs and recover from storage and serv
         assert.equal(await prepare.isDisabled(), true);
         await picker.setInputFiles({ name: 'wrong.txt', mimeType: 'text/plain', buffer: Buffer.from('wrong') });
         await enter(page, prepare);
-        await page.getByRole('alert').waitFor();
+        await page.locator('p[role=alert]').waitFor();
         await picker.setInputFiles({ name: '가게 안내.txt', mimeType: 'text/plain', buffer: Buffer.from('업무를 시작하기 전에 필요한 사항을 확인합니다.') });
         for (const label of ['업로드 내용 확인', '제안 불러오기', '제안 검토', '이 변경 확인', '업로드 승인']) await enter(page, page.getByRole('button', { name: label, exact: true }));
         await page.route('**/api/fixture/upload', route => route.fulfill({ status: 503, body: '' }));
         await enter(page, page.getByRole('button', { name: '파일 올리기', exact: true }));
-        await page.getByRole('alert').waitFor();
+        await page.locator('p[role=alert]').waitFor();
         await page.unroute('**/api/fixture/upload');
         await enter(page, page.getByRole('button', { name: '파일 올리기', exact: true }));
         await page.getByText('파일을 올렸습니다.', { exact: true }).waitFor();
@@ -51,7 +51,7 @@ test('library keyboard actions validate inputs and recover from storage and serv
         assert.equal(await create.isDisabled(), true);
         await title.focus(); await page.keyboard.type('Meeting 01');
         await page.evaluate(() => { window.oldSetItem = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new Error('unavailable'); }; });
-        await enter(page, create); await page.getByRole('alert').waitFor();
+        await enter(page, create); await page.locator('p[role=alert]').waitFor();
         await page.evaluate(() => { Storage.prototype.setItem = window.oldSetItem; });
         await enter(page, create); await page.waitForURL(/\/meetings\/[0-9a-f-]+$/);
         assert.equal(await page.locator('h1').innerText(), 'Meeting 01');

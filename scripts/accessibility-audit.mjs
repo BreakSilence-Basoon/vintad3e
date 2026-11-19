@@ -93,7 +93,7 @@ try {
             if (canCapturePage) await page.evaluate(() => window.scrollTo(0, 0));
             const shot = await page.screenshot({ animations: 'disabled', fullPage: canCapturePage });
             await hidden.evaluate(el => el.remove());
-            const measurements = await page.evaluate(async ({ png, nodes }) => {
+            const measure = async (png, nodes) => page.evaluate(async ({ png, nodes }) => {
               const image = new Image(); image.src = `data:image/png;base64,${png}`; await image.decode();
               const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
               const ctx = canvas.getContext('2d', { willReadFrequently: true }); ctx.drawImage(image, 0, 0);
@@ -109,8 +109,21 @@ try {
                 }
                 return samples;
               });
-            }, { png: shot.toString('base64'), nodes: undecided });
+            }, { png, nodes });
+            const measurements = await measure(shot.toString('base64'), undecided);
             undecided.forEach((node, i) => { node.backgroundSamples = measurements[i]; });
+            // A narrow table may hide a cell in a horizontal scroller; reveal it before sampling.
+            for (const node of undecided.filter(node => !node.backgroundSamples && node.target.length === 1)) {
+              try {
+                const element = page.locator(node.target[0]).first();
+                await element.scrollIntoViewIfNeeded({ timeout: 2000 });
+                const rect = await element.boundingBox();
+                const hiddenText = await page.addStyleTag({ content: '* { -webkit-text-fill-color: transparent !important; text-shadow: none !important; }' });
+                const scrolledShot = await page.screenshot({ animations: 'disabled' });
+                await hiddenText.evaluate(el => el.remove());
+                [node.backgroundSamples] = await measure(scrolledShot.toString('base64'), [{ ...node, rect }]);
+              } catch { /* Keep unresolved when a node cannot be safely sampled. */ }
+            }
           }
           const focus = [];
           const focusable = await page.evaluate(() => {

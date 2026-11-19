@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { djFixtureDetail } from './dj-fixture-detail';
 
 export function guideEnabled(env: string | undefined, value: string | undefined) {
   return env === 'development' && value === '1';
@@ -21,6 +22,7 @@ export function DjFixtureGuide({ guideKey = 'ko' }: { guideKey?: string }) {
   if (!guideEnabled(process.env.NODE_ENV, process.env.VINTAD3E_PARTNERS_FIXTURE) || !djKeys.some(key => key === guideKey)) notFound();
   const language = guideKey.startsWith('en') ? 'en' : 'ko';
   const copy = djCopy[language];
+  const detail = djFixtureDetail[language];
   const suffix = guideKey.includes('-') ? guideKey.slice(2) : '';
   const isHouse = suffix === '-house';
   const title = suffix ? isHouse ? copy.house : copy.rnb : copy.title;
@@ -28,10 +30,10 @@ export function DjFixtureGuide({ guideKey = 'ko' }: { guideKey?: string }) {
     {suffix && <Link href={djHref(language)}>{copy.back}</Link>}
     <Link href={djHref(`ko${suffix}`)} lang="ko" hrefLang="ko" aria-current={language === 'ko' ? 'page' : undefined}>한국어</Link>
     <Link href={djHref(`en${suffix}`)} lang="en" hrefLang="en" aria-current={language === 'en' ? 'page' : undefined}>English</Link>
-  </nav><article><h1>{title}</h1>{suffix ? <><p>{copy.music}</p><ul>{copy.tracks.map(text => <li key={text}>{text}</li>)}</ul></> : <>
-    <p>{copy.intro}</p><h2>{copy.headings[0]}</h2><p>{copy.space}</p><figure><GuideImage /></figure>
+  </nav><article><h1>{title}</h1>{suffix ? <>{detail.genreParagraphs.map((paragraph, index) => <div key={paragraph}><p>{paragraph}</p><ul>{detail.genreItems.slice(index, index === detail.genreParagraphs.length - 1 ? (isHouse ? 10 : 12) : index + 1).map(item => <li key={item}>{item}</li>)}</ul></div>)}</> : <>
+    <p>{copy.intro}</p><h2>{copy.headings[0]}</h2><p>{copy.space}</p><p>{detail.paragraphs[0]}</p><p>{detail.paragraphs[1]}</p><figure><GuideImage /></figure>
     <div className="partners-guide-columns" style={{ '--guide-columns': '1fr 1fr 1fr 1fr' } as React.CSSProperties}>{[0, 1, 2, 3].map(index => <div className="partners-guide-column" key={index}><figure><GuideImage /></figure></div>)}</div>
-    <h2>{copy.headings[1]}</h2><p>{copy.music}</p><ul><li><Link href={djHref(`${language}-house`)}>{copy.house}</Link></li><li><Link href={djHref(`${language}-rnb-hiphop`)}>{copy.rnb}</Link></li></ul>
-    <h2>{copy.headings[2]}</h2><p>{copy.shoot}</p><h2>{copy.headings[3]}</h2><p>{copy.gear}</p>{copy.lists.map((heading, index) => <div key={heading}><h3>{index + 1}) {heading}</h3><ul><li>{copy.steps[index]}</li></ul></div>)}
+    <h2>{copy.headings[1]}</h2><p>{copy.music}</p><p>{detail.paragraphs[2]}</p><ul><li><Link href={djHref(`${language}-house`)}>{copy.house}</Link></li><li><Link href={djHref(`${language}-rnb-hiphop`)}>{copy.rnb}</Link></li></ul>
+    <h2>{copy.headings[2]}</h2><p>{copy.shoot}</p><p>{detail.paragraphs[3]}</p><h2>{copy.headings[3]}</h2><p>{copy.gear}</p>{copy.lists.map((heading, index) => <div key={heading}><h3>{index + 1}) {heading}</h3><ul><li>{copy.steps[index]}</li>{detail.extras[index].map(item => <li key={item}>{item}</li>)}</ul>{index === 0 && <><h3>{detail.caution}</h3><ul>{detail.cautionItems.map(item => <li key={item}>{item}</li>)}</ul></>}</div>)}
   </>}</article></main><footer className="public-footer"><div className="public-footer__inner"><p className="public-footer__copyright">© 2026 빈타제</p></div></footer></>;
 }

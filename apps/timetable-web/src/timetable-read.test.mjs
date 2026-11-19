@@ -25,6 +25,31 @@ test('untrusted addresses, missing or malformed sessions and malformed queries f
   assert.equal((await handleTimetableRequest(request('', `${cookie}; ${cookie}`), 'history', 'http://127.0.0.1:1')).status, 401);
 });
 
+test('access response forwards one session and exposes only its verified role', async () => {
+  let mode = 'valid';
+  const server = createServer((req, res) => {
+    assert.equal(req.url, '/v1/me/access');
+    assert.equal(req.headers.cookie, cookie);
+    if (mode === 'redirect') { res.writeHead(302, { location: '/other' }); res.end(); return; }
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ role: mode === 'invalid' ? 'OWNER' : 'ADMIN', privateField: 'omit' }));
+  });
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  const apiOrigin = `http://127.0.0.1:${server.address().port}`;
+  const url = 'https://example.invalid/api/timetable/access';
+  try {
+    const response = await handleTimetableRequest(new Request(url, { headers: { cookie: `${cookie}; unrelated=omit` } }), 'access', apiOrigin);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('cache-control'), 'private, no-store');
+    assert.deepEqual(await response.json(), { role: 'ADMIN' });
+    assert.equal((await handleTimetableRequest(new Request(url), 'access', apiOrigin)).status, 401);
+    assert.equal((await handleTimetableRequest(new Request(url, { headers: { cookie: `${cookie}; ${cookie}` } }), 'access', apiOrigin)).status, 401);
+    assert.equal((await handleTimetableRequest(new Request(`${url}?subject=other`, { headers: { cookie } }), 'access', apiOrigin)).status, 400);
+    mode = 'invalid'; assert.equal((await handleTimetableRequest(new Request(url, { headers: { cookie } }), 'access', apiOrigin)).status, 503);
+    mode = 'redirect'; assert.equal((await handleTimetableRequest(new Request(url, { headers: { cookie } }), 'access', apiOrigin)).status, 503);
+  } finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
+});
+
 test('history view loads all pages, filters Seoul dates, and never presents partial or denied data', async () => {
   let mode = 'ok';
   const server = createServer((req, res) => {

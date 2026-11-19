@@ -80,6 +80,8 @@ export function createTimetableStore(db) {
   }
   const epochFilter = version >= 10 ? 'AND m.token_valid_after <= ?' : '';
   const tokenArgs = (issuedAt) => version >= 10 ? [Number.isSafeInteger(issuedAt) && issuedAt >= 0 ? issuedAt : -1] : [];
+  const ownAccess = db.prepare(`SELECT m.role FROM memberships m
+    WHERE m.issuer = ? AND m.subject = ? AND m.active = 1 AND m.role IN ('VIEWER', 'ADMIN') ${epochFilter}`);
   const authorizedHistory = db.prepare(`SELECT h.business_id AS businessId, h.staff_id AS recordStaffId,
     h.id, h.starts_at AS startsAt, h.ends_at AS endsAt, m.staff_id AS actorStaffId, m.role, m.active
     FROM memberships m JOIN history h ON h.business_id = m.business_id
@@ -106,6 +108,9 @@ export function createTimetableStore(db) {
   const firstOwnShiftsWithAttendance = version >= 14 ? ownShiftQuery(false, true) : null;
   const nextOwnShiftsWithAttendance = version >= 14 ? ownShiftQuery(true, true) : null;
   return {
+    async findOwnAccess(issuer, subject, issuedAt) {
+      return ownAccess.get(issuer, subject, ...tokenArgs(issuedAt))?.role ?? null;
+    },
     async findOwnShifts(issuer, subject, from, to, cursor, limit, issuedAt, includeAttendance = false) {
       const first = includeAttendance ? firstOwnShiftsWithAttendance : firstOwnShifts;
       const next = includeAttendance ? nextOwnShiftsWithAttendance : nextOwnShifts;

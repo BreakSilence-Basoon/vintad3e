@@ -43,11 +43,12 @@ export async function readTimetable({ apiOrigin, sessionValue, resource, from, t
   const base = origin(apiOrigin);
   if (sessionValue === undefined || sessionValue === null || sessionValue === '') return { kind: 'signed-out' };
   if (typeof sessionValue !== 'string' || !sessionPattern.test(sessionValue)) return { kind: 'signed-out' };
-  if (!base || !['history', 'shifts'].includes(resource)) return { kind: 'unavailable' };
+  if (!base || !['access', 'history', 'shifts'].includes(resource)) return { kind: 'unavailable' };
   if (typeof includeAttendance !== 'boolean' || includeAttendance && resource !== 'shifts') return { kind: 'unavailable' };
   if (nextCursor !== undefined && (typeof nextCursor !== 'string' || !cursorPattern.test(nextCursor))) return { kind: 'unavailable' };
-  const url = new URL(resource === 'history' ? '/v1/me/history' : '/v1/me/shifts', base);
-  url.searchParams.set('limit', '100');
+  if (resource === 'access' && (nextCursor !== undefined || from != null || to != null)) return { kind: 'unavailable' };
+  const url = new URL(`/v1/me/${resource}`, base);
+  if (resource !== 'access') url.searchParams.set('limit', '100');
   if (nextCursor !== undefined) url.searchParams.set('cursor', nextCursor);
   if (resource === 'shifts') {
     if (!instant(from) || !instant(to) || from >= to || Date.parse(to) - Date.parse(from) > 62 * 86400000) return { kind: 'unavailable' };
@@ -62,10 +63,11 @@ export async function readTimetable({ apiOrigin, sessionValue, resource, from, t
     const length = response.headers.get('content-length');
     if (length !== null && (!/^\d+$/.test(length) || Number(length) > 262144)) return { kind: 'unavailable' };
     const data = await readBoundedJson(response);
-    if (!(resource === 'history' ? history(data) : shifts(data, includeAttendance))) return { kind: 'unavailable' };
+    if (!(resource === 'history' ? history(data) : resource === 'shifts' ? shifts(data, includeAttendance) : data && ['VIEWER', 'ADMIN'].includes(data.role))) return { kind: 'unavailable' };
     const projected = resource === 'history'
       ? { records: data.records.map(({ id, startsAt, endsAt }) => ({ id, startsAt, endsAt })), nextCursor: data.nextCursor }
-      : { shifts: data.shifts.map(({ id, location, startsAt, endsAt, graceMinutes, attendance }) => ({ id, location: { id: location.id, label: location.label }, startsAt, endsAt, graceMinutes, ...(includeAttendance ? { attendance: attendance === null ? null : { startsAt: attendance.startsAt, endsAt: attendance.endsAt } } : {}) })), nextCursor: data.nextCursor };
+      : resource === 'shifts' ? { shifts: data.shifts.map(({ id, location, startsAt, endsAt, graceMinutes, attendance }) => ({ id, location: { id: location.id, label: location.label }, startsAt, endsAt, graceMinutes, ...(includeAttendance ? { attendance: attendance === null ? null : { startsAt: attendance.startsAt, endsAt: attendance.endsAt } } : {}) })), nextCursor: data.nextCursor }
+        : { role: data.role };
     return { kind: 'ready', data: projected };
   } catch { return { kind: 'unavailable' }; }
 }

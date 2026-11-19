@@ -114,6 +114,11 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     assert.equal(uiHistory.kind, 'ready');
     assert.deepEqual(uiHistory.data.records.map((item) => item.id), ['record-a']);
     const uiRequest = new Request('https://app.example.invalid/api/timetable/history', { headers: { cookie: session } });
+    const accessRequest = new Request('https://app.example.invalid/api/timetable/access', { headers: { cookie: session } });
+    const viewerAccess = await handleTimetableRequest(accessRequest, 'access', base);
+    assert.equal(viewerAccess.status, 200);
+    assert.equal(viewerAccess.headers.get('cache-control'), 'private, no-store');
+    assert.deepEqual(await viewerAccess.json(), { role: 'VIEWER' });
     const uiResponse = await handleTimetableRequest(uiRequest, 'history', base);
     assert.equal(uiResponse.status, 200);
     assert.equal(uiResponse.headers.get('cache-control'), 'private, no-store');
@@ -124,6 +129,10 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
       headers: { cookie: cookieValue, origin, 'content-type': 'application/json' },
       body: JSON.stringify({ staffId: 'staff-b', subject: 'example-other' }) });
     assert.equal((await adminPost(session, publicOrigin)).status, 401);
+    writer.prepare('UPDATE memberships SET role = ? WHERE subject = ?').run('ADMIN', 'example-user');
+    assert.deepEqual(await (await handleTimetableRequest(new Request(accessRequest.url, { headers: { cookie: session } }), 'access', base)).json(), { role: 'ADMIN' });
+    assert.equal((await adminPost(session, publicOrigin)).status, 401);
+    writer.prepare('UPDATE memberships SET role = ? WHERE subject = ?').run('VIEWER', 'example-user');
     const writeStart = await fetch(`${base}/auth/start-write`, { redirect: 'manual' });
     const writeAuthorization = new URL(writeStart.headers.get('location'));
     nonce = writeAuthorization.searchParams.get('nonce');
@@ -138,6 +147,8 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     assert.equal((await adminPost(writeSession, 'https://other.example.invalid')).status, 403);
     assert.equal((await adminPost(writeSession, publicOrigin)).status, 403);
     writer.prepare('UPDATE memberships SET role = ? WHERE subject = ?').run('ADMIN', 'example-user');
+    const adminAccess = await handleTimetableRequest(new Request(accessRequest.url, { headers: { cookie: writeSession } }), 'access', base);
+    assert.deepEqual(await adminAccess.json(), { role: 'ADMIN' });
     assert.equal((await adminPost(writeSession, publicOrigin)).status, 200);
     const close = await fetch(`${base}/v1/admin/history/close`, { method: 'POST',
       headers: { cookie: writeSession, origin: publicOrigin, 'content-type': 'application/json' },
@@ -163,6 +174,7 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     assert.equal((await fetch(`${base}/v1/admin/shifts?${scheduleQuery}`, { headers: writeHeaders })).status, 404);
     assert.equal((await handleTimetableLogout(new Request(`${publicOrigin}/auth/logout`, { method: 'POST', headers: { ...writeHeaders, origin: 'https://other.example.invalid' } }), base)).status, 403);
     writer.prepare('UPDATE memberships SET active = 0 WHERE subject = ?').run('example-user');
+    assert.equal((await handleTimetableRequest(new Request(accessRequest.url, { headers: { cookie: writeSession } }), 'access', base)).status, 404);
     assert.equal((await readTimetable({ apiOrigin: base, sessionValue: writeSession.slice('__Host-vintad3e-session='.length), resource: 'history' })).kind, 'denied');
     assert.equal((await handleTimetableRequest(new Request(uiRequest.url, { headers: { cookie: writeSession } }), 'history', base)).status, 404);
     assert.equal((await fetch(`${base}/v1/history/record-a`, { headers: writeHeaders })).status, 404);
@@ -170,6 +182,7 @@ test('fake OIDC login reaches HTTP authorization, honors current membership and 
     assert.equal((await fetch(`${base}/v1/me/shifts?${scheduleQuery}`, { headers: writeHeaders })).status, 404);
     writer.prepare('UPDATE memberships SET active = 1, token_valid_after = ? WHERE subject = ?')
       .run(Math.floor(Date.now() / 1000) + 1, 'example-user');
+    assert.equal((await handleTimetableRequest(new Request(accessRequest.url, { headers: { cookie: writeSession } }), 'access', base)).status, 404);
     assert.equal((await fetch(`${base}/v1/me/history`, { headers: writeHeaders })).status, 404);
     const logout = await handleTimetableLogout(new Request(`${publicOrigin}/auth/logout`, { method: 'POST', headers: { ...writeHeaders, origin: publicOrigin } }), base);
     assert.equal(logout.status, 200);

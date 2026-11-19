@@ -51,6 +51,8 @@ test('version 5 migration backs up before adding the owner and time index', asyn
       .all('2026-02-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z', 'https://identity.example.invalid', 'example-user', 10);
     assert.ok(schedulePlan.some((row) => row.detail.includes('scheduled_shifts_business_time')));
     const scheduleStore = createTimetableStore(db);
+    assert.equal(await scheduleStore.findOwnAccess('https://identity.example.invalid', 'example-user', 0), 'VIEWER');
+    assert.equal(await scheduleStore.findOwnAccess('https://identity.example.invalid', 'example-other', 0), null);
     const scheduleArgs = ['https://identity.example.invalid', 'example-user', '2026-01-01T00:00:00.000Z', '2026-02-01T00:00:00.000Z', null, 10, 0];
     assert.deepEqual(await scheduleStore.findOwnShifts(...scheduleArgs), []);
     await assert.rejects(scheduleStore.findOwnShifts(...scheduleArgs, true), /Migration required/);

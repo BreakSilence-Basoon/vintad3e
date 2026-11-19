@@ -132,6 +132,10 @@ test('development server renders schedule and paginates attendance', { timeout: 
     await waitFor(async () => evaluate("Boolean(document.querySelector('.attendance-history-filter [data-hydrated=true]'))"));
     await evaluate("(()=>{const s=document.querySelector('.attendance-history-filter [name=range]');s.value='all';s.dispatchEvent(new Event('change',{bubbles:true}));document.querySelector('.attendance-history-filter').requestSubmit();})()");
     await waitFor(async () => evaluate("location.search.includes('range=all') && document.querySelectorAll('article.attendance-history-card').length===10"));
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('article.attendance-history-card')).display"), 'grid');
+    await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('article.attendance-history-card')).gridTemplateColumns.split(' ').length"), 2);
+    await send('Emulation.clearDeviceMetricsOverride');
     await waitFor(async () => evaluate("(()=>{const b=document.querySelector('.attendance-history-pager button');if(location.search.includes('historyPage=2')&&document.querySelectorAll('article.attendance-history-card').length===20)return true;b?.click();return false;})()"));
     assert.ok(await evaluate("location.search.includes('range=all')"));
     await waitFor(async () => evaluate("(()=>{const b=document.querySelector('.attendance-history-pager button');if(location.search.includes('historyPage=3')&&document.querySelectorAll('article.attendance-history-card').length===21)return true;b?.click();return false;})()"));

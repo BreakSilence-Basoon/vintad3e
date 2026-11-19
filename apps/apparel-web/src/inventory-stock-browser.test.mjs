@@ -38,11 +38,13 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     const run = async expression => { await evaluate(expression); await delay(150); };
     await send('Page.navigate',{url:`${origin}/admin/audit`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.audit-page .audit-filter-bar[data-hydrated=true]'))"));
-    assert.equal(await evaluate("document.querySelector('.audit-empty').textContent"), '아직 표시할 수정 이력이 없습니다.');
+    assert.equal(await evaluate("document.querySelectorAll('.audit-page .audit-card').length"), 3);
     assert.deepEqual(await evaluate("[...document.querySelectorAll('[name=actor] option')].map(x=>x.textContent)"), ['실행자 전체', '구성원 1', '대표님', '구성원 2', 'AI', '시스템']);
     await evaluate("(()=>{const f=document.querySelector('.audit-filter-bar');f.querySelector('[name=keyword]').value='재고';f.querySelector('[name=actor]').value='staff1';f.requestSubmit()})()");
     await waitFor(async () => evaluate("location.search.includes('actor=staff1') && location.search.includes('keyword=')"));
     assert.equal(await evaluate("document.querySelector('.audit-filter-bar [name=keyword]').value"), '재고');
+    await waitFor(async () => evaluate("document.querySelectorAll('.audit-page .audit-card').length === 1"));
+    assert.ok(await evaluate("document.querySelector('.audit-card').textContent.includes('재고 수량을 수정했습니다.')"));
     await send('Page.navigate',{url:`${origin}/admin/products`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.product-card__view-button'))"));
     // The server-rendered button can appear before React attaches its handler.

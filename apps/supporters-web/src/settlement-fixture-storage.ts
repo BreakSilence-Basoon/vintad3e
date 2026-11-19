@@ -4,6 +4,11 @@ type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 const staffIds = new Set(['supporter-1', 'supporter-2']);
 const monthPattern = /^(?:20\d{2})-(?:0[1-9]|1[0-2])$/;
 const datePattern = /^20\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/;
+function validDate(value: string): boolean {
+  if (!datePattern.test(value)) return false;
+  const timestamp = Date.parse(`${value}T00:00:00.000Z`);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === value;
+}
 const key = (staff: string) => `vintad3e:settlement:${staff}`;
 
 export function readFixturePayouts(storage: StorageLike, staff: string): FixturePayouts | null {
@@ -20,7 +25,7 @@ export function readFixturePayouts(storage: StorageLike, staff: string): Fixture
     for (const [month, value] of entries) {
       if (!monthPattern.test(month) || !value || typeof value !== 'object' || Array.isArray(value)) return null;
       const item = value as Record<string, unknown>;
-      if (typeof item.paid !== 'boolean' || !(item.checkedDate === null || typeof item.checkedDate === 'string' && datePattern.test(item.checkedDate))) return null;
+      if (Object.keys(item).sort().join(',') !== 'checkedDate,paid' || typeof item.paid !== 'boolean' || !(item.checkedDate === null || typeof item.checkedDate === 'string' && validDate(item.checkedDate))) return null;
       result[month] = { paid: item.paid, checkedDate: item.checkedDate as string | null };
     }
     return result;
@@ -28,7 +33,7 @@ export function readFixturePayouts(storage: StorageLike, staff: string): Fixture
 }
 
 export function writeFixturePayout(storage: StorageLike, staff: string, month: string, paid: boolean, checkedDate: string): FixturePayouts | null {
-  if (!staffIds.has(staff) || !monthPattern.test(month) || typeof paid !== 'boolean' || !datePattern.test(checkedDate)) return null;
+  if (!staffIds.has(staff) || !monthPattern.test(month) || typeof paid !== 'boolean' || !validDate(checkedDate)) return null;
   const current = readFixturePayouts(storage, staff);
   if (!current || (!Object.hasOwn(current, month) && Object.keys(current).length >= 120)) return null;
   const next = { ...current, [month]: { paid, checkedDate: paid ? checkedDate : null } };

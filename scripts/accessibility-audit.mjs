@@ -77,7 +77,12 @@ try {
           await page.addScriptTag({ content: axe });
           const audit = await page.evaluate(async () => {
             const result = await window.axe.run(document, { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'link-name', 'label', 'image-alt', 'html-has-lang', 'aria-valid-attr', 'aria-required-attr', 'aria-valid-attr-value'] } });
-            return { violations: result.violations.map(item => ({ id: item.id, impact: item.impact, nodes: item.nodes.map(node => node.target).slice(0, 8) })), incomplete: result.incomplete.map(item => item.id) };
+            return { violations: result.violations.map(item => ({ id: item.id, impact: item.impact, nodes: item.nodes.map(node => node.target).slice(0, 8) })), incomplete: result.incomplete.map(item => ({ id: item.id, nodes: item.nodes.map(node => {
+              let el; try { el = document.querySelector(node.target[0]); } catch {}
+              const backgrounds = []; for (let cur = el; cur && backgrounds.length < 8; cur = cur.parentElement) { const style = getComputedStyle(cur); backgrounds.push({ color: style.backgroundColor, image: style.backgroundImage, opacity: style.opacity }); }
+              const style = el && getComputedStyle(el);
+              return { target: node.target, html: node.html, checks: node.any.map(check => ({ id: check.id, data: check.data, message: check.message })), foreground: style?.color, fontSize: style?.fontSize, fontWeight: style?.fontWeight, backgrounds };
+            }) })) };
           });
           const focus = [];
           const focusable = await page.evaluate(() => Array.from(document.querySelectorAll('a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex]:not([tabindex="-1"])')).filter(el => { const style = getComputedStyle(el); return el.getClientRects().length > 0 && style.visibility !== 'hidden' && !el.closest('[inert],[aria-hidden="true"]'); }).length);

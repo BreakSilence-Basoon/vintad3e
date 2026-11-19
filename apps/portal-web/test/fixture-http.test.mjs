@@ -34,6 +34,7 @@ test('development fixture signs in, opens the local tile and signs out through H
     const home = await fetch(origin, { headers: { cookie }, redirect: 'manual' });
     assert.equal(home.status, 200); const html = await home.text();
     assert.match(html, /http:\/\/127\.0\.0\.1:3824\//); assert.match(html, /Timetable/);
+    assert.match(html, /http:\/\/127\.0\.0\.1:3829\//); assert.match(html, /http:\/\/127\.0\.0\.1:3827\/coupon/);
     const logout = await fetch(`${origin}/api/fixture/logout`, { method: 'POST', redirect: 'manual', headers: { origin, cookie } });
     assert.equal(logout.status, 303);
     const after = await fetch(origin, { headers: { cookie }, redirect: 'manual' });

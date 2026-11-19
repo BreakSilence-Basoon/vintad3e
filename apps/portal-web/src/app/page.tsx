@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { PortalCarousel } from '../portal-carousel';
-import { fixturePortalLinks } from '../fixture-links.mjs';
+import { fixtureAppIds, fixturePortalLinks } from '../fixture-links.mjs';
 import { fixtureOrigin, fixtureSession } from '../fixture-session.mjs';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
@@ -45,8 +45,8 @@ export default async function Page() {
     if (host !== new URL(origin).host) notFound();
     if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect('/sign-in');
   }
-  const links = fixturePortalLinks({ nodeEnv: process.env.NODE_ENV, enabled: process.env.VINTAD3E_PORTAL_FIXTURE, grants: origin ? ['timetable'] : [] });
-  const visibleApps = apps.map((app) => app.id === 'timetable' && links.timetable ? { ...app, href: links.timetable, restIcon: '/images/neutral/timetable.svg' } : app);
+  const links = fixturePortalLinks({ nodeEnv: process.env.NODE_ENV, enabled: process.env.VINTAD3E_PORTAL_FIXTURE, grants: origin ? fixtureAppIds : [] });
+  const visibleApps = apps.map((app) => links[app.id] && app.icon ? { ...app, href: links[app.id], restIcon: app.icon } : app);
   return <main className="portal-home">
     <h1 className="sr-only">빈타제</h1>
     <div className="portal-home__apps"><PortalCarousel pages={[

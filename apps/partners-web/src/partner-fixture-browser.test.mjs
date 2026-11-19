@@ -17,6 +17,20 @@ async function waitFor(fn) {
   throw new Error('Timed out waiting for browser or server');
 }
 
+test('DJ entry is unavailable without the development fixture', { timeout: 60000 }, async () => {
+  const port = await freePort(), origin = `http://127.0.0.1:${port}`;
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_PARTNERS_FIXTURE:''}, stdio:'ignore' });
+  try {
+    const response = await waitFor(async () => { const result = await fetch(`${origin}/dj`); return result.status === 404 ? result : false; });
+    assert.equal(response.status, 404);
+    assert.ok(!(await response.text()).includes('세무사 전달문'));
+  } finally {
+    server.kill('SIGTERM');
+    if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000)]);
+    if (server.exitCode === null && server.signalCode === null) server.kill('SIGKILL');
+  }
+});
+
 test('fixture calendar links to rental ledger and detail in Chrome', { timeout: 90000 }, async () => {
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
@@ -52,6 +66,21 @@ test('fixture calendar links to rental ledger and detail in Chrome', { timeout: 
     await waitFor(async () => evaluate("document.querySelectorAll('.partners-ledger tbody tr').length===1 && document.querySelector('.partners-ledger tbody').textContent.includes('대관처 02')"));
     assert.ok(await evaluate("document.querySelector('.partners-ledger tbody').textContent.includes('미수납')"));
     assert.ok(await evaluate("!document.querySelector('.partners-ledger tbody').textContent.includes('100,000원')"));
+    await send('Page.navigate',{url:`${origin}/dj`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.partners-accountant'))"));
+    await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.partners-accountant__row').length===2)return true;[...document.querySelectorAll('.partners-accountant button')].find(x=>x.textContent==='DJ 추가')?.click();return false;})()"));
+    await evaluate("document.querySelector('[aria-label=\"DJ 2 삭제\"]').click()");
+    await waitFor(async () => evaluate("document.querySelectorAll('.partners-accountant__row').length===1"));
+    await evaluate("(()=>{const inputs=document.querySelectorAll('.partners-accountant__row input');const set=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;[['DJ A',inputs[0]],['0000000000000',inputs[1]],['10000',inputs[2]]].forEach(([value,input])=>{set.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));});})()");
+    await waitFor(async () => evaluate("document.querySelector('.partners-accountant__preview')?.textContent.includes('DJ A ******-******* 10,000원')"));
+    assert.ok(await evaluate("!document.querySelector('.partners-accountant__preview').textContent.includes('0000000000000')"));
+    await evaluate("Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copied=text;}}});[...document.querySelectorAll('.partners-accountant button')].find(x=>x.textContent==='전달문 복사').click()");
+    await waitFor(async () => evaluate("window.copied?.includes('DJ A 000000-0000000 10,000원')"));
+    await send('Page.navigate',{url:`${origin}/rental`});
+    await waitFor(async () => evaluate("location.pathname === '/rental' && Boolean(document.querySelector('.partners-ledger'))"));
+    await send('Page.navigate',{url:`${origin}/dj`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.partners-accountant__row input'))"));
+    assert.equal(await evaluate("document.querySelector('.partners-accountant__row input').value"), '');
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

@@ -58,6 +58,10 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
     await waitFor(async () => evaluate("(()=>{if(document.querySelectorAll('.sales-audit-card').length===18&&document.querySelector('.sales-audit-card').textContent.includes('주스'))return true;const f=document.querySelector('.audit-filter-bar');f.querySelector('[name=keyword]').value='';f.querySelector('[name=sort]').value='asc';f.requestSubmit();return false;})()"));
     assert.ok(await evaluate("document.querySelector('.load-more-pager').textContent.includes('18 / 21')"));
     assert.ok(await evaluate("document.querySelector('.load-more-pager a').getAttribute('href').includes('sort=asc')"));
+    await send('Page.navigate',{url:`${origin}/inventory`});
+    await waitFor(async () => evaluate("document.querySelector('main')?.textContent.includes('재료 01')"));
+    assert.ok(await evaluate("document.querySelector('main').textContent.includes('음료 01')"));
+    assert.equal(await evaluate("document.querySelectorAll('.inventory-editor').length"), 0);
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

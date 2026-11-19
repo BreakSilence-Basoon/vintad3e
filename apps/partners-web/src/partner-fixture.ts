@@ -2,7 +2,8 @@ import type { ScheduleRead } from './partner-schedule';
 import type { LedgerRead } from './ledger-filter';
 
 export function getPartnerFixture(env: string | undefined, enabled: string | undefined, today: string): { schedule: ScheduleRead; ledger: LedgerRead } {
-  if (env !== 'development' || enabled !== '1' || !/^\d{4}-\d{2}-\d{2}$/.test(today) || !Number.isFinite(Date.parse(`${today}T00:00:00.000Z`))) {
+  const instant = Date.parse(`${today}T00:00:00.000Z`);
+  if (env !== 'development' || enabled !== '1' || !/^\d{4}-\d{2}-\d{2}$/.test(today) || !Number.isFinite(instant) || new Date(instant).toISOString().slice(0, 10) !== today) {
     return { schedule: { kind: 'ready', events: [] }, ledger: { kind: 'ready', rows: [] } };
   }
   return {

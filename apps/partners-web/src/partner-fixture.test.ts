@@ -23,6 +23,15 @@ test('fixture requires explicit development opt-in and connects calendar to rent
   assert.equal(filterLedger(result.ledger.rows, { from: '', to: '', query: '02', status: 'COMPLETED' }).length, 0);
 });
 
+test('rental fixtures reject invalid calendar dates without normalizing them', () => {
+  for (const day of ['2026-02-29', '2026-02-30', '2026-04-31', 'invalid']) {
+    assert.deepEqual(getPartnerFixture('development', '1', day), { schedule: { kind: 'ready', events: [] }, ledger: { kind: 'ready', rows: [] } });
+  }
+  const leapDay = getPartnerFixture('development', '1', '2024-02-29');
+  assert.equal(leapDay.schedule.kind, 'ready');
+  if (leapDay.schedule.kind === 'ready') assert.equal(leapDay.schedule.events.length, 3);
+});
+
 test('DJ payments are synthetic and require development opt-in and a valid day', () => {
   for (const [env, enabled, day] of [['production','1','2026-11-18'], ['development',undefined,'2026-11-18'], ['development','1','2026-02-30'], ['development','1','invalid']] as const) assert.deepEqual(getDjFixture(env, enabled, day), { kind: 'ready', rows: [] });
   const result = getDjFixture('development', '1', '2026-11-18');

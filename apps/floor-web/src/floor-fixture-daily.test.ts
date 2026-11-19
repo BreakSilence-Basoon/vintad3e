@@ -18,7 +18,7 @@ test('daily brief computes only opted-in POS sales and comparisons', () => {
 });
 test('repeated menu lines combine amounts without inventing a unit price', () => {
   const sale = getSalesFixtures('development', '1', now)[0];
-  const differentPrice = { ...sale, items: [{ ...sale.items[0], listUnitPrice: 6000 }] };
+  const differentPrice = { ...sale, items: [{ ...sale.items[0], listUnitPrice: 6001 }] };
   const menu = fixtureMenuTotals([sale, differentPrice]).find(item => item.productName === '드립 커피')!;
   assert.equal(menu.quantity, 3);
   assert.equal(menu.net, 15000);

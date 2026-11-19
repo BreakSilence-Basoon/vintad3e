@@ -60,7 +60,7 @@ test('bedroom partner and settlement exist only in the opted-in development fixt
   assert.equal(second.ledger.kind, 'ready');
   if (second.ledger.kind === 'ready') {
     assert.equal(second.ledger.rows[0].counterparty, second.partner.name);
-    assert.equal(second.ledger.rows[0].amount, '7000');
+    assert.equal(second.ledger.rows[0].amount, '7001');
     assert.equal(second.ledger.rows[0].status, 'COMPLETED');
   }
   assert.equal(bedroomFixture('development', '1', '2026-11-18', 'unknown'), null);

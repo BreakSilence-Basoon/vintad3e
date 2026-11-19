@@ -11,6 +11,6 @@ export function bedroomFixtures(env: string | undefined, enabled: string | undef
 export function bedroomFixture(env: string | undefined, enabled: string | undefined, today: string, id = 'partner-01'): { partner: typeof samplePartners[number]; ledger: LedgerRead } | null {
   const partner = bedroomFixtures(env, enabled, today)?.find(item => item.id === id);
   if (!partner) return null;
-  const completed = partner.id === 'partner-02', amount = completed ? '7000' : '5000';
+  const completed = partner.id === 'partner-02', amount = completed ? '7001' : '5000';
   return { partner, ledger: { kind: 'ready', rows: [{ id: `settlement-${partner.id}`, counterparty: partner.name, from: today, to: today, terms: [...partner.terms], amount, status: completed ? 'COMPLETED' : 'PENDING', completedAt: completed ? today : null, completedAmount: completed ? amount : '0', reference: null }] } };
 }

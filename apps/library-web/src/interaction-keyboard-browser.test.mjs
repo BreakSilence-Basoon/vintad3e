@@ -72,6 +72,7 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await enter(page, prepare);
         await page.locator('p[role=alert]').waitFor();
         await picker.setInputFiles({ name: '가게 안내.txt', mimeType: 'text/plain', buffer: Buffer.from('업무를 시작하기 전에 필요한 사항을 확인합니다.') });
+        await page.locator('.library-register p[role=alert]').waitFor({ state: 'hidden' });
         for (const label of ['업로드 내용 확인', '제안 불러오기', '제안 검토', '이 변경 확인', '업로드 승인']) await enter(page, page.getByRole('button', { name: label, exact: true }));
         await page.route('**/api/fixture/upload', route => route.fulfill({ status: 503, body: '' }));
         await enter(page, page.getByRole('button', { name: '파일 올리기', exact: true }));

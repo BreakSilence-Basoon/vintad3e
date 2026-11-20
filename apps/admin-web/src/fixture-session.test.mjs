@@ -34,3 +34,8 @@ test('fixture cannot activate in production or accept nonlocal and cross-origin 
   const response = handleFixtureSession(post('login'), 'login', env, 1000);
   assert.equal(fixtureSession(cookie(response), '127.0.0.1:3832', env, 1000 + 30 * 60 * 1000), false);
 });
+
+test('login returns only to known synthetic admin screens', () => {
+  for (const next of ['/members', '/permissions', '/permissions/apps', '/audit', '/members/00000000-0000-4000-8000-000000000001']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), next);
+  for (const next of ['//example.invalid/', 'https://example.invalid/', '/members/unknown', '/members?next=//example.invalid/']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
+});

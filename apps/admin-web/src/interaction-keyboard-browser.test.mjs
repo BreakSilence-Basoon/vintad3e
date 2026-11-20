@@ -24,6 +24,9 @@ test('admin lists, audit filters and invalid addresses work with keyboard input'
       try {
         await page.route('http://127.0.0.1:3826/', route => route.fulfill({ status: 200, contentType: 'text/html', body: '<main>Apparel</main>' }));
         await page.goto(origin);
+        await page.waitForURL('**/sign-in?next=%2F');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL(origin + '/');
         const home = page.getByRole('region', { name: '앱 실행 및 방문 현황' });
         assert.equal(await home.getByRole('link', { name: 'Apparel' }).getAttribute('href'), 'http://127.0.0.1:3826/');
         assert.equal(await home.getByRole('link', { name: 'Ledger' }).count(), 0);

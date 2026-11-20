@@ -15,7 +15,7 @@ export default async function Page() {
   const requestHeaders = await headers();
   const host = requestHeaders.get('host');
   if (host !== new URL(origin).host) notFound();
-  if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect('/sign-in');
+  if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect('/sign-in?next=%2Fformula');
   if (process.env.VINTAD3E_SUPPORTERS_FIXTURE_SELF === '1') redirect('/formula-info');
   const result = calculateFixtureFormula(settings.expression, settings.variables);
   const expression = formatFixtureFormula(settings.expression, settings.variables);

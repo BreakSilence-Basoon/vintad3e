@@ -26,8 +26,8 @@ test('fixture login and logout rotate and revoke only local synthetic sessions',
   assert.equal(fixtureSession(secondCookie, '127.0.0.1:3827', env, 1005), false);
 });
 
-test('fixture login only returns to the known confirmation path', () => {
-  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/confirmations/proposal-01').headers.get('location'), '/confirmations/proposal-01');
+test('fixture login only returns to known local paths', () => {
+  for (const next of ['/confirmations/proposal-01', '/formula', '/formula-info', '/performance']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), next);
   for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
 });
 

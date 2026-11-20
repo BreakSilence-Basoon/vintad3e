@@ -59,7 +59,7 @@ test('synthetic meeting stays in the tab and arbitrary file upload remains disco
     assert.deepEqual(await evaluate("[...document.querySelectorAll('article.library-page h2')].map(x=>x.textContent)"), ['녹화·녹음 첨부', '회의 문서 등록']);
     assert.equal(await evaluate("[...document.querySelectorAll('button')].find(x=>x.textContent==='회의에 첨부').disabled"), true);
     assert.equal(await evaluate("[...document.querySelectorAll('button')].find(x=>x.textContent==='회의 문서 확인').disabled"), true);
-    await evaluate("(()=>{const x=document.querySelector('select');x.value='CORRECTED';x.dispatchEvent(new Event('change',{bubbles:true}));})()");
+    await evaluate("(()=>{const x=document.querySelector('article.library-page select');x.value='CORRECTED';x.dispatchEvent(new Event('change',{bubbles:true}));})()");
     await waitFor(async () => evaluate("[...document.querySelectorAll('label')].some(x=>x.textContent.includes('근거 문서'))"));
     assert.equal(await evaluate("[...document.querySelectorAll('button')].find(x=>x.textContent==='회의 문서 확인').disabled"), true);
     await send('Page.navigate', { url: `${origin}/objects` });

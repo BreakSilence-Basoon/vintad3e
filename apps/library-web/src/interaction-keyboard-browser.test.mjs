@@ -41,7 +41,7 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await page.route('**/api/search?*',route=>route.fulfill({status:503,body:''}));
         await search.fill('오류'); await dialog.getByRole('alert').waitFor(); await page.unroute('**/api/search?*');
         await page.keyboard.press('Escape'); assert.equal(await dialog.isVisible(),false);
-        if(width===390){await enter(page,page.getByRole('button',{name:'메뉴 열기'}));await page.getByRole('navigation',{name:'모바일 메뉴'}).getByRole('link',{name:'보관함'}).click();await page.waitForURL('**/bookmarks');await page.goto(origin+'/objects/new');}
+        if(width===390){await page.locator('button[data-hydrated=true][aria-label="메뉴 열기"]').waitFor();await enter(page,page.getByRole('button',{name:'메뉴 열기'}));await page.getByRole('navigation',{name:'모바일 메뉴'}).getByRole('link',{name:'보관함'}).click();await page.waitForURL('**/bookmarks');await page.goto(origin+'/objects/new');}
         const picker = page.locator('#library-object-file');
         const prepare = page.getByRole('button', { name: '업로드 내용 확인' });
         assert.equal(await prepare.isDisabled(), true);
@@ -87,7 +87,10 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await page.goto(`${origin}/mypage`); await publicationLink.waitFor();
         await page.goto(origin); await publicationLink.waitFor();
         await enter(page,page.getByRole('button',{name:'게시물 검색'})); const publishedSearch=page.getByRole('dialog',{name:'게시물 검색'}); await publishedSearch.getByRole('combobox',{name:'게시물 제목 검색'}).fill('업무 안내'); await publishedSearch.locator('a[href="/publications/00000000-0000-4000-8000-000000000004"]').waitFor(); await page.keyboard.press('Escape');
+        await publishedSearch.waitFor({state:'hidden'});
         await enter(page,publicationLink);
+        await page.waitForURL('**/publications/00000000-0000-4000-8000-000000000004');
+        await page.getByRole('button',{name:'목록에서 제외'}).waitFor();
         await page.evaluate(()=>{window.oldSetItem=Storage.prototype.setItem;Storage.prototype.setItem=()=>{throw new Error('unavailable');};});
         await enter(page,page.getByRole('button',{name:'목록에서 제외'})); await page.getByRole('alert').filter({hasText:'문서를 목록에서 제외하지 못했습니다.'}).waitFor();
         await page.evaluate(()=>{Storage.prototype.setItem=window.oldSetItem;});

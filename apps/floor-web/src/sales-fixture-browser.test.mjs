@@ -68,12 +68,9 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
     await waitFor(async () => evaluate("location.pathname === '/'"));
     await send('Page.navigate',{url: `${origin}/confirmations/proposal-01`});
     await waitFor(async () => evaluate("[...document.querySelectorAll('button')].some(b => b.textContent === '제안 불러오기')"));
-    await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent === '제안 불러오기').click()");
-    await waitFor(async () => evaluate("document.body.textContent.includes('재료 이름 변경')"));
-    await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent === '제안 검토').click()");
-    await waitFor(async () => evaluate("document.body.textContent.includes('이 내용으로 확인')"));
-    await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent === '이 변경 확인').click()");
-    await waitFor(async () => evaluate("document.body.textContent.includes('확인되었습니다.')"));
+    await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('재료 이름 변경'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '제안 불러오기')?.click();return false;})()"));
+    await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('이 내용으로 확인'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '제안 검토')?.click();return false;})()"));
+    await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('확인되었습니다.'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '이 변경 확인')?.click();return false;})()"));
     await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
     assert.ok(await evaluate("document.documentElement.scrollWidth <= window.innerWidth"));
     await send('Page.navigate',{url: `${origin}/confirmations/unknown`});

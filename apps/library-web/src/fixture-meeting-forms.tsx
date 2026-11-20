@@ -58,7 +58,7 @@ function MeetingStageForm({ meetingId, content, apply }: { meetingId: string; co
   const parents = content.stages.filter(item => item.step === (step === 'CORRECTED' ? 'TRANSCRIPT' : 'CORRECTED'));
   const selected = parents.find(item => String(item.revision) === parent)?.revision ?? null;
   const change: MeetingChange | null = objectId && title.trim() && source.trim() && (step === 'TRANSCRIPT' || selected !== null) ? { kind: 'stage', objectId, step, title: title.trim(), sourceKind: kind, sourceDetail: source.trim(), parentRevision: step === 'TRANSCRIPT' ? null : selected } : null;
-  return <section><h2>회의 문서 등록</h2><ObjectUploadForm key={cycle} fixture inputId="meeting-stage-file" onComplete={id => { setObjectId(id); setProposalCycle(value => value + 1); }} />
+  return <section><h2>회의 문서 등록</h2><ObjectUploadForm key={cycle} includeCorrected fixture inputId="meeting-stage-file" onComplete={id => { setObjectId(id); setProposalCycle(value => value + 1); }} />
     <label>단계 <select value={step} onChange={event => { setStep(event.target.value as MeetingStage['step']); setParent(''); }}><option value="TRANSCRIPT">전사본</option><option value="CORRECTED">보정본</option><option value="SUMMARY">요약</option></select></label>
     {step !== 'TRANSCRIPT' && <label>근거 문서 <select value={parent} onChange={event => setParent(event.target.value)}><option value="">선택</option>{parents.map(item => <option key={item.revision} value={item.revision}>{names[item.step]} · {item.revision}</option>)}</select></label>}
     <label>제목 <input value={title} maxLength={255} onChange={event => setTitle(event.target.value)} /></label>

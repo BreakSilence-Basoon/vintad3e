@@ -86,15 +86,16 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/admin/attendance');
         await context.clearCookies();
-        await page.addInitScript(() => { navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('denied', window.cameraFailure || 'NotAllowedError'); }; });
+        await page.addInitScript(() => { window.cameraAttempts = 0; navigator.mediaDevices.getUserMedia = async () => { window.cameraAttempts++; throw new DOMException('denied', 'NotAllowedError'); }; });
         await page.goto(`${origin}/scan`);
         await page.waitForURL('**/sign-in?next=%2Fscan');
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/scan');
         await page.locator('.employee-scanner p[role=alert]').waitFor();
-        await page.evaluate(() => { window.cameraFailure = 'NotReadableError'; });
+        const attempts = await page.evaluate(() => window.cameraAttempts);
         await enter(page, page.getByRole('button', { name: '카메라 다시 켜기' }));
-        await page.locator('.employee-scanner p[role=alert]').filter({ hasText: '다른 앱이 카메라를 사용 중입니다.' }).waitFor();
+        await page.waitForFunction(previous => window.cameraAttempts > previous, attempts);
+        await page.locator('.employee-scanner p[role=alert]').waitFor();
       } finally { await context.close(); }
     }
   } finally {

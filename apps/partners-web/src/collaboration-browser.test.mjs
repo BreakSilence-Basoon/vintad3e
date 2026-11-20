@@ -41,3 +41,22 @@ test('showroom settlement shows the original loading error on desktop and mobile
     }finally{await context.close();}}
   }finally{await browser?.close();child.kill('SIGTERM');if(child.exitCode===null)await Promise.race([once(child,'exit'),delay(5000)]);if(child.exitCode===null)child.kill('SIGKILL');}
 });
+
+test('collaboration read error preserves the date form on desktop and mobile', {timeout:120000}, async () => {
+  const origin=`http://127.0.0.1:${await port()}`, child=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',new URL(origin).port],{env:{...process.env,NODE_ENV:'development',VINTAD3E_PARTNERS_FIXTURE:'1',VINTAD3E_PARTNERS_FIXTURE_ORIGIN:origin,VINTAD3E_PARTNERS_COLLABORATION_STATE:'error'},stdio:'ignore'}); let browser;
+  try {
+    let ready=false; for(let i=0;i<120;i++){if(child.exitCode!==null) throw new Error('fixture server exited');try{if((await fetch(origin+'/sign-in')).ok){ready=true;break;}}catch{}await delay(250);} assert.ok(ready);
+    browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+    for(const width of [1440,390]) {const context=await browser.newContext({viewport:{width,height:844}}),page=await context.newPage();try {
+      const path='/proj-bedroom/partner-01/settlement';
+      await page.goto(origin+path+'?from=2026-01-03');
+      await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); await page.waitForURL(origin+path);
+      await page.goto(origin+path+'?from=2026-01-03&to=2026-01-04');
+      await page.getByRole('alert').getByText('협업 정산 정보를 불러오지 못했습니다.',{exact:true}).waitFor();
+      assert.equal(await page.getByLabel('시작일').inputValue(),'2026-01-03'); assert.equal(await page.getByLabel('종료일').inputValue(),'2026-01-04');
+      await page.getByLabel('종료일').fill('2026-01-05'); await page.getByRole('button',{name:'조회'}).click();
+      await page.waitForURL(/to=2026-01-05/); await page.getByRole('alert').getByText('협업 정산 정보를 불러오지 못했습니다.',{exact:true}).waitFor();
+      assert.equal(await page.locator('tbody tr').count(),0); assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    } finally {await context.close();}}
+  } finally {await browser?.close();child.kill('SIGTERM');if(child.exitCode===null)await Promise.race([once(child,'exit'),delay(5000)]);if(child.exitCode===null)child.kill('SIGKILL');}
+});

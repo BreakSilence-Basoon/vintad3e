@@ -14,6 +14,36 @@ async function freePort() {
   const port = server.address().port; await new Promise(resolve => server.close(resolve)); return port;
 }
 
+test('home shows the original partial loading error on desktop and mobile', { timeout: 120000 }, async () => {
+  const port = await freePort(), origin = `http://127.0.0.1:${port}`;
+  const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_LIBRARY_FIXTURE: '1', VINTAD3E_LIBRARY_FIXTURE_ORIGIN: origin, VINTAD3E_LIBRARY_FEED_STATE: 'error' }, stdio: 'ignore' });
+  let browser;
+  try {
+    let ready = false;
+    for (let i = 0; i < 120; i++) { if (child.exitCode !== null) throw new Error('fixture server exited'); try { if ((await fetch(`${origin}/sign-in`)).ok) { ready = true; break; } } catch {} await delay(250); }
+    assert.ok(ready);
+    browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--no-sandbox'] });
+    for (const width of [1440, 390]) {
+      const context = await browser.newContext({ viewport: { width, height: 844 } });
+      try {
+        const page = await context.newPage();
+        await page.goto(origin);
+        await page.getByRole('button', { name: '회사 계정으로 로그인' }).click();
+        await page.waitForURL(origin + '/');
+        await page.getByRole('alert').getByText('게시물 목록을 불러오지 못했습니다.', { exact: true }).waitFor();
+        await page.getByRole('link', { name: '가게 안내 기록' }).waitFor();
+        await page.goto(`${origin}/?q=없는검색어`);
+        await page.getByRole('alert').getByText('게시물 목록을 불러오지 못했습니다.', { exact: true }).waitFor();
+        assert.equal(await page.getByText('검색 결과가 없습니다.', { exact: true }).count(), 0);
+      } finally { await context.close(); }
+    }
+  } finally {
+    await browser?.close(); child.kill('SIGTERM');
+    if (child.exitCode === null) await Promise.race([once(child, 'exit'), delay(5000)]);
+    if (child.exitCode === null) child.kill('SIGKILL');
+  }
+});
+
 test('activity pages show original read errors on desktop and mobile', { timeout: 120000 }, async () => {
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_LIBRARY_FIXTURE: '1', VINTAD3E_LIBRARY_FIXTURE_ORIGIN: origin, VINTAD3E_LIBRARY_ACTIVITY_STATE: 'error' }, stdio: 'ignore' });

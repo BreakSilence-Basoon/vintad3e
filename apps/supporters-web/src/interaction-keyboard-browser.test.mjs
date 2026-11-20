@@ -80,6 +80,14 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/settlements?staff=supporter-1');
         await page.locator('[data-fixture-staff="supporter-1"]').waitFor();
+        await page.evaluate(() => sessionStorage.setItem('vintad3e:settlement:supporter-1', '{'));
+        await page.reload();
+        await page.getByText('정산 내역을 불러올 수 없습니다.', { exact: false }).waitFor();
+        assert.equal(await page.locator('.settlement-history__table tbody input').first().isDisabled(), true);
+        assert.equal(await page.evaluate(() => sessionStorage.getItem('vintad3e:settlement:supporter-1')), '{');
+        await page.evaluate(() => sessionStorage.removeItem('vintad3e:settlement:supporter-1'));
+        await page.reload();
+        await page.waitForFunction(() => document.querySelector('.settlement-history__table tbody input:not(:disabled)') !== null);
         await enter(page, page.getByRole('link', { name: '로그인 전 화면 보기' }));
         await enter(page, page.getByRole('link', { name: '콘솔로 돌아가기' }));
         await page.waitForURL('**/settlements?staff=supporter-1');

@@ -25,6 +25,10 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { if (window.failCopy) throw new Error('clipboard unavailable'); window.copiedText = text; } } }));
         await page.goto(`${origin}/accounts`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
+        await page.goto(`${origin}/proj-bedroom/partner-01`);
+        await page.waitForURL('**/sign-in?next=%2Fproj-bedroom%2Fpartner-01');
+        await page.goto(`${origin}/proj-bedroom/partner-02`);
+        await page.waitForURL('**/sign-in?next=%2Fproj-bedroom%2Fpartner-02');
         await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
         assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-01/sign-in');
         await page.goto(`${origin}/dj`);
@@ -90,11 +94,15 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await enter(page,page.getByRole('button',{name:'진열 1'})); await enter(page,page.getByRole('button',{name:'협업 티셔츠 재고 상세 보기'}));
         await page.getByRole('dialog').waitFor(); assert.equal(await page.getByRole('dialog').getByRole('row').count(),3);
         await enter(page,page.getByRole('button',{name:'재고 상세 창 닫기'})); assert.equal(await page.getByRole('dialog').count(),0);
+        await context.clearCookies();
         await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
         assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-01/sign-in');
         await enter(page, page.getByRole('button', { name: '게스트 계정으로 로그인하기' }));
         await page.waitForURL('**/proj-bedroom/partner-01/guest');
         await page.getByRole('heading', { name: /협업처 01/ }).waitFor();
+        await page.goto(`${origin}/proj-bedroom/partner-01`);
+        await page.waitForURL('**/sign-in?next=%2Fproj-bedroom%2Fpartner-01');
+        await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
         await page.getByRole('tab', { name: '하의' }).click();
         assert.equal(await page.getByRole('tab', { name: '하의' }).getAttribute('aria-selected'), 'true');
         await page.getByRole('status').filter({ hasText: '이 분류에 등록된 상품이 없습니다.' }).waitFor();

@@ -6,12 +6,14 @@ import { FixtureObjectViewer } from '../../../fixture-object-viewer';
 import { headers } from 'next/headers';
 import { getFixtureUpload } from '../../../fixture-upload.mjs';
 import { fixtureUpload } from '../../../fixture-upload-spec.mjs';
+import { fixtureMeetingDocumentId } from '../../../fixture-meeting-document';
 
 export const dynamic = 'force-dynamic';
 export default async function ObjectPage({ params, searchParams }: { params: Promise<{ objectId: string }>; searchParams: Promise<{ documentId?: string; view?: string }> }) {
   const { objectId } = await params;
   const { documentId, view } = await searchParams;
-  if ((view !== undefined && (view !== 'corrected' || !documentId)) || (documentId !== undefined && (documentId !== internalDocumentId || objectId !== OBJECT_ID))) notFound();
+  const linkedDocument = (documentId === internalDocumentId && objectId === OBJECT_ID) || (documentId === fixtureMeetingDocumentId && objectId === fixtureUpload.id);
+  if ((view !== undefined && (view !== 'corrected' || !documentId)) || (documentId !== undefined && !linkedDocument)) notFound();
   if (objectId !== OBJECT_ID && objectId !== fixtureUpload.id) notFound();
   const origin = fixtureOrigin(process.env), requestHeaders = await headers(), host = requestHeaders.get('host');
   if (!origin || host !== new URL(origin).host) notFound();

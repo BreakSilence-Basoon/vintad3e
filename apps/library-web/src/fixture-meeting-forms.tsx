@@ -6,6 +6,7 @@ import { ObjectUploadForm } from './records-entry-forms';
 import { applyFixtureMeetingChange, readFixtureMeetingContent, type MeetingChange, type MeetingContent, type MeetingStage } from './fixture-meeting-content';
 import { fixtureUpload } from './fixture-upload-spec.mjs';
 import { confirmationPayloadText, escapeConfirmationText } from './fixture-confirmation-display';
+import { fixtureMeetingDocumentId } from './fixture-meeting-document';
 
 const names = { TRANSCRIPT: '전사본', CORRECTED: '보정본', SUMMARY: '요약' } as const;
 type Proposal = { proposalId: string; meetingId: string; change: MeetingChange; canonical: string; changeDigest: string; permissionDigest: string; checkedAt: number; expiresAt: number; state: 'proposal' | 'loaded' | 'reviewed' | 'confirmed' | 'executed' };
@@ -72,7 +73,7 @@ export function FixtureMeetingDetail({ id, title }: { id: string; title: string 
   useEffect(() => { try { const saved = readFixtureMeetingContent(sessionStorage, id); if (saved) setContent(saved); } catch {} }, [id]);
   const apply = (change: MeetingChange) => { try { const next = applyFixtureMeetingChange(sessionStorage, id, change, new Date()); if (next) { setContent(next); return true; } } catch {} return false; };
   return <main className="library-home"><article className="library-page library-page--reader"><header className="library-page__header"><h1>{title}</h1></header>
-    {content.stages.map(stage => <section key={`${stage.step}-${stage.revision}`}><h2>{names[stage.step]} · {stage.revision}</h2><p>직원 · {new Date(stage.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} · {stage.sourceDetail}</p><Link href={`/objects/${stage.objectId}`}>{names[stage.step]} 열기</Link></section>)}
+    {content.stages.map(stage => <section key={`${stage.step}-${stage.revision}`}><h2>{names[stage.step]} · {stage.revision}</h2><p>직원 · {new Date(stage.createdAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} · {stage.sourceDetail}</p><Link href={`/objects/${stage.objectId}?documentId=${fixtureMeetingDocumentId}${stage.step === 'CORRECTED' ? '&view=corrected' : ''}`}>{names[stage.step]} 열기</Link></section>)}
     {content.attached && <section><h2>첨부 파일</h2><ul><li><Link href={`/objects/${fixtureUpload.id}`}>{fixtureUpload.filename}</Link></li></ul></section>}
     <AttachMeetingForm meetingId={id} apply={apply} /><MeetingStageForm meetingId={id} content={content} apply={apply} />
   </article></main>;

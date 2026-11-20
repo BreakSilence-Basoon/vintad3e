@@ -4,6 +4,8 @@
 
 ‘일부 대조’는 위 문서에 기록된 범위만 비교했다는 뜻입니다. 나머지 동작과 ‘상세 미대조’ 화면은 추가 확인이 필요합니다. 공개판의 로그인·자료는 합성 환경이며 실제 운영 권한이나 사업 데이터를 검증하지 않습니다.
 
+화면의 동작·빠진 부분은 앱별 기록에서도 확인할 수 있습니다: [Admin](screen-audit-admin.md), [Apparel](screen-audit-apparel.md), [Creative](#creative), [Floor](screen-audit-floor.md), [Library](screen-audit-library.md), [Partners](screen-audit-partners.md), [Portal](screen-audit-portal.md), [Supporters](screen-audit-supporters.md), [Timetable](screen-audit-timetable.md).
+
 ## Admin
 
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
@@ -38,11 +40,13 @@
 
 ## Creative
 
-| 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
+| 화면 | 단추·입력과 상태 | 공개판에서 빠진 부분 |
 | --- | --- | --- |
-| `/confirmations/[proposalId]` | 동일 주소 | 일부 대조 |
-| `/` | 동일 주소 | 일부 대조 |
-| `/sign-in` | 동일 주소 | 일부 대조 |
+| `/` | 프로젝트 목록·빈 목록·조회 오류, 상단 홈·로그인 화면 보기·로그아웃을 합성 자료로 확인. 목록 자체에 등록·검색 입력은 없음. | 실제 직원 접근 확인과 실제 프로젝트 서버의 권한·인증 오류 분기 미연결. |
+| `/sign-in` | 합성 로그인과 로그인 화면 보기·홈 복귀를 확인. | 실제 인증 제공자 설정·인증 실패·접근 거부 안내 미연결. |
+| `/confirmations/[proposalId]` | 합성 제안 불러오기·검토·확인, 조회 오류 후 재시도, 유효 시간 안내를 확인. | 정해진 합성 제안 한 건만 사용하며 실제 서버 제안·계정 권한 확인과 업무 변경 실행은 미연결. 실제 권한 거부와 재인증 상태는 미대조. |
+
+PC·모바일 합성 흐름의 자동 검사 근거는 [Creative 브라우저 검사](../apps/creative-web/src/interaction-browser.test.mjs)입니다. 원본의 실제 인증·회사 서버를 사용할 수 없어 이 부분까지 원본과 같다고 판단하지 않습니다.
 
 ## Floor
 

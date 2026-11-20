@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export default async function ObjectPage({ params, searchParams }: { params: Promise<{ objectId: string }>; searchParams: Promise<{ documentId?: string; view?: string }> }) {
   const { objectId } = await params;
   const { documentId, view } = await searchParams;
-  if (view !== undefined || (documentId !== undefined && (documentId !== internalDocumentId || objectId !== OBJECT_ID))) notFound();
+  if ((view !== undefined && (view !== 'corrected' || !documentId)) || (documentId !== undefined && (documentId !== internalDocumentId || objectId !== OBJECT_ID))) notFound();
   if (objectId !== OBJECT_ID && objectId !== fixtureUpload.id) notFound();
   const origin = fixtureOrigin(process.env), requestHeaders = await headers(), host = requestHeaders.get('host');
   if (!origin || host !== new URL(origin).host) notFound();

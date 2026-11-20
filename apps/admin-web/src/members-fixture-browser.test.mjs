@@ -47,8 +47,8 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     assert.ok(await evaluate("[...document.querySelectorAll('.home-matrix a')].every(a => a.href.startsWith('http://127.0.0.1:'))"));
     await send('Page.navigate',{url:`${origin}/members`});
     await waitFor(async () => evaluate("document.querySelector('.staff-table tbody')?.textContent.includes('staff01@example.invalid')"));
-    assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody tr').length"),2);
-    assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody a').length"),2);
+    assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody tr').length"),50);
+    assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody a').length"),50);
     await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
     assert.equal(await evaluate("getComputedStyle(document.querySelector('.staff-table tbody td')).display"), 'grid');
     assert.equal(await evaluate("getComputedStyle(document.querySelector('.staff-table tbody td')).gridTemplateColumns.split(' ').length"), 2);

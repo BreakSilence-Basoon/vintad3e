@@ -7,7 +7,8 @@ const sessions = globalThis[key] ??= new Map();
 const ttl = 30 * 60 * 1000;
 export function fixtureNext(value) {
   if (['/members', '/permissions', '/permissions/apps', '/audit'].includes(value)) return value;
-  return typeof value === 'string' && /^\/members\/00000000-0000-4000-8000-00000000000[123]$/.test(value) ? value : '/';
+  const match = typeof value === 'string' && /^\/members\/00000000-0000-4000-8000-(\d{12})$/.exec(value);
+  return match && Number(match[1]) >= 1 && Number(match[1]) <= 53 ? value : '/';
 }
 
 export function fixtureCoverNext(value) {

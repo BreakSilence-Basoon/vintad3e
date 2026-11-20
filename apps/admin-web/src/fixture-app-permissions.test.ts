@@ -13,7 +13,10 @@ test('app members are synthetic, separated by app and gated to development', () 
   const now = Date.parse('2026-11-18T00:00:00Z');
   assert.deepEqual(fixtureAppMembers('production', '1', 'portal', now), []);
   assert.deepEqual(fixtureAppMembers('development', undefined, 'portal', now), []);
-  assert.deepEqual(fixtureAppMembers('development', '1', 'portal', now).map(row => row.access), ['크루', '어드민']);
+  const portalMembers = fixtureAppMembers('development', '1', 'portal', now);
+  assert.equal(portalMembers.length, 52);
+  assert.deepEqual(portalMembers.slice(0, 2).map(row => row.access), ['크루', '어드민']);
+  assert.ok(portalMembers.slice(2).every(row => row.access === '크루'));
   assert.deepEqual(fixtureAppMembers('development', '1', 'partners', now).map(row => row.access), ['게스트', '어드민']);
   assert.deepEqual(fixtureAppMembers('development', '1', 'creative', now), []);
 });

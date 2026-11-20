@@ -22,6 +22,8 @@ test('library keyboard actions validate inputs and recover from storage and serv
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       const page = await context.newPage();
       try {
+        await page.goto(`${origin}/objects/00000000-0000-4000-8000-000000000003`);
+        await page.waitForURL('**/sign-in?next=%2Fobjects%2F00000000-0000-4000-8000-000000000003');
         await page.goto(`${origin}/objects/00000000-0000-4000-8000-000000000003?documentId=00000000-0000-4000-8000-000000000001`);
         await page.waitForURL('**/sign-in?next=%2Fobjects%2F00000000-0000-4000-8000-000000000003');
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));

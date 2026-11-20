@@ -12,13 +12,11 @@ export default async function ObjectPage({ params, searchParams }: { params: Pro
   const { objectId } = await params;
   const { documentId, view } = await searchParams;
   if (view !== undefined || (documentId !== undefined && (documentId !== internalDocumentId || objectId !== OBJECT_ID))) notFound();
-  if (documentId !== undefined) {
-    const origin = fixtureOrigin(process.env), requestHeaders = await headers(), host = requestHeaders.get('host');
-    if (!origin || host !== new URL(origin).host) notFound();
-    if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect(`/sign-in?next=${encodeURIComponent(`/objects/${objectId}`)}`);
-  }
-  const requestHeaders = objectId === fixtureUpload.id ? await headers() : null;
-  const object = getFixtureObject(process.env.NODE_ENV, process.env.VINTAD3E_LIBRARY_FIXTURE, objectId) ?? (objectId === fixtureUpload.id && requestHeaders ? getFixtureUpload(requestHeaders.get('cookie'), requestHeaders.get('host'), process.env) : null);
+  if (objectId !== OBJECT_ID && objectId !== fixtureUpload.id) notFound();
+  const origin = fixtureOrigin(process.env), requestHeaders = await headers(), host = requestHeaders.get('host');
+  if (!origin || host !== new URL(origin).host) notFound();
+  if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect(`/sign-in?next=${encodeURIComponent(`/objects/${objectId}`)}`);
+  const object = getFixtureObject(process.env.NODE_ENV, process.env.VINTAD3E_LIBRARY_FIXTURE, objectId) ?? (objectId === fixtureUpload.id ? getFixtureUpload(requestHeaders.get('cookie'), host, process.env) : null);
   if (!object) notFound();
   return <main className="library-home"><article className="library-page library-page--reader"><header className="library-page__header"><h1>{object.filename}</h1></header><FixtureObjectViewer object={object} /></article></main>;
 }

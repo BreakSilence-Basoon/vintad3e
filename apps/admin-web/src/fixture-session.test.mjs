@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fixtureOrigin, fixtureSession, handleFixtureSession } from './fixture-session.mjs';
+import { fixtureCoverNext, fixtureOrigin, fixtureSession, handleFixtureSession } from './fixture-session.mjs';
 const origin = 'http://127.0.0.1:3832';
 const env = { NODE_ENV: 'development', VINTAD3E_ADMIN_FIXTURE: '1' };
+test('cover returns only to a known local screen while preserving its filters', () => {
+  assert.equal(fixtureCoverNext('/permissions?tier=guest'), '/permissions?tier=guest');
+  for (const path of ['//example.invalid/', '/\\example.invalid/', 'https://example.invalid/', '/sign-in', '/members/unknown']) assert.equal(fixtureCoverNext(path), '/');
+});
 function post(action, headers = {}) { return new Request(`${origin}/api/fixture/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3832', origin, ...headers } }); }
 function cookie(response) { return response.headers.get('set-cookie').split(';')[0]; }
 

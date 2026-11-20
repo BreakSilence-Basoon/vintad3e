@@ -27,6 +27,19 @@ test('admin lists, audit filters and invalid addresses work with keyboard input'
         await page.waitForURL('**/sign-in?next=%2F');
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL(origin + '/');
+        if (width === 390) {
+          await enter(page, page.getByRole('button', { name: '메뉴 열기' }));
+          await page.getByRole('navigation', { name: '모바일 메뉴' }).getByRole('link', { name: '계정 권한' }).click();
+        } else {
+          await page.getByRole('navigation', { name: '메뉴' }).getByRole('link', { name: '계정 권한' }).click();
+        }
+        await page.waitForURL('**/permissions');
+        await page.goto(`${origin}/permissions?tier=guest`);
+        await enter(page, page.getByRole('link', { name: '로그인 전 화면 보기' }));
+        await page.getByRole('link', { name: 'Admin로 돌아가기' }).waitFor();
+        await enter(page, page.getByRole('link', { name: 'Admin로 돌아가기' }));
+        await page.waitForURL('**/permissions?tier=guest');
+        await page.goto(origin);
         const home = page.getByRole('region', { name: '앱 실행 및 방문 현황' });
         assert.equal(await home.getByRole('link', { name: 'Apparel' }).getAttribute('href'), 'http://127.0.0.1:3826/');
         assert.equal(await home.getByRole('link', { name: 'Ledger' }).count(), 0);
@@ -39,7 +52,7 @@ test('admin lists, audit filters and invalid addresses work with keyboard input'
         await page.locator('.staff-table tbody a').first().waitFor();
         await enter(page, page.locator('.staff-table tbody a').first());
         await page.waitForURL(/\/members\/[0-9a-f-]+$/);
-        await page.getByText('staff01@example.invalid', { exact: true }).waitFor();
+        await page.locator('main').getByText('staff01@example.invalid', { exact: true }).waitFor();
         await enter(page, page.locator('.admin-actions a').first());
         await page.locator('.permissions-matrix').waitFor();
         const tier = page.getByLabel('계층 선택');
@@ -71,6 +84,10 @@ test('admin lists, audit filters and invalid addresses work with keyboard input'
         await enter(page, page.locator('.load-more-pager button'));
         await page.waitForFunction(() => document.querySelectorAll('.audit-card').length === 20);
         assert.equal((await page.goto(`${origin}/members/unknown`)).status(), 404);
+        await page.goto(origin);
+        await enter(page, page.getByRole('button', { name: '로그아웃', exact: true }));
+        if (width === 390) await enter(page, page.getByRole('button', { name: '로그아웃 하시겠습니까?' }));
+        await page.waitForURL('**/sign-in');
       } finally { await context.close(); }
     }
   } finally {

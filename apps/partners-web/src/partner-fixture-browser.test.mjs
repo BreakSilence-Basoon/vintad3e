@@ -73,6 +73,8 @@ test('fixture calendar links to rental ledger and detail in Chrome', { timeout: 
     closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     await send('Page.navigate',{url:origin});
+    await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('.partners-calendar__chip'))"));
     assert.equal(await evaluate("document.querySelector('.partners-calendar__chip').getAttribute('href')"),'/rental');
     await evaluate("document.querySelector('.partners-calendar__chip').click()");

@@ -73,6 +73,7 @@ test('apparel stock validation, saving and sales filters work with keyboard inpu
         await enter(page, page.getByRole('navigation', { name: '판매내역 더 불러오기' }).getByRole('link', { name: '더 불러오기' }));
         await page.waitForURL(url => url.searchParams.get('salesPage') === '2');
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 21);
+        await page.getByText('판매 항목 없음', { exact: true }).waitFor();
         const form = page.locator('.audit-filter-bar');
         const search = form.locator('input[name=keyword]');
         await search.focus(); await page.keyboard.type('찾을수없는항목');

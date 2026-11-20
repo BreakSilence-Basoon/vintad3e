@@ -7,3 +7,47 @@ body:has(.timetable-console) { background:var(--background); }
 .schedule-calendar-page { width:min(600px,100%); min-width:0; margin:0 auto; }
 .attendance-history-empty { margin:0; padding:20px 0; border-bottom:1px solid rgba(54,44,32,.1); color:var(--muted); font-size:.9rem; font-weight:720; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+.timetable-page-loading .console-section {
+  min-width: 0;
+  padding: 22px;
+  display: grid;
+  gap: 18px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface-strong);
+  box-shadow: var(--shadow);
+}
+
+.timetable-page-loading .console-section--loading {
+  min-height: 260px;
+}
+
+.timetable-page-loading .skeleton-list {
+  display: grid;
+  gap: 12px;
+}
+
+.timetable-page-loading .skeleton-row {
+  display: grid;
+  gap: 10px;
+  min-height: 74px;
+  padding: 16px 18px;
+  border: 1px solid rgba(65, 48, 29, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 252, 246, 0.72);
+}
+
+.timetable-page-loading .skeleton-line {
+  display: block;
+  width: min(420px, 72%);
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(43, 74, 64, 0.08);
+}
+
+.timetable-page-loading .skeleton-line--strong {
+  width: min(260px, 48%);
+  height: 16px;
+  background: rgba(43, 74, 64, 0.12);
+}

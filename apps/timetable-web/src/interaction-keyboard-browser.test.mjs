@@ -28,6 +28,14 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await page.waitForURL('**/sign-in?next=%2Fadmin%2Fschedule%3Fmonth%3D2026-05');
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/?view=schedule&month=2026-05');
+        assert.equal(await page.locator('[aria-label="1/2 출근부"] .timetable-page-loading').count(), 1);
+        await enter(page, page.getByRole('button', { name: '출근부 보기' }));
+        await page.waitForURL('**/?view=history&month=2026-05');
+        await page.locator('[aria-label="1/2 출근부"] .attendance-history-list').waitFor();
+        assert.equal(await page.locator('[aria-label="2/2 근무시간표"] .timetable-page-loading').count(), 1);
+        await enter(page, page.getByRole('button', { name: '근무시간표 보기' }));
+        await page.waitForURL('**/?view=schedule&month=2026-05');
+        await page.locator('[aria-label="2/2 근무시간표"] .schedule-calendar-page').waitFor();
         await page.getByRole('link', { name: 'QR 코드 스캔' }).waitFor();
         const scanIcon = await page.getByRole('link', { name: 'QR 코드 스캔' }).locator('svg').boundingBox();
         assert.ok(scanIcon && scanIcon.width <= 30 && scanIcon.height <= 30);

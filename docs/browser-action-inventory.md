@@ -6,7 +6,7 @@
 | --- | ---: | ---: | --- |
 | Admin | 16 | 15 | [구성원 검사](../apps/admin-web/src/members-fixture-browser.test.mjs), [키보드 검사](../apps/admin-web/src/interaction-keyboard-browser.test.mjs). 구성원 조회·직원/협업자 전환·상세·권한 화면·계층 전환 3종·앱별 권한·감사 목록·검색·초기화·상세·더보기·잘못된 주소를 확인합니다. 직접 기간 지정과 오래된순 정렬은 [검사 보강 PR #242](https://github.com/BreakSilence-Basoon/vintad3e/pull/242)에서 검사하고 main에 반영했습니다. |
 | Apparel | 15+ | 15 | [재고 검사](../apps/apparel-web/src/inventory-stock-browser.test.mjs), [부족 재고 검사](../apps/apparel-web/src/shortage-fixture-browser.test.mjs), [키보드 검사](../apps/apparel-web/src/interaction-keyboard-browser.test.mjs), [매출 통계 검사](../apps/apparel-web/src/sales-overview-browser.test.mjs). 재고 상세·수량 검증·저장·새로고침·미저장 취소/확인·스위치 끄기/켜기·저장 오류·판매 검색/초기화·검증 오류·감사 필터·부족 재고 탭·통계 지표 전환·정렬을 확인합니다. |
-| Creative | 최소 14 | 15 | [브라우저 검사](../apps/creative-web/src/interaction-browser.test.mjs). 로그인 필요·로그인·제안 불러오기/검토/확인·새로고침·프로젝트 조회·없는 주소·서버 오류 복구를 확인합니다. 프로젝트 빈 상태·읽기 오류와 원본 상단 홈/계정/로그아웃은 [이관 PR #241](https://github.com/BreakSilence-Basoon/vintad3e/pull/241)에서 검사하고 main에 반영했습니다. 상단 홈 링크의 실제 이동 결과는 [검사 PR #246](https://github.com/BreakSilence-Basoon/vintad3e/pull/246)에서 확인 중입니다. 원본에 없는 동작은 만들지 않습니다. |
+| Creative | 15 | 15 | [브라우저 검사](../apps/creative-web/src/interaction-browser.test.mjs). 로그인 필요·로그인·제안 불러오기/검토/확인·새로고침·프로젝트 조회·없는 주소·서버 오류 복구를 확인합니다. 프로젝트 빈 상태·읽기 오류와 원본 상단 홈/계정/로그아웃은 [이관 PR #241](https://github.com/BreakSilence-Basoon/vintad3e/pull/241)에서 검사하고 main에 반영했습니다. 상단 홈 링크의 실제 이동 결과는 [검사 PR #246](https://github.com/BreakSilence-Basoon/vintad3e/pull/246)으로 확인했습니다. 원본에 없는 동작은 만들지 않습니다. |
 | Floor | 17 | 15 | [판매 검사](../apps/floor-web/src/sales-fixture-browser.test.mjs), [키보드 검사](../apps/floor-web/src/sales-keyboard-browser.test.mjs). 홈·기간 전환·이전 날짜의 빈 상태·판매 목록·더보기·검색·정렬·초기화·재고 조회·로그인·제안 불러오기/검토/확인·없는 주소를 확인합니다. 재료 등록·중복 거부·손상 저장 보호는 [이관 PR #239](https://github.com/BreakSilence-Basoon/vintad3e/pull/239)에서 검사하고 main에 반영했습니다. |
 | Library | 15+ | 15 | [자료 검사](../apps/library-web/src/library-fixture-browser.test.mjs), [기록 검사](../apps/library-web/src/library-records-browser.test.mjs), [키보드 검사](../apps/library-web/src/interaction-keyboard-browser.test.mjs). 검색·문서 열기·파일 목록/열기·북마크 추가/해제·댓글·내 기록·구성원 검색/빈 결과·회의 생성·파일 검증·업로드 확인/승인/실행·업로드 오류 복구·공개 자료 열기를 확인합니다. |
 | Partners | 15+ | 15 | [협업 검사](../apps/partners-web/src/partner-fixture-browser.test.mjs), [키보드·게스트 검사](../apps/partners-web/src/interaction-keyboard-browser.test.mjs), [기간 조회 검사](../apps/partners-web/src/collaboration-browser.test.mjs). 협업처 이동·정산 상세·검색/빈 결과·상태 필터·초기화·조건 열기·DJ 추가/삭제/입력 지우기·복사와 실패·게스트 로그인/로그아웃·다른 협업처 접근 거부·재고 탭/상세·기간 조회를 확인합니다. |
@@ -32,4 +32,17 @@
 | Supporters | 13 | 11 | 개인정보 문서·약관은 각 가게가 준비 |
 | Timetable | 16 | 14 | 개인정보 문서·약관은 각 가게가 준비 |
 
-코드 기반 대조로 Creative 홈의 로그인 메뉴·빈 상태·오류를 복원했고, Floor 재고 화면은 재료 등록까지 복원했습니다. Floor의 구매·입고, 실사, 재료 구성과 그 저장 동작은 아직 대조 및 이관이 필요합니다. 다른 경로도 개별 내용과 상호작용의 원본 일치 여부는 계속 확인해야 합니다.
+코드 기반 대조로 Creative 홈의 로그인 메뉴·빈 상태·오류를 복원했고, Floor 재고 화면은 재료 등록까지 복원했습니다. Floor의 구매·입고와 재료 구성 및 저장은 아직 이관이 필요하며, 실사는 [PR #247](https://github.com/BreakSilence-Basoon/vintad3e/pull/247)에서 검사 중입니다. 다른 경로도 개별 내용과 상호작용의 원본 일치 여부는 계속 확인해야 합니다.
+
+## 내용·동작 대조 기록
+
+아래는 원본 화면 코드를 직접 읽고 공개판과 대조한 항목입니다. 목록에 없는 화면의 내용 일치는 아직 확인하지 않았습니다.
+
+| 화면 | 원본에서 확인한 구성 | 공개판 상태 |
+| --- | --- | --- |
+| Creative 홈·로그인 | 로그인 후 상단 홈·계정·로그아웃과 프로젝트 목록, 빈 상태·오류 | 합성 세션과 함께 이관; 홈 이동 결과도 검사 |
+| Floor 재고 | 재료 등록, 재료 구성, 구매·입고, 실사 입력 및 기록 취소 | 재료 등록 이관; 실사·취소는 [PR #247](https://github.com/BreakSilence-Basoon/vintad3e/pull/247) 검사 중; 재료 구성과 구매·입고 미이관 |
+| Partners 협업처 상세 | 협업 정산 계산 진입과 해당 협업처의 정산·상품 구성 | 합성 정산 계산 진입 이관; 상품 구성과 세부 정산은 추가 대조 필요 |
+| Library 내부 문서 | 홈 목록에서 문서를 열고 목차·본문·문서 정보를 확인 | 합성 문서와 로그인 경로는 [PR #245](https://github.com/BreakSilence-Basoon/vintad3e/pull/245) 검사 완료 |
+| Library 로그인 상단 | 홈·검색·계정·로그아웃 및 모바일 메뉴 | 합성 검색·세션 연결은 [PR #248](https://github.com/BreakSilence-Basoon/vintad3e/pull/248) 검사 중 |
+| Library 발행 문서 | 문서 도구·문서 정보·다운로드·공유·댓글 및 권한에 따른 보관 | 다운로드와 합성 댓글 등 일부 이관; 문서 정보·공유·보관과 접근 경로는 추가 대조 필요 |

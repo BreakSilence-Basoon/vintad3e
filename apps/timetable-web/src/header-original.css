@@ -2,3 +2,235 @@
 body:has(.kiosk-screen) .topbar__inner {
   width: min(600px, calc(100% - (var(--page-gutter) * 2)));
 }
+
+.topbar__account-row {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar__scan-link {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-strong);
+  color: var(--accent-strong);
+  box-shadow: var(--shadow-soft);
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.topbar__scan-link:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
+}
+
+.topbar__scan-link:active {
+  transform: translateY(0);
+}
+
+.topbar__scan-link:focus-visible {
+  outline: 3px solid rgba(43, 74, 64, 0.24);
+  outline-offset: 3px;
+}
+
+.topbar__scan-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.topbar__account-row .topbar__identity {
+  min-width: 0;
+}
+
+.topbar__identity-email-mobile {
+  display: none;
+}
+
+.topbar__navigation {
+  grid-column: 2;
+  min-width: 0;
+}
+
+.topbar__navigation > .topbar__nav {
+  grid-column: auto;
+}
+
+.topbar__navigation--mobile,
+.topbar__logout-icon {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .topbar__navigation--desktop {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .topbar__account-row {
+    width: 100%;
+  }
+
+  .topbar__account-row .topbar__identity {
+    flex: 1 1 auto;
+  }
+
+}
+
+@media (max-width: 640px) {
+  .topbar .topbar__inner {
+    grid-template-columns: 44px 44px minmax(0, 1fr) auto 44px;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 0;
+  }
+
+  .topbar .topbar__brand-group {
+    grid-column: 1;
+    grid-row: 1;
+    width: auto;
+    justify-content: flex-start;
+  }
+
+  .topbar .topbar__brand-link {
+    width: 44px;
+    min-height: 44px;
+  }
+
+  .topbar__navigation--desktop {
+    display: none;
+  }
+
+  .topbar__navigation--mobile {
+    position: relative;
+    z-index: 60;
+    display: block;
+    grid-column: 5;
+    grid-row: 1;
+    width: 44px;
+  }
+
+  .topbar__navigation > .topbar__nav {
+    display: none;
+  }
+
+  .topbar__settings-link {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-strong);
+    color: var(--accent-strong);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .topbar__settings-link svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .topbar__settings-link:hover,
+  .topbar__settings-link.is-active {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+
+  .topbar__settings-link:focus-visible {
+    outline: 3px solid rgba(43, 74, 64, 0.24);
+    outline-offset: 3px;
+  }
+
+  .topbar .topbar__controls {
+    display: contents;
+  }
+
+  .topbar .topbar__auth {
+    display: contents;
+  }
+
+  .topbar__account-row {
+    display: contents;
+  }
+
+  .topbar__scan-link {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .topbar__account-row .topbar__identity {
+    grid-column: 3;
+    grid-row: 1;
+    max-width: none;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 2px;
+  }
+
+  .topbar .topbar__identity span {
+    overflow: hidden;
+    font-size: 0.78rem;
+    overflow-wrap: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .topbar__identity-email-full {
+    display: none;
+  }
+
+  .topbar__identity-email-mobile {
+    display: inline;
+  }
+
+  .topbar__auth form {
+    grid-column: 4;
+    grid-row: 1;
+    width: 44px;
+  }
+
+  .topbar__auth .button {
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .topbar__logout-label {
+    display: none;
+  }
+
+  .topbar__logout-icon {
+    width: 21px;
+    height: 21px;
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+}

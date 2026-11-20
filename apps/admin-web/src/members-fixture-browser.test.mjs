@@ -80,6 +80,11 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     assert.ok(await evaluate("document.querySelector('.staff-console').textContent.includes('게스트')"));
     await send('Page.navigate',{url:`${origin}/members?type=employee&type=partner`});
     await waitFor(async () => evaluate("document.querySelector('[role=alert]')?.textContent.includes('이 목록을 이어서 볼 수 없습니다.')"));
+    await send('Page.navigate',{url:`${origin}/members?type=partner&cursor=unknown`});
+    await waitFor(async () => evaluate("document.querySelector('[role=alert]')?.textContent.includes('이 목록을 이어서 볼 수 없습니다.')"));
+    assert.equal(await evaluate("document.querySelector('.staff-table') === null"), true);
+    await evaluate("document.querySelector('[role=alert] a').click()");
+    await waitFor(async () => evaluate("location.search === '?type=partner' && Boolean(document.querySelector('.staff-table'))"));
     await send('Page.navigate',{url:`${origin}/members`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('[href=\"/audit\"]'))"));
     await evaluate("document.querySelector('[href=\"/audit\"]').click()");

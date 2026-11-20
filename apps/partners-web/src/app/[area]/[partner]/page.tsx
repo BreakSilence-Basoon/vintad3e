@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { requireFixturePartnersStaff } from '../../../fixture-staff-access';
 import PartnerPage from '../../../area-partner';
 import { bedroomFixtures } from '../../../bedroom-fixture';
 import { seoulDate } from '../../../partner-schedule';
@@ -12,5 +13,6 @@ export async function generateMetadata({ params }: Props) {
 export default async function AreaPartnerPage({ params }: Props) {
   const { area, partner } = await params;
   if (area !== 'proj-bedroom') notFound();
+  if (partner === 'partner-02') await requireFixturePartnersStaff('/proj-bedroom/partner-02');
   return <PartnerPage params={Promise.resolve({ partner })} />;
 }

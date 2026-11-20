@@ -35,6 +35,21 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await page.waitForURL('**/sign-in?next=%2Fdj');
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/dj');
+        await enter(page, page.getByRole('link', { name: 'staff01@example.invalid 로그인 전 화면 보기' }));
+        await enter(page, page.getByRole('link', { name: 'Partners로 돌아가기' }));
+        await page.waitForURL('**/dj');
+        if (width === 390) {
+          await enter(page, page.locator('summary[aria-label="메뉴"]'));
+          await enter(page, page.getByRole('navigation', { name: 'Partners 모바일 메뉴' }).getByRole('link', { name: '계정 추가' }));
+        } else {
+          await enter(page, page.getByRole('navigation', { name: 'Partners 메뉴' }).getByRole('link', { name: '계정 추가' }));
+        }
+        await page.waitForURL('**/accounts');
+        await page.goto(`${origin}/proj-bedroom/partner-01/sign-in`);
+        assert.equal(await page.locator('.partners-staff-shell').count(), 0);
+        await page.goto(`${origin}/guide/dj/ko`);
+        assert.equal(await page.locator('.partners-staff-shell').count(), 0);
+        await page.goto(`${origin}/dj`);
         const form = page.locator('.partners-accountant');
         await enter(page, form.getByRole('button', { name: '전달문 복사' }));
         await form.locator('input[aria-invalid="true"]').first().waitFor();

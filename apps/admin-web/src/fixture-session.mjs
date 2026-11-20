@@ -10,6 +10,16 @@ export function fixtureNext(value) {
   return typeof value === 'string' && /^\/members\/00000000-0000-4000-8000-00000000000[123]$/.test(value) ? value : '/';
 }
 
+export function fixtureCoverNext(value) {
+  if (typeof value !== 'string' || value.length > 2048 || !value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(value)) return '/';
+  try {
+    const base = 'http://127.0.0.1:3832';
+    const url = new URL(value, base);
+    if (url.origin !== base || fixtureNext(url.pathname) !== url.pathname) return '/';
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch { return '/'; }
+}
+
 export function fixtureOrigin(env) {
   if (env.NODE_ENV !== 'development' || env.VINTAD3E_ADMIN_FIXTURE !== '1') return null;
   const value = env.VINTAD3E_ADMIN_FIXTURE_ORIGIN || 'http://127.0.0.1:3832';

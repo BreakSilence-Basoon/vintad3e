@@ -25,6 +25,12 @@ export function fixtureResumePath(value) {
   } catch { return '/'; }
 }
 
+export function fixtureCoverNext(value) {
+  const safe = fixtureResumePath(value);
+  const url = new URL(safe, 'http://127.0.0.1:3827');
+  return fixtureNext(url.pathname) === url.pathname ? safe : '/';
+}
+
 export function fixtureOrigin(env) {
   if (env.NODE_ENV !== 'development' || env.VINTAD3E_SUPPORTERS_FIXTURE !== '1') return null;
   const value = env.VINTAD3E_SUPPORTERS_FIXTURE_ORIGIN || 'http://127.0.0.1:3827';

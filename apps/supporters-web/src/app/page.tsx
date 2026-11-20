@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { fixtureNext, fixtureOrigin, fixtureSession } from '../fixture-session.mjs';
-import { StaffToastViewport } from '@vintad3e/ui/toast';
 import { getCouponFixtures, selectCouponFixture } from '../coupon-fixture';
 import { CouponStaffSelector } from '../sns-fixture-selector';
 import { CouponAnalyticsPanel } from '../coupon-analytics-panel';
@@ -50,6 +49,6 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
       </section>}
       <section className="gtm-section performance-board" aria-label="성과 요약"><div className="performance-card__header"><strong>이번달 예상</strong><span>{month}</span></div><div className="performance-stat-strip">{[['SNS 점수 충족률', '80%'], ['성과보너스', '1,234원'], ['판매보상', '123원'], ['인센티브', '1,357원']].map(([label, value]) => <span key={label}><strong>{value}</strong>{label}</span>)}</div></section>
     </section></div> : <div className="staff-home-empty" aria-hidden="true"><img src="/icon.svg" alt="" /></div>}
-    <StaffToastViewport />
+
   </main>;
 }

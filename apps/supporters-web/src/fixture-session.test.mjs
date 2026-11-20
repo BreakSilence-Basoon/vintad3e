@@ -1,11 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fixtureOrigin, fixtureSession, handleFixtureSession, fixtureResumePath } from './fixture-session.mjs';
+import { fixtureCoverNext, fixtureOrigin, fixtureSession, handleFixtureSession, fixtureResumePath } from './fixture-session.mjs';
 const origin = 'http://127.0.0.1:3827';
 const env = { NODE_ENV: 'development', VINTAD3E_SUPPORTERS_FIXTURE: '1' };
 test('resume accepts internal paths only', () => {
   assert.equal(fixtureResumePath('/documents?tab=all'), '/documents?tab=all');
   for (const path of ['//example.invalid/', '/\\example.invalid/', '/auth/session-resume', 'https://example.invalid/', undefined]) assert.equal(fixtureResumePath(path), '/');
+});
+test('cover returns to known local screens with their selected filters', () => {
+  assert.equal(fixtureCoverNext('/coupon?staff=supporter-1'), '/coupon?staff=supporter-1');
+  for (const path of ['//example.invalid/', '/\\example.invalid/', 'https://example.invalid/', '/sign-in', '/unknown']) assert.equal(fixtureCoverNext(path), '/');
 });
 function post(action, headers = {}) { return new Request(`${origin}/api/fixture/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3827', origin, ...headers } }); }
 function cookie(response) { return response.headers.get('set-cookie').split(';')[0]; }

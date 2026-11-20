@@ -40,6 +40,13 @@ test('creative login, confirmation and failures work in a browser', { timeout: 1
         await press(page, 'button', '회사 계정으로 로그인');
         await page.waitForURL('**/confirmations/proposal-01');
 
+        // Invalid actions must not skip the review or change the stored proposal.
+        assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'confirm' }) })).status), 409);
+        assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'review' }) })).status), 409);
+        assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'load', extra: true }) })).status), 400);
+        assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: JSON.stringify({ action: 'load' }) })).status), 400);
+        assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation')).json().then(r => r.state)), 'idle');
+
         // Fail the server once and verify the screen recovers on the next request.
         await page.route('**/api/fixture/confirmation', route => route.fulfill({ status: 503, body: '' }));
         await page.reload();

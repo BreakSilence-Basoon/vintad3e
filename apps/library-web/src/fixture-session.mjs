@@ -5,7 +5,7 @@ const tokenPattern = /^[A-Za-z0-9_-]{43}$/;
 const key = Symbol.for('vintad3e.library.fixture.sessions');
 const sessions = globalThis[key] ??= new Map();
 const ttl = 30 * 60 * 1000;
-export function fixtureNext(value) { return value === '/confirmations/proposal-01' || value === '/objects/new' ? value : '/'; }
+export function fixtureNext(value) { return ['/confirmations/proposal-01', '/objects/new', '/ir/00000000-0000-4000-8000-000000000001', '/native/00000000-0000-4000-8000-000000000001'].includes(value) ? value : '/'; }
 
 export function fixtureResumePath(value) {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(value)) return '/';

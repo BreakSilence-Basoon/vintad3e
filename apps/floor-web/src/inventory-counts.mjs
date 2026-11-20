@@ -5,7 +5,7 @@ export function parseCounts(text, ingredients) {
  } catch { return null; }
 }
 export function newCount(date,time,ids,quantities,ingredients,now=Date.now()) {
- if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time)) return null;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time)||Number(time.slice(0,2))>23||Number(time.slice(3,5))>59) return null;
  const day=new Date(date+'T00:00:00.000Z'), when=new Date(date+'T'+time+':00+09:00');if(!Number.isFinite(day.getTime())||day.toISOString().slice(0,10)!==date||!Number.isFinite(when.getTime())||when.getTime()>now)return null;
  const records=[{id:'fixture-'+crypto.randomUUID(),kind:'COUNT',status:'RECORDED',supplier:null,reference:null,occurredAt:when.toISOString(),lines:ids.map((ingredientId,i)=>({ingredientId,quantity:Number(quantities[i])}))}];
  if(ids.length!==quantities.length || quantities.some(q=>typeof q!=='string' || !/^\d+(?:\.\d{1,3})?$/.test(q)))return null;return parseCounts(JSON.stringify(records),ingredients)?.[0]??null;

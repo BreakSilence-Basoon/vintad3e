@@ -1,4 +1,5 @@
 import { Button } from '@vintad3e/ui/components';
+import { requireFixtureFloorAccess } from '../fixture-access';
 import Link from 'next/link';
 import { FloorRevenueTrend } from '../floor-revenue-trend';
 import {
@@ -295,6 +296,7 @@ function DailyBrief({ data }: { data: FloorDailyResponse }) {
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
+  await requireFixtureFloorAccess('/');
   const params = searchParams ? await searchParams : {};
   const requestedDate = single(params.date)?.trim();
   const validDate = requestedDate && parseBusinessDate(requestedDate) ? requestedDate : undefined;

@@ -76,17 +76,25 @@ test('library keyboard actions validate inputs and recover from storage and serv
         for (const label of ['제안 검토','이 변경 확인','문서 발행']) await enter(page,page.getByRole('button',{name:label,exact:true}));
         await enter(page,page.getByRole('link',{name:'발행한 문서 열기'}));
         await page.getByRole('button',{name:'목록에서 제외'}).waitFor();
+        const downloadPromise=page.waitForEvent('download'); await page.getByRole('link',{name:'원본 다운로드'}).click(); const download=await downloadPromise;
+        let downloadText=''; for await(const chunk of await download.createReadStream()) downloadText+=chunk.toString(); assert.equal(downloadText,'업무를 시작하기 전에 필요한 사항을 확인합니다.');
+        await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copiedText=text;}}}));
+        await enter(page,page.getByRole('button',{name:'내용 복사'})); await page.waitForFunction(()=>window.copiedText==='업무를 시작하기 전에 필요한 사항을 확인합니다.');
+        await enter(page,page.getByRole('button',{name:'보관함 저장'})); await page.getByRole('button',{name:'저장 해제'}).waitFor();
+        await page.getByLabel('댓글').fill('좋은 안내입니다.'); await enter(page,page.getByRole('button',{name:'댓글 작성'})); await page.getByText('좋은 안내입니다.').waitFor();
+        await page.goto(`${origin}/bookmarks`); await page.getByRole('link',{name:'업무 안내',exact:true}).waitFor();
         await page.goto(`${origin}/mypage`); await page.getByRole('link',{name:'업무 안내',exact:true}).waitFor();
         await page.goto(origin); await page.getByRole('link',{name:'업무 안내',exact:true}).waitFor();
-        await enter(page,page.getByRole('button',{name:'게시물 검색'})); const publishedSearch=page.getByRole('dialog',{name:'게시물 검색'}); await publishedSearch.getByRole('combobox',{name:'게시물 제목 검색'}).fill('업무 안내'); await publishedSearch.getByRole('option',{name:/업무 안내/}).waitFor(); await page.keyboard.press('Escape');
+        await enter(page,page.getByRole('button',{name:'게시물 검색'})); const publishedSearch=page.getByRole('dialog',{name:'게시물 검색'}); await publishedSearch.getByRole('combobox',{name:'게시물 제목 검색'}).fill('업무 안내'); await publishedSearch.locator('a[href="/publications/00000000-0000-4000-8000-000000000004"]').waitFor(); await page.keyboard.press('Escape');
         await enter(page,page.getByRole('link',{name:'업무 안내',exact:true}));
         await page.evaluate(()=>{window.oldSetItem=Storage.prototype.setItem;Storage.prototype.setItem=()=>{throw new Error('unavailable');};});
         await enter(page,page.getByRole('button',{name:'목록에서 제외'})); await page.getByRole('alert').filter({hasText:'문서를 목록에서 제외하지 못했습니다.'}).waitFor();
         await page.evaluate(()=>{Storage.prototype.setItem=window.oldSetItem;});
         await enter(page,page.getByRole('button',{name:'목록에서 제외'})); await page.waitForURL('**/mypage');
         await page.waitForFunction(()=>!document.querySelector('a[href="/publications/00000000-0000-4000-8000-000000000004"]'));
+        await page.goto(`${origin}/bookmarks`); await page.getByText('저장한 게시물이 없습니다.').waitFor();
         await page.goto(origin); await page.waitForFunction(()=>!document.querySelector('a[href="/publications/00000000-0000-4000-8000-000000000004"]'));
-        await enter(page,page.getByRole('button',{name:'게시물 검색'})); const archivedSearch=page.getByRole('dialog',{name:'게시물 검색'}); await archivedSearch.getByRole('combobox',{name:'게시물 제목 검색'}).fill('업무 안내'); await archivedSearch.getByText('검색 결과가 없습니다.').waitFor();
+        await enter(page,page.getByRole('button',{name:'게시물 검색'})); const archivedSearch=page.getByRole('dialog',{name:'게시물 검색'}); await archivedSearch.getByRole('combobox',{name:'게시물 제목 검색'}).fill('업무 안내'); await archivedSearch.getByRole('option',{name:/업무 안내\.txt/}).waitFor(); assert.equal(await archivedSearch.locator('a[href="/publications/00000000-0000-4000-8000-000000000004"]').count(),0);
       } finally { await context.close(); }
     }
   } finally {

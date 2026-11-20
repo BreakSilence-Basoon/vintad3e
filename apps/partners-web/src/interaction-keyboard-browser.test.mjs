@@ -42,6 +42,10 @@ test('public guides navigate languages, copy and open images on desktop and mobi
         await enter(page, page.locator('.guest-language-float__choices button[lang=en]'));
         await page.waitForURL('**/proj-bedroom/guide/en');
         await page.getByText('Artist Brief', { exact: true }).waitFor();
+        await enter(page, page.getByRole('button', { name: 'Select language', exact: true }));
+        await enter(page, page.locator('.guest-language-float__choices button[lang=ja]'));
+        await page.waitForURL('**/proj-bedroom/guide/ja');
+        await page.getByText('アーティスト向けブリーフ', { exact: true }).waitFor();
       } finally { await context.close(); }
     }
   } finally {

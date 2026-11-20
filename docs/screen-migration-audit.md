@@ -4,6 +4,8 @@
 
 ‘일부 대조’는 위 문서에 기록된 범위만 비교했다는 뜻입니다. 나머지 동작과 ‘상세 미대조’ 화면은 추가 확인이 필요합니다. 공개판의 로그인·자료는 합성 환경이며 실제 운영 권한이나 사업 데이터를 검증하지 않습니다.
 
+화면의 동작·빠진 부분은 앱별 기록에서도 확인할 수 있습니다: [Admin](screen-audit-admin.md), [Apparel](screen-audit-apparel.md), [Creative](#creative), [Floor](screen-audit-floor.md), [Library](screen-audit-library.md), [Partners](screen-audit-partners.md), [Portal](screen-audit-portal.md), [Supporters](screen-audit-supporters.md), [Timetable](screen-audit-timetable.md).
+
 ## Admin
 
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |

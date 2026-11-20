@@ -15,7 +15,7 @@ test('fixture administrator edits, reloads and deletes attendance with required 
   const port = await freePort(), debugPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debugPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-timetable-admin-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env: { ...process.env, NODE_ENV:'development', VINTAD3E_TIMETABLE_FIXTURE:'1', VINTAD3E_TIMETABLE_FIXTURE_ADMIN:'1' }, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env: { ...process.env, NODE_ENV:'development', VINTAD3E_TIMETABLE_FIXTURE:'1', VINTAD3E_TIMETABLE_FIXTURE_ORIGIN:origin, VINTAD3E_TIMETABLE_FIXTURE_ADMIN:'1' }, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debugPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {
@@ -29,6 +29,9 @@ test('fixture administrator edits, reloads and deletes attendance with required 
     const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));});
     closeBrowser=()=>send('Browser.close');
     const evaluate=async expression=>{const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw new Error(result.exceptionDetails.text);return result.result.value;};
+    await send('Page.navigate',{url:`${origin}/sign-in`});
+    await waitFor(async()=>evaluate("Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()"); await waitFor(async()=>evaluate("location.pathname === '/'"));
     await send('Page.navigate',{url:`${origin}/?view=history&range=last7`});
     await waitFor(async()=>evaluate("document.querySelectorAll('button.attendance-history-card[data-hydrated=true]').length === 7"));
     await evaluate("document.querySelectorAll('button.attendance-history-card')[1].click()");

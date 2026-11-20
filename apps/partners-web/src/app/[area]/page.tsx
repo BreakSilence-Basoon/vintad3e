@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { requireFixturePartnersStaff } from '../../fixture-staff-access';
 import DjPage from '../../area-dj';
 import BedroomsPage from '../../area-bedrooms';
 import RentalPage from '../../area-rental';
@@ -11,6 +12,8 @@ export async function generateMetadata({ params }: Props) {
 }
 export default async function AreaPage({ params }: Props) {
   const { area } = await params;
+  if (!['dj', 'proj-bedroom', 'rental'].includes(area)) notFound();
+  await requireFixturePartnersStaff(`/${area}`);
   if (area === 'dj') return <DjPage />;
   if (area === 'proj-bedroom') return <BedroomsPage />;
   if (area === 'rental') return <RentalPage />;

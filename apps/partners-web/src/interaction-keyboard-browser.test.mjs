@@ -28,6 +28,9 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
         assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-01/sign-in');
         await page.goto(`${origin}/dj`);
+        await page.waitForURL('**/sign-in?next=%2Fdj');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/dj');
         const form = page.locator('.partners-accountant');
         await enter(page, form.getByRole('button', { name: '전달문 복사' }));
         await form.locator('input[aria-invalid="true"]').first().waitFor();

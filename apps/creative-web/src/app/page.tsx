@@ -1,6 +1,15 @@
+import { headers } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
+import { fixtureOrigin, fixtureSession } from '../fixture-session.mjs';
 import { formatKstDateTime, getCreativeFixtures, projectStatusLabel } from '../creative-fixture';
 export const dynamic = 'force-dynamic';
-export default function Page() {
+export default async function Page() {
+  const origin = fixtureOrigin(process.env);
+  if (origin) {
+    const requestHeaders = await headers(), host = requestHeaders.get('host');
+    if (host !== new URL(origin).host) notFound();
+    if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect('/sign-in');
+  }
   const projects = getCreativeFixtures(process.env.NODE_ENV, process.env.VINTAD3E_CREATIVE_FIXTURE, process.env.VINTAD3E_CREATIVE_FIXTURE_STATE);
   const failed = process.env.NODE_ENV === 'development' && process.env.VINTAD3E_CREATIVE_FIXTURE === '1' && process.env.VINTAD3E_CREATIVE_FIXTURE_STATE === 'error';
   return <main className="staff-console"><header className="staff-page__header"><h1>Creative</h1></header><section className="staff-section" aria-labelledby="projects-title"><div className="staff-section__heading"><h2 id="projects-title">프로젝트</h2></div>{failed ? <div className="staff-error" role="alert"><strong>프로젝트 목록을 불러오지 못했습니다.</strong> 작업 자료 저장소에 연결할 수 없습니다. 새로고침해 다시 확인할 수 있습니다.</div> : projects.length === 0 ? <div className="staff-empty"><strong>등록된 프로젝트가 없습니다.</strong></div> : <div className="staff-panel"><ul className="staff-list" aria-labelledby="projects-title">{projects.map(project => <li key={project.projectId} className="staff-list__item"><div className="staff-row"><span className="staff-row__title">{project.title}</span><span className="staff-row__detail">{formatKstDateTime(project.updatedAt)} 수정</span><span className="staff-row__aside"><span className="status-pill">{projectStatusLabel[project.status]}</span></span></div></li>)}</ul></div>}</section></main>;

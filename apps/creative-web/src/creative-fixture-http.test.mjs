@@ -14,10 +14,14 @@ test('development project list renders the source layout with fixture data', { t
     let response;
     for (let i = 0; i < 100; i++) {
       if (child.exitCode !== null) throw new Error('Development server exited');
-      try { response = await fetch(origin); if (response.status === 200) break; } catch {}
+      try { response = await fetch(origin + '/sign-in'); if (response.status === 200) break; } catch {}
       await delay(300);
     }
     assert.equal(response?.status, 200);
+    const anonymous = await fetch(origin, { redirect:'manual' }); assert.equal(anonymous.status, 307);
+    const homeLogin = await fetch(origin + '/api/fixture/login', { method:'POST', headers:{ origin }, body:new URLSearchParams({ next:'/' }), redirect:'manual' });
+    const homeCookie = homeLogin.headers.get('set-cookie').split(';')[0];
+    response = await fetch(origin, { headers:{ cookie:homeCookie } });
     const html = await response.text();
     assert.match(html, /class="staff-list"/);
     assert.match(html, /매장 촬영/);

@@ -3,6 +3,7 @@ import { requireFixturePartnersStaff } from '../../../fixture-staff-access';
 import PartnerPage from '../../../area-partner';
 import { bedroomFixtures } from '../../../bedroom-fixture';
 import { seoulDate } from '../../../partner-schedule';
+import { FixtureStaffShell } from '../../../fixture-staff-shell';
 export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ area: string; partner: string }> };
 export async function generateMetadata({ params }: Props) {
@@ -14,5 +15,5 @@ export default async function AreaPartnerPage({ params }: Props) {
   const { area, partner } = await params;
   if (area !== 'proj-bedroom') notFound();
   if (partner === 'partner-01' || partner === 'partner-02') await requireFixturePartnersStaff(`/proj-bedroom/${partner}`);
-  return <PartnerPage params={Promise.resolve({ partner })} />;
+  return <FixtureStaffShell><PartnerPage params={Promise.resolve({ partner })} /></FixtureStaffShell>;
 }

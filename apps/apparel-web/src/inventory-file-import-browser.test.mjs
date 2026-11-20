@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright';
+import { join } from 'node:path';
 
 async function freePort() { const socket = createServer(); socket.listen(0, '127.0.0.1'); await once(socket, 'listening'); const port = socket.address().port; await new Promise(resolve => socket.close(resolve)); return port; }
 async function enter(page, locator) { await locator.waitFor({ state: 'visible' }); await page.waitForFunction(el => !el.disabled, await locator.elementHandle()); await locator.focus(); await page.keyboard.press('Enter'); }
@@ -26,14 +27,18 @@ test('inventory CSV stays local, previews, rejects bad data and restores previou
         await page.goto(`${origin}/admin/products`);
         const widget = page.locator('.inventory-file-import');
         await enter(page, widget.locator('summary'));
+        const capture = async label => { if (process.env.VINTAD3E_CAPTURE_DIR) await widget.screenshot({ path: join(process.env.VINTAD3E_CAPTURE_DIR, `${width}-${label}.png`) }); };
+        await capture('before');
         const requests = [];
         page.on('request', request => { if (new URL(request.url()).pathname.startsWith('/api/')) requests.push(request.url()); });
         const input = widget.locator('input[type=file]');
         await input.setInputFiles(csv('SKU,상품명,현재수량,이메일\nSHIRT,셔츠,4,x@example.invalid'));
         await widget.getByRole('alert').waitFor();
+        await capture('warning');
         assert.equal(await widget.getByRole('button', { name: '재고 적용' }).count(), 0);
         await input.setInputFiles(csv('SKU,상품명,현재수량\nSHIRT,셔츠,4'));
         await widget.getByRole('region', { name: '가져올 재고' }).getByText('SHIRT', { exact: true }).waitFor();
+        await capture('preview');
         assert.equal(await widget.getByRole('region', { name: '가져온 재고' }).count(), 0);
         await enter(page, widget.getByRole('button', { name: '재고 적용' }));
         await widget.getByRole('region', { name: '가져온 재고' }).getByText('SHIRT', { exact: true }).waitFor();
@@ -41,9 +46,11 @@ test('inventory CSV stays local, previews, rejects bad data and restores previou
         await widget.getByRole('region', { name: '가져올 재고' }).getByText('PANTS', { exact: true }).waitFor();
         await enter(page, widget.getByRole('button', { name: '재고 적용' }));
         await widget.getByRole('region', { name: '가져온 재고' }).getByText('PANTS', { exact: true }).waitFor();
+        await capture('applied');
         await enter(page, widget.getByRole('button', { name: '가져오기 되돌리기' }));
         await widget.getByRole('region', { name: '가져온 재고' }).getByText('SHIRT', { exact: true }).waitFor();
         assert.equal(requests.length, 0);
+        await capture('undo');
         await page.reload();
         assert.equal(await widget.getByRole('region', { name: '가져온 재고' }).count(), 0);
       } finally { await context.close(); }

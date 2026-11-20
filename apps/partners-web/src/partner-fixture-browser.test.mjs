@@ -97,7 +97,9 @@ test('fixture calendar links to rental ledger and detail in Chrome', { timeout: 
     await waitFor(async () => evaluate("(()=>{if(location.pathname==='/proj-bedroom/partner-01')return true;document.querySelector('.partners-counterpart-card')?.click();return false;})()"));
     await waitFor(async () => evaluate("Boolean(document.querySelector('.partners-settlement-terms'))"));
     assert.ok(await evaluate("document.querySelector('.partners-counterpart-heading h1').textContent.includes('협업처 01')"));
-    assert.ok(await evaluate("document.querySelector('.partners-ledger tbody').textContent.includes('5,000원')"));
+    assert.ok(await evaluate("document.querySelector('.partners-history summary').textContent.includes('6,173원')"));
+    await evaluate("document.querySelector('.partners-history summary').click()");
+    assert.ok(await evaluate("document.querySelector('.partners-history__detail').textContent.includes('123,460원')"));
     await evaluate("document.querySelector('.partners-settlement-terms summary').click()");
     assert.ok(await evaluate("document.querySelector('.partners-settlement-terms').textContent.includes('판매금액의 5%')"));
     await send('Page.navigate',{url:`${origin}/proj-bedroom`});

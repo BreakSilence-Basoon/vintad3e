@@ -71,6 +71,8 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await ledger.locator('.staff-empty').waitFor();
 
         await page.goto(`${origin}/proj-bedroom/partner-01`);
+        await enter(page,page.locator('.partners-history summary'));
+        await page.getByRole('region',{name:'정산 항목'}).getByText('123,460원').waitFor();
         const settlement=page.getByRole('region',{name:'정산',exact:true});
         await settlement.locator('input[type=search]').fill('없는 협업처'); await settlement.getByText('브랜드를 찾을 수 없습니다.').waitFor();
         await settlement.locator('input[type=search]').fill('협업처 01'); await settlement.getByRole('combobox',{name:'기간'}).selectOption('custom');

@@ -80,6 +80,7 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
         await enter(page,page.locator('.formula-guide__contents summary'));
         await page.getByRole('navigation',{name:'목차'}).getByRole('link',{name:'쿠폰 판매'}).click();
         await page.waitForURL('**/formula-info#coupon-sales');
+        await page.evaluate(()=>{window.failCopy=true;});
         await enter(page,page.getByRole('button',{name:'내용 복사'})); await page.getByRole('status').filter({hasText:'내용을 복사하지 못했습니다.'}).waitFor();
         await page.evaluate(()=>{window.failCopy=false;}); await enter(page,page.getByRole('button',{name:'내용 복사'})); await page.getByRole('status').filter({hasText:'복사됨'}).waitFor();
         assert.ok(await page.evaluate(()=>window.copiedText?.includes('쿠폰 판매')));

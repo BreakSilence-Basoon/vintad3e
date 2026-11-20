@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { requireFixtureAdminAccess } from '../../../fixture-access';
 import { notFound } from 'next/navigation';
 import { fixtureGrantDisplay, fixtureGrants, fixtureTier, formatKstDateTime, getFixtureMembers } from '../../../members-fixture';
 
@@ -6,6 +7,7 @@ export const dynamic = 'force-dynamic';
 function Field({ label, value }: { label: string; value: string }) { return <div className="staff-list__item staff-row"><dt className="staff-row__detail">{label}</dt><dd className="staff-row__title">{value}</dd></div>; }
 export default async function MemberPage({ params }: { params: Promise<{ staffId: string }> }) {
   const { staffId } = await params;
+  await requireFixtureAdminAccess(`/members/${staffId}`);
   const member = getFixtureMembers(process.env.NODE_ENV, process.env.VINTAD3E_ADMIN_FIXTURE).find(item => item.staffId === staffId);
   const grants = fixtureGrants(process.env.NODE_ENV, process.env.VINTAD3E_ADMIN_FIXTURE, staffId);
   if (!member || !grants) notFound();

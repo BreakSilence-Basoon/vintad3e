@@ -13,6 +13,6 @@ export async function generateMetadata({ params }: Props) {
 export default async function AreaPartnerPage({ params }: Props) {
   const { area, partner } = await params;
   if (area !== 'proj-bedroom') notFound();
-  if (partner === 'partner-02') await requireFixturePartnersStaff('/proj-bedroom/partner-02');
+  if (partner === 'partner-01' || partner === 'partner-02') await requireFixturePartnersStaff(`/proj-bedroom/${partner}`);
   return <PartnerPage params={Promise.resolve({ partner })} />;
 }

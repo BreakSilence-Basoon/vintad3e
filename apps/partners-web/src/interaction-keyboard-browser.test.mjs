@@ -68,6 +68,35 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await ledger.locator('input[name=query]').fill('찾을 수 없는 협업처');
         await enter(page, ledger.getByRole('button', { name: '조회' }));
         await ledger.locator('.staff-empty').waitFor();
+
+        await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
+        assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-01/sign-in');
+        await enter(page, page.getByRole('button', { name: '게스트 계정으로 로그인하기' }));
+        await page.waitForURL('**/proj-bedroom/partner-01/guest');
+        await page.getByRole('heading', { name: /협업처 01/ }).waitFor();
+        await page.getByRole('tab', { name: '하의' }).click();
+        assert.equal(await page.getByRole('tab', { name: '하의' }).getAttribute('aria-selected'), 'true');
+        await page.getByRole('status').filter({ hasText: '이 분류에 등록된 상품이 없습니다.' }).waitFor();
+        await page.getByRole('tab', { name: '상의' }).click();
+        await page.getByRole('button', { name: '협업 티셔츠' }).click();
+        await page.getByRole('dialog').waitFor();
+        assert.equal(await page.getByRole('dialog').getByRole('row').count(), 3);
+        await page.keyboard.press('Escape');
+        assert.equal(await page.getByRole('dialog').count(), 0);
+        if (width === 390) {
+          await page.getByRole('button', { name: '정산 내역 보기' }).click();
+          await page.waitForFunction(() => document.querySelector('[aria-label="정산 내역 보기"]')?.getAttribute('aria-current') === 'true');
+        } else {
+          await page.getByRole('region', { name: '정산 내역', exact: true }).waitFor();
+        }
+        await page.goto(`${origin}/proj-bedroom/partner-02/guest`);
+        assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-02/sign-in');
+        await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
+        await page.getByRole('button', { name: '로그아웃', exact: true }).click();
+        if (width === 390) await page.getByRole('button', { name: '로그아웃 하시겠습니까?' }).click();
+        await page.waitForURL('**/proj-bedroom/partner-01/sign-in');
+        await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
+        assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-01/sign-in');
       } finally { await context.close(); }
     }
   } finally {

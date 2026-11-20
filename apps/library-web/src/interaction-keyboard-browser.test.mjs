@@ -22,6 +22,11 @@ test('library keyboard actions validate inputs and recover from storage and serv
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       const page = await context.newPage();
       try {
+        await page.goto(`${origin}/objects/00000000-0000-4000-8000-000000000003?documentId=00000000-0000-4000-8000-000000000001`);
+        await page.waitForURL('**/sign-in?next=%2Fobjects%2F00000000-0000-4000-8000-000000000003');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/objects/00000000-0000-4000-8000-000000000003');
+        await context.clearCookies();
         await page.goto(`${origin}/auth/session-resume?next=%2Fmypage`);
         await page.waitForURL('**/sign-in?next=%2Fmypage');
         await enter(page,page.getByRole('button',{name:'회사 계정으로 로그인'})); await page.waitForURL('**/mypage');
@@ -31,6 +36,14 @@ test('library keyboard actions validate inputs and recover from storage and serv
         assert.equal(await page.evaluate(async () => (await fetch('/api/search?q=매장')).status),401);
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/objects/new');
+        await page.goto(`${origin}/native/00000000-0000-4000-8000-000000000001`);
+        const attachment = page.getByRole('link', { name: /업무 안내\.txt/ });
+        await enter(page, attachment);
+        await page.waitForURL('**/objects/00000000-0000-4000-8000-000000000003?documentId=00000000-0000-4000-8000-000000000001');
+        await enter(page, page.getByRole('button', { name: '파일 열기' }));
+        await page.locator('pre.publication-content').waitFor();
+        assert.equal(await page.evaluate(async () => (await fetch('/objects/00000000-0000-4000-8000-000000000003?documentId=00000000-0000-4000-8000-000000000099')).status), 404);
+        await page.goto(`${origin}/objects/new`);
         assert.equal(await page.evaluate(async () => (await fetch('/api/search?q=one&q=two')).status),400);
         await enter(page, page.getByRole('link', {name:'로그인 전 화면 보기'}));
         await page.getByRole('link', {name:'Library로 돌아가기'}).click(); await page.waitForURL('**/objects/new');

@@ -63,7 +63,7 @@ test('floor administrator adds synthetic ingredients and preserves data on stora
       assert.equal(await page.getByRole('rowheader',{name:'재료 02'}).count(),1);
       const countEditor=page.locator('.inventory-editor').filter({has:page.getByText('실제 재고 입력',{exact:true})}); await enter(page,countEditor.locator('summary'));
       const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10); await countEditor.getByLabel('실사일 (한국 시간)').fill(yesterday); await countEditor.getByLabel('시간',{exact:true}).fill('12:00');
-      await countEditor.getByLabel('재료',{exact:true}).selectOption({label:'재료 02 (g)'}); await countEditor.getByLabel('수량',{exact:true}).fill('5.125'); await enter(page,countEditor.getByRole('button',{name:'저장'}));
+      await countEditor.locator('select[name=ingredientId]').selectOption({label:'재료 02 (g)'}); await countEditor.getByLabel('수량',{exact:true}).fill('5.125'); await enter(page,countEditor.getByRole('button',{name:'저장'}));
       await countEditor.getByText('저장했습니다.').waitFor(); assert.ok((await page.getByRole('row').filter({has:page.getByRole('rowheader',{name:/재료 02/})}).innerText()).includes('5.125'));
       await page.reload(); await page.getByText('재고 실사',{exact:true}).waitFor(); await enter(page,page.getByRole('button',{name:'기록 취소'}));
       await page.getByText('취소됨',{exact:true}).waitFor(); assert.ok((await page.getByRole('row').filter({has:page.getByRole('rowheader',{name:/재료 02/})}).innerText()).includes('—'));

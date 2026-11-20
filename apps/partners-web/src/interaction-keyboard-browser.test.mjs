@@ -72,8 +72,8 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
 
         await page.goto(`${origin}/proj-bedroom/partner-01`);
         const settlement=page.getByRole('region',{name:'정산',exact:true});
-        await settlement.getByRole('searchbox',{name:'브랜드'}).fill('없는 협업처'); await settlement.getByText('브랜드를 찾을 수 없습니다.').waitFor();
-        await settlement.getByRole('searchbox',{name:'브랜드'}).fill('협업처 01'); await settlement.getByRole('combobox',{name:'기간'}).selectOption('custom');
+        await settlement.locator('input[type=search]').fill('없는 협업처'); await settlement.getByText('브랜드를 찾을 수 없습니다.').waitFor();
+        await settlement.locator('input[type=search]').fill('협업처 01'); await settlement.getByRole('combobox',{name:'기간'}).selectOption('custom');
         await settlement.getByLabel('시작일').fill('2026-11-19'); await settlement.getByLabel('종료일').fill('2026-11-19'); await settlement.getByRole('button',{name:'닫기'}).click();
         await enter(page,settlement.getByRole('button',{name:'적용'})); await settlement.getByText('24,690원',{exact:true}).first().waitFor();
         assert.ok((await settlement.innerText()).includes('1,235원'));

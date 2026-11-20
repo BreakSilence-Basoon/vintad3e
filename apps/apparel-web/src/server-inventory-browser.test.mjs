@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright';
+import { join } from 'node:path';
 
 async function freePort() { const server = createServer(); server.listen(0, '127.0.0.1'); await once(server, 'listening'); const port = server.address().port; await new Promise(resolve => server.close(resolve)); return port; }
 async function enter(page, locator) { await locator.waitFor({ state: 'visible' }); await page.waitForFunction(el => !el.disabled, await locator.elementHandle()); await locator.focus(); await page.keyboard.press('Enter'); }
@@ -28,11 +29,15 @@ test('two browser sessions share a separate local service and can undo validated
         await page.goto(`${origin}/admin/products`);
         const widget = page.locator('.server-inventory-import'); await enter(page, widget.locator('summary'));
         await page.waitForFunction(() => !document.querySelector('.server-inventory-import input[type=file]')?.disabled);
+        const capture = async label => { if (process.env.VINTAD3E_CAPTURE_DIR) await widget.screenshot({ path: join(process.env.VINTAD3E_CAPTURE_DIR, `${width}-${label}.png`) }); };
+        await capture('before');
         const input = widget.locator('input[type=file]');
         await input.setInputFiles(csv('SKU,상품명,현재수량,이메일\nA,셔츠,3,x@example.invalid'));
         await widget.locator('p[role=alert]').waitFor();
+        await capture('warning');
         await input.setInputFiles(csv('SKU,상품명,현재수량\nA,셔츠,3'));
         await widget.getByRole('region', { name: '가져올 재고' }).getByText('A', { exact: true }).waitFor();
+        await capture('preview');
         await enter(page, widget.getByRole('button', { name: '재고 적용' }));
         await widget.getByRole('region', { name: '가져온 재고' }).getByText('A', { exact: true }).waitFor();
         const otherContext = await browser.newContext({ viewport: { width, height: 844 } }), second = await otherContext.newPage();
@@ -48,8 +53,10 @@ test('two browser sessions share a separate local service and can undo validated
         await widget.getByRole('region', { name: '가져올 재고' }).getByText('B', { exact: true }).waitFor();
         await enter(page, widget.getByRole('button', { name: '재고 적용' }));
         await widget.getByRole('region', { name: '가져온 재고' }).getByText('B', { exact: true }).waitFor();
+        await capture('applied');
         await enter(page, widget.getByRole('button', { name: '가져오기 되돌리기' }));
         await widget.getByRole('region', { name: '가져온 재고' }).getByText('A', { exact: true }).waitFor();
+        await capture('undo');
         await page.route('**/api/server-inventory', route => route.fulfill({ status: 503, body: '' }));
         await enter(page, widget.getByRole('button', { name: '현재 재고 다시 불러오기' }));
         await widget.locator('p[role=alert]').waitFor();

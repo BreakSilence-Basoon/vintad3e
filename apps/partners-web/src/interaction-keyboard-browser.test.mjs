@@ -9,6 +9,59 @@ import { chromium } from 'playwright';
 async function freePort() { const server = createServer(); server.listen(0, '127.0.0.1'); await once(server, 'listening'); const port = server.address().port; await new Promise(resolve => server.close(resolve)); return port; }
 async function enter(page, locator) { await locator.waitFor({ state: 'visible' }); await page.waitForFunction(el => !el.disabled, await locator.elementHandle()); await locator.focus(); await page.keyboard.press('Enter'); }
 
+test('public guides navigate languages, copy and open images on desktop and mobile', { timeout: 120000 }, async () => {
+  const port = await freePort(), origin = `http://127.0.0.1:${port}`;
+  const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_PARTNERS_FIXTURE: '1', VINTAD3E_PARTNERS_FIXTURE_ORIGIN: origin }, stdio: 'ignore' });
+  let browser;
+  try {
+    let ready = false;
+    for (let i = 0; i < 120; i++) { if (child.exitCode !== null) throw new Error('fixture server exited'); try { if ((await fetch(`${origin}/guide/dj`)).ok) { ready = true; break; } } catch {} await delay(250); }
+    assert.ok(ready);
+    browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--no-sandbox'] });
+    for (const width of [1440, 390]) {
+      const context = await browser.newContext({ viewport: { width, height: 844 } });
+      try {
+        const page = await context.newPage();
+        await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { if (window.failGuideCopy) throw new Error('clipboard unavailable'); window.copiedGuide = text; } } }));
+        await page.goto(`${origin}/guide/dj`);
+        await enter(page, page.getByRole('link', { name: 'English', exact: true }));
+        await page.waitForURL('**/guide/dj/en');
+        await enter(page, page.getByRole('link', { name: 'House music guide', exact: true }));
+        await page.waitForURL('**/guide/dj/en-house');
+        await page.getByRole('heading', { name: 'House music guide', exact: true }).waitFor();
+        await page.goto(`${origin}/proj-bedroom/guide/ko`);
+        const disclosure = page.locator('#guide-disclosure-0');
+        await enter(page, disclosure.locator('summary'));
+        assert.equal(await disclosure.evaluate(element => element.open), true);
+        await enter(page, page.getByRole('button', { name: '내용 복사', exact: true }));
+        await page.waitForFunction(() => typeof window.copiedGuide === 'string' && window.copiedGuide.includes('# proj.bedroom'));
+        await page.evaluate(() => { window.failGuideCopy = true; });
+        await enter(page, page.getByRole('button', { name: '복사됨', exact: true }));
+        await page.getByRole('status').filter({ hasText: '복사하지 못했습니다. 다시 눌러 주세요.' }).waitFor();
+        await enter(page, page.getByRole('button', { name: /사진 크게 보기/ }).first());
+        const dialog = page.getByRole('dialog', { name: '사진 크게 보기' });
+        await dialog.waitFor();
+        await enter(page, dialog.locator('.bedroom-zoom-controls').getByRole('button', { name: '확대', exact: true }));
+        await enter(page, dialog.getByRole('button', { name: '닫기', exact: true }));
+        await dialog.waitFor({ state: 'hidden' });
+        await enter(page, page.getByRole('button', { name: '언어 선택', exact: true }));
+        await enter(page, page.locator('.guest-language-float__choices button[lang=en]'));
+        await page.waitForURL('**/proj-bedroom/guide/en');
+        await page.getByText('Artist Brief', { exact: true }).waitFor();
+        await page.waitForFunction(() => document.querySelector('#guide-disclosure-0')?.open === true);
+        await enter(page, page.getByRole('button', { name: 'Select language', exact: true }));
+        await enter(page, page.locator('.guest-language-float__choices button[lang=ja]'));
+        await page.waitForURL('**/proj-bedroom/guide/ja');
+        await page.getByText('アーティスト向けブリーフ', { exact: true }).waitFor();
+      } finally { await context.close(); }
+    }
+  } finally {
+    await browser?.close(); child.kill('SIGTERM');
+    if (child.exitCode === null) await Promise.race([once(child, 'exit'), delay(5000)]);
+    if (child.exitCode === null) child.kill('SIGKILL');
+  }
+});
+
 test('partner ledger and DJ form respond to keyboard input and errors', { timeout: 120000 }, async () => {
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_PARTNERS_FIXTURE: '1', VINTAD3E_PARTNERS_FIXTURE_ORIGIN: origin }, stdio: 'ignore' });

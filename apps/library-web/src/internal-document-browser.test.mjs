@@ -8,7 +8,18 @@ test('internal readers require login and show synthetic documents', {timeout:120
  const documentLink=page.getByRole('link',{name:kind==='ir'?'가게 안내 기록':'매장 인수인계 자료'});await documentLink.waitFor();await context.clearCookies();await documentLink.click();await page.waitForURL('**/sign-in?**');await page.getByRole('button',{name:'회사 계정으로 로그인'}).click();await page.waitForURL(origin+target);
  await page.getByRole('heading',{name:kind==='ir'?'가게 안내 기록':'매장 인수인계 자료'}).waitFor();await page.getByRole('heading',{name:'업무 시작'}).waitFor();await page.locator('.library-reader-toc summary').click();await page.getByRole('link',{name:'업무 시작'}).click();assert.equal(new URL(page.url()).hash,'#library-section-1');
  if(kind==='native'){const info=page.getByRole('button',{name:'문서 정보'});await info.click();assert.equal(await info.getAttribute('aria-expanded'),'true');await page.getByText('작성 날짜').waitFor();await info.click();assert.equal(await info.getAttribute('aria-expanded'),'false');}
- assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.equal((await page.goto(origin+`/${kind}/unknown`)).status(),404);assert.equal((await page.goto(origin+'/documents/legacy-document')).status(),404);
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ if(kind==='native') {
+  const object='/objects/00000000-0000-4000-8000-000000000003', documentId='00000000-0000-4000-8000-000000000001';
+  await page.goto(origin+`${object}?documentId=${documentId}&view=corrected`);
+  await page.getByRole('button',{name:'파일 열기',exact:true}).click();
+  await page.locator('pre.publication-content').waitFor();
+  assert.equal(await page.locator('pre.publication-content').textContent(),'업무를 시작하기 전에 필요한 사항을 확인합니다.');
+  assert.equal((await page.goto(origin+`${object}?view=corrected`)).status(),404);
+  assert.equal((await page.goto(origin+`${object}?documentId=${documentId}&view=invalid`)).status(),404);
+  assert.equal((await page.goto(origin+`${object}?documentId=00000000-0000-4000-8000-000000000099&view=corrected`)).status(),404);
+ }
+ assert.equal((await page.goto(origin+`/${kind}/unknown`)).status(),404);assert.equal((await page.goto(origin+'/documents/legacy-document')).status(),404);
  }finally{await context.close();}}
  }finally{await browser?.close();child.kill('SIGTERM');if(child.exitCode===null)await Promise.race([once(child,'exit'),delay(5000)]);if(child.exitCode===null)child.kill('SIGKILL');}
 });

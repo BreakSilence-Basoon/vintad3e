@@ -1,11 +1,12 @@
 import { randomBytes } from 'node:crypto';
+import { fixtureAdminReturnPath } from './admin-return-path.mjs';
 
 const cookieName = 'vintad3e-apparel-fixture';
 const tokenPattern = /^[A-Za-z0-9_-]{43}$/;
 const key = Symbol.for('vintad3e.apparel.fixture.sessions');
 const sessions = globalThis[key] ??= new Map();
 const ttl = 30 * 60 * 1000;
-export function fixtureNext(value) { return value === '/confirmations/proposal-01' ? value : '/'; }
+export function fixtureNext(value) { return fixtureAdminReturnPath(value) ?? (['/confirmations/proposal-01','/access-denied'].includes(value) ? value : '/'); }
 
 export function fixtureResumePath(value) {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(value)) return '/';

@@ -9,7 +9,7 @@ import { chromium } from 'playwright';
 async function freePort() { const server = createServer(); server.listen(0, '127.0.0.1'); await once(server, 'listening'); const port = server.address().port; await new Promise(resolve => server.close(resolve)); return port; }
 async function enter(page, locator) { await locator.waitFor({ state: 'visible' }); await page.waitForFunction(el => !el.disabled, await locator.elementHandle()); await locator.focus(); await page.keyboard.press('Enter'); }
 
-test('library keyboard actions validate inputs and recover from storage and server errors', { timeout: 120000 }, async () => {
+test('library keyboard actions validate inputs and recover from storage and server errors', { timeout: 180000 }, async () => {
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_LIBRARY_FIXTURE: '1', VINTAD3E_LIBRARY_FIXTURE_ORIGIN: origin }, stdio: 'ignore' });
   let browser;
@@ -22,10 +22,49 @@ test('library keyboard actions validate inputs and recover from storage and serv
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       const page = await context.newPage();
       try {
+        await page.goto(`${origin}/members`);
+        await page.waitForURL('**/sign-in?next=%2Fmembers');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/members');
+        await page.getByLabel('이름 검색').waitFor();
+        await context.clearCookies();
+        await page.goto(`${origin}/objects/00000000-0000-4000-8000-000000000003`);
+        await page.waitForURL('**/sign-in?next=%2Fobjects%2F00000000-0000-4000-8000-000000000003');
+        await page.goto(`${origin}/objects/00000000-0000-4000-8000-000000000003?documentId=00000000-0000-4000-8000-000000000001`);
+        await page.waitForURL('**/sign-in?next=%2Fobjects%2F00000000-0000-4000-8000-000000000003');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/objects/00000000-0000-4000-8000-000000000003');
+        await context.clearCookies();
+        await page.goto(`${origin}/auth/session-resume?next=%2Fmypage`);
+        await page.waitForURL('**/sign-in?next=%2Fmypage');
+        await enter(page,page.getByRole('button',{name:'회사 계정으로 로그인'})); await page.waitForURL('**/mypage');
+        await context.clearCookies();
         await page.goto(`${origin}/objects/new`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
+        assert.equal(await page.evaluate(async () => (await fetch('/api/search?q=매장')).status),401);
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/objects/new');
+        await page.goto(`${origin}/ir/00000000-0000-4000-8000-000000000001`);
+        await page.getByRole('link', { name: /업무 안내\.txt/ }).waitFor();
+        await page.goto(`${origin}/native/00000000-0000-4000-8000-000000000001`);
+        const attachment = page.getByRole('link', { name: /업무 안내\.txt/ });
+        await enter(page, attachment);
+        await page.waitForURL('**/objects/00000000-0000-4000-8000-000000000003?documentId=00000000-0000-4000-8000-000000000001');
+        await enter(page, page.getByRole('button', { name: '파일 열기' }));
+        await page.locator('pre.publication-content').waitFor();
+        assert.equal(await page.evaluate(async () => (await fetch('/objects/00000000-0000-4000-8000-000000000003?documentId=00000000-0000-4000-8000-000000000099')).status), 404);
+        await page.goto(`${origin}/objects/new`);
+        assert.equal(await page.evaluate(async () => (await fetch('/api/search?q=one&q=two')).status),400);
+        await enter(page, page.getByRole('link', {name:'로그인 전 화면 보기'}));
+        await page.getByRole('link', {name:'Library로 돌아가기'}).click(); await page.waitForURL('**/objects/new');
+        await enter(page, page.getByRole('button', {name:'게시물 검색'}));
+        const dialog=page.getByRole('dialog',{name:'게시물 검색'}), search=dialog.getByRole('combobox',{name:'게시물 제목 검색'});
+        await search.fill('매장'); await dialog.getByRole('option',{name:/매장 운영 안내/}).waitFor();
+        await search.fill('찾을수없는항목'); await dialog.getByText('검색 결과가 없습니다.').waitFor();
+        await page.route('**/api/search?*',route=>route.fulfill({status:503,body:''}));
+        await search.fill('오류'); await dialog.getByRole('alert').waitFor(); await page.unroute('**/api/search?*');
+        await page.keyboard.press('Escape'); assert.equal(await dialog.isVisible(),false);
+        if(width===390){await page.locator('button[data-hydrated=true][aria-label="메뉴 열기"]').waitFor();await enter(page,page.getByRole('button',{name:'메뉴 열기'}));await page.getByRole('navigation',{name:'모바일 메뉴'}).getByRole('link',{name:'보관함'}).click();await page.waitForURL('**/bookmarks');await page.goto(origin+'/objects/new');}
         const picker = page.locator('#library-object-file');
         const prepare = page.getByRole('button', { name: '업로드 내용 확인' });
         assert.equal(await prepare.isDisabled(), true);
@@ -56,6 +95,62 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await enter(page, create); await page.waitForURL(/\/meetings\/[0-9a-f-]+$/);
         assert.equal(await page.locator('h1').innerText(), 'Meeting 01');
         await page.reload(); assert.equal(await page.locator('h1').innerText(), 'Meeting 01');
+        const attach = page.getByRole('heading', { name: '녹화·녹음 첨부' }).locator('..');
+        const stage = page.getByRole('heading', { name: '회의 문서 등록' }).locator('..');
+        async function uploadFixture(section, inputId) {
+          await section.locator(inputId).setInputFiles({ name: '가게 안내.txt', mimeType: 'text/plain', buffer: Buffer.from('업무를 시작하기 전에 필요한 사항을 확인합니다.') });
+          for (const label of ['업로드 내용 확인', '제안 불러오기', '제안 검토', '이 변경 확인', '업로드 승인', '파일 올리기']) await enter(page, section.getByRole('button', { name: label, exact: true }));
+          await section.getByText('파일을 올렸습니다.', { exact: true }).waitFor();
+        }
+        await uploadFixture(attach, '#meeting-attachment-file');
+        await page.route('**/api/fixture/meeting-confirmation', route => route.fulfill({ status: 503, body: '' }));
+        await enter(page, attach.getByRole('button', { name: '회의에 첨부', exact: true }));
+        await attach.getByRole('alert').waitFor();
+        await page.unroute('**/api/fixture/meeting-confirmation');
+        for (const label of ['회의에 첨부', '제안 불러오기', '제안 검토', '이 변경 확인']) await enter(page, attach.getByRole('button', { name: label, exact: true }));
+        await page.evaluate(() => { window.oldSetItem = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new Error('unavailable'); }; });
+        await enter(page, attach.getByRole('button', { name: '등록', exact: true }));
+        await attach.getByRole('alert').waitFor();
+        await page.evaluate(() => { Storage.prototype.setItem = window.oldSetItem; });
+        await enter(page, attach.getByRole('button', { name: '등록', exact: true }));
+        await page.getByRole('heading', { name: '첨부 파일' }).waitFor();
+        await uploadFixture(stage, '#meeting-stage-file');
+        await stage.getByLabel('제목').fill('회의 기록');
+        await stage.getByLabel('출처').fill('회의 내용');
+        for (const label of ['회의 문서 확인', '제안 불러오기', '제안 검토', '이 변경 확인', '등록']) await enter(page, stage.getByRole('button', { name: label, exact: true }));
+        await page.getByRole('heading', { name: '전사본 · 1' }).waitFor();
+        await page.reload();
+        await page.getByRole('heading', { name: '첨부 파일' }).waitFor();
+        await page.getByRole('heading', { name: '전사본 · 1' }).waitFor();
+        await page.getByLabel('단계').selectOption('CORRECTED');
+        assert.equal(await page.getByLabel('근거 문서').getByRole('option', { name: '전사본 · 1' }).count(), 1);
+        await page.goto(`${origin}/confirmations/proposal-01`);
+        for (const label of ['제안 검토','이 변경 확인','문서 발행']) await enter(page,page.getByRole('button',{name:label,exact:true}));
+        await enter(page,page.getByRole('link',{name:'발행한 문서 열기'}));
+        await page.getByRole('button',{name:'목록에서 제외'}).waitFor();
+        const downloadPromise=page.waitForEvent('download'); await page.getByRole('link',{name:'원본 다운로드'}).click(); const download=await downloadPromise;
+        let downloadText=''; for await(const chunk of await download.createReadStream()) downloadText+=chunk.toString(); assert.equal(downloadText,'업무를 시작하기 전에 필요한 사항을 확인합니다.');
+        await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copiedText=text;}}}));
+        await enter(page,page.getByRole('button',{name:'내용 복사'})); await page.waitForFunction(()=>window.copiedText==='업무를 시작하기 전에 필요한 사항을 확인합니다.');
+        await enter(page,page.getByRole('button',{name:'보관함 저장'})); await page.getByRole('button',{name:'저장 해제'}).waitFor();
+        await page.getByRole('textbox',{name:'댓글'}).fill('좋은 안내입니다.'); await enter(page,page.getByRole('button',{name:'댓글 작성'})); await page.getByText('좋은 안내입니다.').waitFor();
+        const publicationLink = page.locator('a[href="/publications/00000000-0000-4000-8000-000000000004"]');
+        await page.goto(`${origin}/bookmarks`); await publicationLink.waitFor();
+        await page.goto(`${origin}/mypage`); await publicationLink.waitFor();
+        await page.goto(origin); await publicationLink.waitFor();
+        await enter(page,page.getByRole('button',{name:'게시물 검색'})); const publishedSearch=page.getByRole('dialog',{name:'게시물 검색'}); await publishedSearch.getByRole('combobox',{name:'게시물 제목 검색'}).fill('업무 안내'); await publishedSearch.locator('a[href="/publications/00000000-0000-4000-8000-000000000004"]').waitFor(); await page.keyboard.press('Escape');
+        await publishedSearch.waitFor({state:'hidden'});
+        await enter(page,publicationLink);
+        await page.waitForURL('**/publications/00000000-0000-4000-8000-000000000004');
+        await page.getByRole('button',{name:'목록에서 제외'}).waitFor();
+        await page.evaluate(()=>{window.oldSetItem=Storage.prototype.setItem;Storage.prototype.setItem=()=>{throw new Error('unavailable');};});
+        await enter(page,page.getByRole('button',{name:'목록에서 제외'})); await page.getByRole('alert').filter({hasText:'문서를 목록에서 제외하지 못했습니다.'}).waitFor();
+        await page.evaluate(()=>{Storage.prototype.setItem=window.oldSetItem;});
+        await enter(page,page.getByRole('button',{name:'목록에서 제외'})); await page.waitForURL('**/mypage');
+        await page.waitForFunction(()=>!document.querySelector('a[href="/publications/00000000-0000-4000-8000-000000000004"]'));
+        await page.goto(`${origin}/bookmarks`); await page.getByText('저장한 게시물이 없습니다.').waitFor();
+        await page.goto(origin); await page.waitForFunction(()=>!document.querySelector('a[href="/publications/00000000-0000-4000-8000-000000000004"]'));
+        await enter(page,page.getByRole('button',{name:'게시물 검색'})); const archivedSearch=page.getByRole('dialog',{name:'게시물 검색'}); await archivedSearch.getByRole('combobox',{name:'게시물 제목 검색'}).fill('업무 안내'); await archivedSearch.getByRole('option',{name:/업무 안내\.txt/}).waitFor(); assert.equal(await archivedSearch.locator('a[href="/publications/00000000-0000-4000-8000-000000000004"]').count(),0);
       } finally { await context.close(); }
     }
   } finally {

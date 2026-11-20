@@ -28,8 +28,10 @@ test('home combines only opted-in synthetic documents and files and filters thei
   assert.deepEqual(fixtureHome('production', '1', ''), []);
   assert.deepEqual(fixtureHome('development', undefined, ''), []);
   const home = fixtureHome('development', '1', '');
-  assert.equal(home.length, 3);
+  assert.equal(home.length, 5);
   assert.ok(home.some(item => item.href.startsWith('/objects/')));
+  assert.ok(home.some(item => item.href.startsWith('/ir/')));
+  assert.ok(home.some(item => item.href.startsWith('/native/')));
   assert.deepEqual(fixtureHome('development', '1', '운영').map(item => item.title), ['매장 운영 안내']);
   assert.deepEqual(fixtureHome('development', '1', '.txt').map(item => item.title), ['업무 안내.txt']);
 });

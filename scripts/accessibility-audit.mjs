@@ -70,6 +70,10 @@ try {
             await Promise.all([page.waitForResponse(response => response.url().includes('/api/fixture/login') && response.request().method() === 'POST'), page.keyboard.press('Enter')]);
             if (name === 'portal' && path === '/') await page.locator('.portal-app').first().waitFor();
             else await page.waitForURL(url => !url.pathname.endsWith('/sign-in'), { timeout: 15000 });
+            if (name === 'apparel' && path.startsWith('/admin/')) {
+              const protectedPage = await page.goto(origin + path, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              if (!protectedPage?.ok() || new URL(page.url()).pathname !== path) throw new Error('admin page did not reopen after sign-in');
+            }
             await page.addStyleTag({ content: 'nextjs-portal { display: none !important; }' });
           }
           // Let route transitions settle before measuring their final contrast.
@@ -136,6 +140,31 @@ try {
             const current = await page.evaluate(() => { const el = document.activeElement; if (!el || el === document.body) return null; const style = getComputedStyle(el); return { index: window.__auditTabStops.indexOf(el), tag: el.tagName, type: el.getAttribute('type'), isFocused: el.matches(':focus'), focusWithin: el.matches(':focus-within'), hasFocus: document.hasFocus(), id: el.id, classes: typeof el.className === 'string' ? el.className : '', outline: style.outlineStyle, outlineWidth: style.outlineWidth, shadow: style.boxShadow, visible: el.getClientRects().length > 0 }; });
             if (current) { focus.push(current); if (current.index >= 0) reached.add(current.index); }
             if (reached.size === focusable && focusable > 0) break;
+          }
+          // Focusing an off-screen gallery image scrolls it into view and can
+          // disable an arrow midway through the first pass. Test any remaining
+          // enabled arrow with an actual Tab from its preceding tab stop.
+          for (let i = 0; i < focusable; i++) {
+            if (reached.has(i)) continue;
+            const prepared = await page.evaluate(index => {
+              const target = window.__auditTabStops[index];
+              if (!target?.isConnected || target.disabled || !target.closest('.bedroom-gallery-arrows')) return false;
+              const stops = Array.from(document.querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex],[contenteditable="true"]')).filter(el => { const style = getComputedStyle(el); const closed = el.closest('details:not([open])'); return el.tabIndex >= 0 && !el.disabled && el.getClientRects().length > 0 && style.visibility !== 'hidden' && !el.closest('[inert],[aria-hidden="true"]') && !(closed && !closed.querySelector(':scope > summary')?.contains(el)); });
+              const position = stops.indexOf(target);
+              if (position < 1) return false;
+              stops[position - 1].focus({ preventScroll: true });
+              return document.activeElement === stops[position - 1];
+            }, i);
+            if (prepared) {
+              await page.keyboard.press('Tab');
+              const current = await page.evaluate(index => {
+                const el = document.activeElement;
+                if (el !== window.__auditTabStops[index]) return null;
+                const style = getComputedStyle(el);
+                return { index, tag: el.tagName, outline: style.outlineStyle, shadow: style.boxShadow };
+              }, i);
+              if (current) { reached.add(i); focus.push(current); }
+            }
           }
           const unreachable = await page.evaluate(indices => window.__auditTabStops.filter((el, i) => el.isConnected && !el.disabled && !indices.includes(i)).map(el => ({ tag: el.tagName, type: el.getAttribute('type'), html: el.outerHTML.slice(0, 300) })), Array.from(reached));
           const summaryFailures = [];

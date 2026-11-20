@@ -1,5 +1,8 @@
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
+import { fixtureOrigin, fixtureSession } from '../fixture-session.mjs';
+import { fixtureKioskDevice } from '../fixture-kiosk.mjs';
 import { TimetableSlideSwitcher } from '../timetable-slide-switcher';
 import { timetableInitialView } from '../view';
 import { normalizeMonth } from '../date-time';
@@ -21,6 +24,16 @@ import type { SessionScheduleShift } from '../schedule-empty-calendar';
 
 export const dynamic = 'force-dynamic';
 
+function SlidePlaceholder({ label }: { label: string }) {
+  return <div className="timetable-page-loading" aria-busy="true" aria-label={label}>
+    <section className="console-section console-section--loading">
+      <div className="skeleton-list" aria-hidden="true">
+        {Array.from({ length: 4 }).map((_, index) => <div key={index} className="skeleton-row"><span className="skeleton-line skeleton-line--strong" /><span className="skeleton-line" /></div>)}
+      </div>
+    </section>
+  </div>;
+}
+
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { view } = await searchParams;
   const screen = timetableInitialView(view) === 'schedule' ? '근무시간표' : '출근부';
@@ -30,15 +43,27 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const { view, month } = params;
-  const initialView = timetableInitialView(view);
+  const requestedView = Array.isArray(view) ? view[0] : view;
+  const initialView = timetableInitialView(requestedView);
   const selectedMonth = normalizeMonth(typeof month === 'string' ? month : undefined);
   const fixtureEnabled = process.env.NODE_ENV === 'development' && process.env.VINTAD3E_TIMETABLE_FIXTURE === '1';
+  if (fixtureEnabled && !process.env.VINTAD3E_TIMETABLE_API_ORIGIN) {
+    const origin = fixtureOrigin(process.env);
+    if (!origin) notFound();
+    const requestHeaders = await headers();
+    const host = requestHeaders.get('host'), cookie = requestHeaders.get('cookie');
+    if (host !== new URL(origin).host) notFound();
+    if (!fixtureSession(cookie, host, process.env)) {
+      if (!requestedView && fixtureKioskDevice(cookie, host, process.env)) redirect('/kiosk');
+      redirect(`/sign-in?${new URLSearchParams({ next: `/?view=${initialView}` })}`);
+    }
+  }
   const fixtureAdmin = fixtureEnabled && process.env.VINTAD3E_TIMETABLE_FIXTURE_ADMIN === '1';
   const fixtureSelf = fixtureSelfEnabled(process.env.NODE_ENV, process.env.VINTAD3E_TIMETABLE_FIXTURE, process.env.VINTAD3E_TIMETABLE_FIXTURE_ADMIN, process.env.VINTAD3E_TIMETABLE_FIXTURE_SELF);
   const parsedFilters = parseHistoryFilters(params);
   const filters = fixtureAdmin ? parsedFilters : { ...parsedFilters, employee: 'all' };
   const now = Date.now();
-  let records = fixtureHistory(process.env.NODE_ENV, process.env.VINTAD3E_TIMETABLE_FIXTURE, now, filters);
+  let records = initialView === 'history' ? fixtureHistory(process.env.NODE_ENV, process.env.VINTAD3E_TIMETABLE_FIXTURE, now, filters) : [];
   let failed = false;
   let scheduleFailed = false;
   let scheduleShifts: SessionScheduleShift[] | undefined;
@@ -70,8 +95,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   return <main className="app-shell timetable-console timetable-home">
     <Suspense fallback={null}>
       <TimetableSlideSwitcher key={initialView} initialSlide={initialView} ariaLabel="출근부와 근무시간표" slides={[
-        { key: 'history', label: '출근부', content: <section className="attendance-history-list" aria-label="출근부">{failed ? <div className="state-panel" role="alert"><strong>출근부를 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해주세요.</p></div> : <><AttendanceHistoryFilter key={filterKey} employees={fixtureAdmin ? [{ id: fixtureEmployeeId, displayName: '직원' }, ...linkedEmployees] : []} filters={filters} isAdmin={fixtureAdmin} pathname="/" persistentParams={{ view: 'history' }} />{fixtureAdmin ? <FixtureHistoryAdmin base={fixtureHistory(process.env.NODE_ENV, process.env.VINTAD3E_TIMETABLE_FIXTURE, now, { ...filters, employee: 'all', range: 'all' })} filters={filters} now={now} page={historyPage} /> : fixtureSelf ? <FixtureHistorySelf filters={filters} now={now} page={historyPage} /> : <><FixtureHistoryList records={visibleRecords} /><AttendanceHistoryPager href={buildHistoryHref(filters, historyPage + 1)} totalCount={records.length} visibleCount={visibleRecords.length} /></>}</>}</section> },
-        { key: 'schedule', label: '근무시간표', content: scheduleFailed ? <section className="schedule-calendar-page" aria-label="근무시간표"><div className="state-panel" role="alert"><strong>근무시간표를 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해주세요.</p></div></section> : <ScheduleEmptyCalendar month={selectedMonth} fixtureEnabled={fixtureEnabled} fixtureAdmin={fixtureAdmin} fixtureSelf={fixtureSelf} sessionShifts={scheduleShifts} /> },
+        { key: 'history', label: '출근부', content: initialView !== 'history' ? <SlidePlaceholder label="출근부" /> : <section className="attendance-history-list" aria-label="출근부">{failed ? <div className="state-panel" role="alert"><strong>출근부를 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해주세요.</p></div> : <><AttendanceHistoryFilter key={filterKey} employees={fixtureAdmin ? [{ id: fixtureEmployeeId, displayName: '직원' }, ...linkedEmployees] : []} filters={filters} isAdmin={fixtureAdmin} pathname="/" persistentParams={{ view: 'history' }} />{fixtureAdmin ? <FixtureHistoryAdmin base={fixtureHistory(process.env.NODE_ENV, process.env.VINTAD3E_TIMETABLE_FIXTURE, now, { ...filters, employee: 'all', range: 'all' })} filters={filters} now={now} page={historyPage} /> : fixtureSelf ? <FixtureHistorySelf filters={filters} now={now} page={historyPage} /> : <><FixtureHistoryList records={visibleRecords} /><AttendanceHistoryPager href={buildHistoryHref(filters, historyPage + 1)} totalCount={records.length} visibleCount={visibleRecords.length} /></>}</>}</section> },
+        { key: 'schedule', label: '근무시간표', content: initialView !== 'schedule' ? <SlidePlaceholder label="근무시간표" /> : scheduleFailed ? <section className="schedule-calendar-page" aria-label="근무시간표"><div className="state-panel" role="alert"><strong>근무시간표를 불러오지 못했습니다.</strong><p>잠시 후 다시 시도해주세요.</p></div></section> : <ScheduleEmptyCalendar month={selectedMonth} fixtureEnabled={fixtureEnabled} fixtureAdmin={fixtureAdmin} fixtureSelf={fixtureSelf} sessionShifts={scheduleShifts} /> },
       ]} />
     </Suspense>
   </main>;

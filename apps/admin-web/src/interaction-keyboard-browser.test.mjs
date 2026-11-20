@@ -22,13 +22,43 @@ test('admin lists, audit filters and invalid addresses work with keyboard input'
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       const page = await context.newPage();
       try {
+        await page.route('http://127.0.0.1:3826/', route => route.fulfill({ status: 200, contentType: 'text/html', body: '<main>Apparel</main>' }));
+        await page.goto(origin);
+        await page.waitForURL('**/sign-in?next=%2F');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL(origin + '/');
+        if (width === 390) {
+          await enter(page, page.getByRole('button', { name: '메뉴 열기' }));
+          await page.getByRole('navigation', { name: '모바일 메뉴' }).getByRole('link', { name: '계정 권한' }).click();
+        } else {
+          await page.getByRole('navigation', { name: '메뉴' }).getByRole('link', { name: '계정 권한' }).click();
+        }
+        await page.waitForURL('**/permissions');
+        await page.goto(`${origin}/permissions?tier=guest`);
+        await enter(page, page.getByRole('link', { name: '로그인 전 화면 보기' }));
+        await page.getByRole('link', { name: 'Admin로 돌아가기' }).waitFor();
+        await enter(page, page.getByRole('link', { name: 'Admin로 돌아가기' }));
+        await page.waitForURL('**/permissions?tier=guest');
+        await page.goto(origin);
+        const home = page.getByRole('region', { name: '앱 실행 및 방문 현황' });
+        assert.equal(await home.getByRole('link', { name: 'Apparel' }).getAttribute('href'), 'http://127.0.0.1:3826/');
+        assert.equal(await home.getByRole('link', { name: 'Ledger' }).count(), 0);
+        await enter(page, home.getByRole('link', { name: 'Apparel' }));
+        await page.waitForURL('http://127.0.0.1:3826/');
+        await page.getByRole('main').getByText('Apparel').waitFor();
         await page.goto(`${origin}/members?type=employee&type=partner`);
         await page.locator('.staff-error[role=alert]').waitFor();
         await enter(page, page.getByRole('link', { name: '처음부터 보기' }));
         await page.locator('.staff-table tbody a').first().waitFor();
+        assert.equal(await page.locator('.staff-table tbody tr').count(), 50);
+        await enter(page, page.getByRole('link', { name: '다음 목록' }));
+        await page.waitForURL('**/members?type=employee&cursor=employee%3A50');
+        assert.equal(await page.locator('.staff-table tbody tr').count(), 2);
+        await enter(page, page.getByRole('link', { name: '처음부터 보기' }));
+        await page.waitForURL('**/members?type=employee');
         await enter(page, page.locator('.staff-table tbody a').first());
         await page.waitForURL(/\/members\/[0-9a-f-]+$/);
-        await page.getByText('staff01@example.invalid', { exact: true }).waitFor();
+        await page.locator('main').getByText('staff01@example.invalid', { exact: true }).waitFor();
         await enter(page, page.locator('.admin-actions a').first());
         await page.locator('.permissions-matrix').waitFor();
         const tier = page.getByLabel('계층 선택');
@@ -44,12 +74,26 @@ test('admin lists, audit filters and invalid addresses work with keyboard input'
         await page.waitForFunction(() => document.querySelectorAll('.audit-card').length === 0);
         await enter(page, form.getByRole('button', { name: '초기화' }));
         await page.locator('.audit-card').first().waitFor();
+        await form.locator('select').first().selectOption('custom');
+        await form.getByLabel('시작일').fill('2000-01-01'); await form.getByLabel('종료일').fill('2000-01-02');
+        await enter(page, form.getByRole('button', { name:'적용' }));
+        assert.equal(await page.locator('.audit-card').count(), 0);
+        await enter(page, form.getByRole('button', { name:'초기화' }));
+        await page.locator('.audit-card').first().waitFor();
+        const latest = await page.locator('.audit-card').first().innerText();
+        await form.locator('select').last().selectOption('asc'); await enter(page, form.getByRole('button', { name:'적용' }));
+        assert.notEqual(await page.locator('.audit-card').first().innerText(), latest);
+        await enter(page, form.getByRole('button', { name:'초기화' }));
         const details = page.locator('.audit-card details').first();
         await enter(page, details.locator('summary'));
         assert.equal(await details.evaluate(el => el.open), true);
         await enter(page, page.locator('.load-more-pager button'));
         await page.waitForFunction(() => document.querySelectorAll('.audit-card').length === 20);
         assert.equal((await page.goto(`${origin}/members/unknown`)).status(), 404);
+        await page.goto(origin);
+        await enter(page, page.getByRole('button', { name: '로그아웃', exact: true }));
+        if (width === 390) await enter(page, page.getByRole('button', { name: '로그아웃 하시겠습니까?' }));
+        await page.waitForURL('**/sign-in');
       } finally { await context.close(); }
     }
   } finally {

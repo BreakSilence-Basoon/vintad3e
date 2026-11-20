@@ -5,7 +5,7 @@ const tokenPattern = /^[A-Za-z0-9_-]{43}$/;
 const key = Symbol.for('vintad3e.timetable.fixture.sessions');
 const sessions = globalThis[key] ??= new Map();
 const ttl = 30 * 60 * 1000;
-export function fixtureNext(value) { return value === '/confirmations/proposal-01' ? value : '/'; }
+export function fixtureNext(value) { return typeof value === 'string' && (/^\/admin\/schedule\?month=\d{4}-(?:0[1-9]|1[0-2])$/.test(value) || ['/confirmations/proposal-01','/history','/schedule','/scan','/kiosk','/kiosk/setup','/admin/attendance','/admin/kiosks','/admin/schedule','/access-denied','/?view=history','/?view=schedule'].includes(value)) ? value : '/'; }
 
 export function fixtureResumePath(value) {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(value)) return '/';
@@ -15,6 +15,12 @@ export function fixtureResumePath(value) {
     if (url.origin !== base || url.pathname === '/auth/session-resume') return '/';
     return `${url.pathname}${url.search}${url.hash}`;
   } catch { return '/'; }
+}
+
+export function fixtureCoverNext(value) {
+  const safe = fixtureResumePath(value);
+  const url = new URL(safe, 'http://127.0.0.1:3824');
+  return fixtureNext(url.pathname) === url.pathname ? safe : '/';
 }
 
 export function fixtureOrigin(env) {

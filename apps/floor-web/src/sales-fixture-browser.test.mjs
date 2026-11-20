@@ -21,7 +21,7 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-floor-browser-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_FLOOR_FIXTURE:'1'}, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_FLOOR_FIXTURE:'1',VINTAD3E_FLOOR_FIXTURE_ORIGIN:origin}, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {
@@ -36,6 +36,8 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
     closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     await send('Page.navigate',{url:origin});
+    await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
     await waitFor(async () => evaluate("document.querySelector('.floor-summary__value')?.textContent.includes('12,000원')"));
     assert.ok(await evaluate("document.querySelector('#floor-menus-title')?.textContent.includes('메뉴별 판매')"));
     assert.ok(await evaluate("document.querySelector('.floor-table--menus')?.textContent.includes('드립 커피')"));
@@ -62,6 +64,19 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
     await waitFor(async () => evaluate("document.querySelector('main')?.textContent.includes('재료 01')"));
     assert.ok(await evaluate("document.querySelector('main').textContent.includes('음료 01')"));
     assert.equal(await evaluate("document.querySelectorAll('.inventory-editor').length"), 0);
+    await send('Network.clearBrowserCookies');
+    await send('Page.navigate',{url: `${origin}/auth/session-resume?next=%2Fconfirmations%2Fproposal-01`});
+    await waitFor(async () => evaluate("location.pathname === '/sign-in'"));
+    await evaluate("document.querySelector('form button').click()");
+    await waitFor(async () => evaluate("location.pathname === '/confirmations/proposal-01'"));
+    await waitFor(async () => evaluate("[...document.querySelectorAll('button')].some(b => b.textContent === '제안 불러오기')"));
+    await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('재료 이름 변경'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '제안 불러오기')?.click();return false;})()"));
+    await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('이 내용으로 확인'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '제안 검토')?.click();return false;})()"));
+    await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('확인되었습니다.'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '이 변경 확인')?.click();return false;})()"));
+    await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    assert.ok(await evaluate("document.documentElement.scrollWidth <= window.innerWidth"));
+    await send('Page.navigate',{url: `${origin}/confirmations/unknown`});
+    await waitFor(async () => evaluate("document.body.textContent.includes('404')"));
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

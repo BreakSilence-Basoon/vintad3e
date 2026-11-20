@@ -2,6 +2,34 @@
 
 이 안내는 내 컴퓨터에서 공개된 포털 화면을 여는 방법입니다. 실제 고객·직원·판매 정보를 처리하는 업무용 설치는 아직 준비되지 않았습니다.
 
+## 한 줄로 설치하고 열기
+
+[Git](https://git-scm.com/install/)과 [Node.js 24](https://nodejs.org/en/download)를 먼저 설치하고 새 터미널을 여세요. 작업할 **빈 폴더**로 이동한 뒤 운영체제에 맞는 한 줄을 입력합니다. 인터넷 연결이 필요합니다. 이 명령은 현재 폴더에 `vintad3e` 폴더를 만들고 패키지를 설치한 뒤 가상의 자료로 포털을 실행합니다. 같은 이름의 폴더가 이미 있으면 지우거나 덮어쓰지 않고 중단합니다.
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/BreakSilence-Basoon/vintad3e.git; if ($LASTEXITCODE -eq 0) { & .\vintad3e\scripts\start.ps1 }
+```
+
+macOS 터미널:
+
+```sh
+git clone https://github.com/BreakSilence-Basoon/vintad3e.git && sh vintad3e/scripts/start.sh
+```
+
+설치가 끝나면 [http://127.0.0.1:3825](http://127.0.0.1:3825)를 엽니다. 화면의 로그인은 가상 로그인입니다. 실행 중에는 터미널을 열어 두고, 끝낼 때 그 터미널에서 Ctrl+C를 누릅니다.
+
+## 문제가 생기면
+
+- `git`, `node` 또는 `corepack`을 찾지 못하면 Git과 Node.js 24 설치를 확인한 뒤 터미널을 닫고 다시 여세요. `node --version`은 `v24.`로 시작해야 합니다.
+- 기존 `vintad3e` 폴더 때문에 중단되면 다른 빈 폴더에서 시작하거나 기존 폴더의 내용을 먼저 확인하세요. 자동으로 삭제하지 않습니다.
+- 3825 포트가 사용 중이면 현재 사용하는 프로그램을 확인하세요. 이 도구는 다른 프로그램을 종료하지 않습니다.
+- 설치 중 다운로드 오류가 나면 인터넷 연결과 오류 내용을 확인하세요. 설치가 실패해도 내려받은 폴더는 남습니다.
+- Windows에서 스크립트 실행이 차단되면 이 컴퓨터의 실행 정책과 관리 권한을 확인하세요. 아래 수동 실행 순서를 사용할 수도 있습니다.
+
+## 단계별로 설치하기
+
 1. [Git](https://git-scm.com/install/)과 [Node.js 24](https://nodejs.org/en/download)를 설치하고 터미널을 엽니다. Corepack은 Node.js에 포함된 도구로, 이 저장소가 지정한 pnpm 설치 도구를 실행합니다. 처음 실행할 때 인터넷 연결이 필요합니다.
 2. 작업할 빈 폴더로 이동해 아래 명령을 한 줄씩 입력합니다.
 

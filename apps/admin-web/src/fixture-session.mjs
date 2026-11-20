@@ -5,6 +5,21 @@ const tokenPattern = /^[A-Za-z0-9_-]{43}$/;
 const key = Symbol.for('vintad3e.admin.fixture.sessions');
 const sessions = globalThis[key] ??= new Map();
 const ttl = 30 * 60 * 1000;
+export function fixtureNext(value) {
+  if (['/members', '/permissions', '/permissions/apps', '/audit'].includes(value)) return value;
+  const match = typeof value === 'string' && /^\/members\/00000000-0000-4000-8000-(\d{12})$/.exec(value);
+  return match && Number(match[1]) >= 1 && Number(match[1]) <= 53 ? value : '/';
+}
+
+export function fixtureCoverNext(value) {
+  if (typeof value !== 'string' || value.length > 2048 || !value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(value)) return '/';
+  try {
+    const base = 'http://127.0.0.1:3832';
+    const url = new URL(value, base);
+    if (url.origin !== base || fixtureNext(url.pathname) !== url.pathname) return '/';
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch { return '/'; }
+}
 
 export function fixtureOrigin(env) {
   if (env.NODE_ENV !== 'development' || env.VINTAD3E_ADMIN_FIXTURE !== '1') return null;
@@ -28,7 +43,7 @@ export function fixtureSession(cookie, host, env, now = Date.now()) {
   const token = readToken(cookie); prune(now);
   return token !== null && sessions.has(token);
 }
-export function handleFixtureSession(request, action, env, now = Date.now()) {
+export function handleFixtureSession(request, action, env, now = Date.now(), next = '/') {
   const origin = fixtureOrigin(env);
   if (!origin || request.method !== 'POST' || !['login', 'logout'].includes(action)) return new Response(null, { status: 404, headers: { 'cache-control': 'no-store' } });
   // Next can normalize request.url's host; Host and Origin must both match the configured loopback origin.
@@ -43,5 +58,5 @@ export function handleFixtureSession(request, action, env, now = Date.now()) {
     sessions.set(token, now + ttl);
     cookie = `${cookieName}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${ttl / 1000}`;
   }
-  return new Response(null, { status: 303, headers: { location: action === 'login' ? '/' : '/sign-in', 'set-cookie': cookie, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
+  return new Response(null, { status: 303, headers: { location: action === 'login' ? fixtureNext(next) : '/sign-in', 'set-cookie': cookie, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
 }

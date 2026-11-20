@@ -35,9 +35,9 @@ function safeFixtureStock(raw: string): boolean {
     const entries = Object.entries(value), parsed = parseFixtureStock(raw);
     if (entries.length !== Object.keys(parsed).length) return false;
     return entries.every(([key, candidate]) => {
-      if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || Object.keys(candidate).sort().join(',') !== 'onHand,shortage,target,tracking') return false;
+      if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || !['onHand,shortage,target,tracking', 'onHand,shortage,target,tracking,workQty'].includes(Object.keys(candidate).sort().join(','))) return false;
       const row = candidate as Row, saved = parsed[key];
-      return saved && row.onHand === saved.onHand && row.target === saved.target && row.shortage === saved.shortage && row.tracking === saved.tracking;
+      return saved && row.onHand === saved.onHand && row.target === saved.target && row.shortage === saved.shortage && row.tracking === saved.tracking && row.workQty === saved.workQty;
     });
   } catch { return false; }
 }
@@ -50,4 +50,8 @@ export function writeFixtureStock(rows: Rows): boolean {
     window.sessionStorage.setItem(storageSlot, encoded);
     return true;
   } catch { return false; }
+}
+
+export function fixtureStockReadable(): boolean {
+  try { return safeFixtureStock(window.sessionStorage.getItem(storageSlot) ?? '{}'); } catch { return false; }
 }

@@ -3712,6 +3712,10 @@
   opacity: 0.72;
 }
 
+.online-prep-tabs button:not(.is-active) .online-prep-tabs__summary small {
+  opacity: 1;
+}
+
 .online-prep-table {
   overflow-x: auto;
   border: 1px solid rgba(54, 44, 32, 0.09);

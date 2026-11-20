@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import './admin-return-path.test.mjs';
 import { fixtureOrigin, fixtureSession, handleFixtureSession, fixtureResumePath } from './fixture-session.mjs';
 const origin = 'http://127.0.0.1:3826';
 const env = { NODE_ENV: 'development', VINTAD3E_APPAREL_FIXTURE: '1' };

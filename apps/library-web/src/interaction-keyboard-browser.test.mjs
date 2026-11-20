@@ -87,7 +87,10 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await page.goto(`${origin}/mypage`); await publicationLink.waitFor();
         await page.goto(origin); await publicationLink.waitFor();
         await enter(page,page.getByRole('button',{name:'게시물 검색'})); const publishedSearch=page.getByRole('dialog',{name:'게시물 검색'}); await publishedSearch.getByRole('combobox',{name:'게시물 제목 검색'}).fill('업무 안내'); await publishedSearch.locator('a[href="/publications/00000000-0000-4000-8000-000000000004"]').waitFor(); await page.keyboard.press('Escape');
+        await publishedSearch.waitFor({state:'hidden'});
         await enter(page,publicationLink);
+        await page.waitForURL('**/publications/00000000-0000-4000-8000-000000000004');
+        await page.getByRole('button',{name:'목록에서 제외'}).waitFor();
         await page.evaluate(()=>{window.oldSetItem=Storage.prototype.setItem;Storage.prototype.setItem=()=>{throw new Error('unavailable');};});
         await enter(page,page.getByRole('button',{name:'목록에서 제외'})); await page.getByRole('alert').filter({hasText:'문서를 목록에서 제외하지 못했습니다.'}).waitFor();
         await page.evaluate(()=>{Storage.prototype.setItem=window.oldSetItem;});

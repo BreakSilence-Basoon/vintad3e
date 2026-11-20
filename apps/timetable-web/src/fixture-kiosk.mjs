@@ -2,6 +2,14 @@ import { randomBytes, randomUUID } from 'node:crypto';
 
 const key = Symbol.for('vintad3e.timetable.fixture.kiosk');
 const state = globalThis[key] ??= { devices: new Map(), challenges: new Map(), events: [], nextEvent: 'CHECK_IN' };
+export function fixtureKioskDevice(cookie, host, env) {
+  const origin = fixtureKioskOrigin(env);
+  if (!origin || host !== new URL(origin).host || typeof cookie !== 'string') return false;
+  const values = cookie.split(';').map(part => part.trim()).filter(part => part.startsWith('vintad3e-kiosk-device='));
+  if (values.length !== 1) return false;
+  const id = values[0].slice('vintad3e-kiosk-device='.length);
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id) && state.devices.has(id);
+}
 
 export function fixtureKioskOrigin(env) {
   if (env.NODE_ENV !== 'development' || env.VINTAD3E_TIMETABLE_FIXTURE !== '1') return null;

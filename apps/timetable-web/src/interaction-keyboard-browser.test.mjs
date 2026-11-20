@@ -22,6 +22,8 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       const page = await context.newPage();
       try {
+        await page.goto(origin);
+        await page.waitForURL('**/sign-in?next=%2F%3Fview%3Dhistory');
         await page.goto(`${origin}/confirmations/proposal-01`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
         await page.goto(`${origin}/auth/session-resume?next=%2Fadmin%2Fkiosks`);
@@ -47,6 +49,12 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await enter(page, form.getByRole('button', { name: '등록' }));
         const device = page.locator('.kiosk-device-list li').filter({ hasText: '기기 01' });
         await device.waitFor();
+        await page.goto(origin);
+        await page.waitForURL(`${origin}/kiosk`);
+        await page.goto(`${origin}/?view=schedule`);
+        await page.waitForURL('**/sign-in?next=%2F%3Fview%3Dschedule');
+        await enter(page,page.getByRole('button',{name:'회사 계정으로 로그인'}));
+        await page.waitForURL('**/?view=schedule');
         await page.goto(`${origin}/kiosk/setup`);
         await page.waitForURL(`${origin}/kiosk`);
         await page.locator('.kiosk-qr-code svg').waitFor();
@@ -57,6 +65,8 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await enter(page, page.getByRole('button', { name: '기기 관리 보기' }));
         await enter(page, device.getByRole('button', { name: '해제' }));
         await device.waitFor({ state: 'detached' });
+        await context.clearCookies(); await page.goto(origin);
+        await page.waitForURL('**/sign-in?next=%2F%3Fview%3Dhistory');
         await page.addInitScript(() => { navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('denied', 'NotAllowedError'); }; });
         await page.goto(`${origin}/scan`);
         await page.locator('.employee-scanner p[role=alert]').waitFor();

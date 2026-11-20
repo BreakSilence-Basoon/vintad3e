@@ -41,7 +41,7 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await page.route('**/api/search?*',route=>route.fulfill({status:503,body:''}));
         await search.fill('오류'); await dialog.getByRole('alert').waitFor(); await page.unroute('**/api/search?*');
         await page.keyboard.press('Escape'); assert.equal(await dialog.isVisible(),false);
-        if(width===390){await enter(page,page.getByRole('button',{name:'메뉴 열기'}));await page.getByRole('navigation',{name:'모바일 메뉴'}).getByRole('link',{name:'보관함'}).click();await page.waitForURL('**/bookmarks');await page.goto(origin+'/objects/new');}
+        if(width===390){await page.locator('button[data-hydrated=true][aria-label="메뉴 열기"]').waitFor();await enter(page,page.getByRole('button',{name:'메뉴 열기'}));await page.getByRole('navigation',{name:'모바일 메뉴'}).getByRole('link',{name:'보관함'}).click();await page.waitForURL('**/bookmarks');await page.goto(origin+'/objects/new');}
         const picker = page.locator('#library-object-file');
         const prepare = page.getByRole('button', { name: '업로드 내용 확인' });
         assert.equal(await prepare.isDisabled(), true);

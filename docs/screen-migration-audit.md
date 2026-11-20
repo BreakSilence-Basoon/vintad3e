@@ -8,7 +8,7 @@
 
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
-| `/audit` | 동일 주소 | 상세 미대조 |
+| `/audit` | 동일 주소 | 일부 대조 |
 | `/members/[staffId]` | 동일 주소 | 상세 미대조 |
 | `/members` | 동일 주소 | 일부 대조 |
 | `/` | 동일 주소 | 일부 대조 |
@@ -21,7 +21,7 @@
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
 | `/access-denied` | 동일 주소 | 일부 대조 |
-| `/admin/audit` | 동일 주소 | 상세 미대조 |
+| `/admin/audit` | 동일 주소 | 일부 대조 |
 | `/admin/inventory/graphics/[productCode]` | 동일 주소 | 일부 대조 |
 | `/admin/inventory/shortages` | 동일 주소 | 상세 미대조 |
 | `/admin` | 동일 주소 | 상세 미대조 |
@@ -82,7 +82,7 @@
 | `/publications/new` | 동일 주소 | 상세 미대조 |
 | `/publications` | 동일 주소 | 상세 미대조 |
 | `/publish` | 동일 주소 | 상세 미대조 |
-| `/sign-in` | 동일 주소 | 상세 미대조 |
+| `/sign-in` | 동일 주소 | 일부 대조 |
 
 ## Partners
 
@@ -111,8 +111,8 @@
 | `/about` | 동일 주소 | 일부 대조 |
 | `/auth/session-resume` | 동일 주소 | 일부 대조 |
 | `/confirmations/[proposalId]` | 동일 주소 | 상세 미대조 |
-| `/` | 동일 주소 | 상세 미대조 |
-| `/sign-in` | 동일 주소 | 상세 미대조 |
+| `/` | 동일 주소 | 일부 대조 |
+| `/sign-in` | 동일 주소 | 일부 대조 |
 
 ## Supporters
 

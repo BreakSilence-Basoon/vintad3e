@@ -4,26 +4,32 @@ import { Button } from '@vintad3e/ui/components';
 import { parseIngredients, newIngredient } from './inventory-ingredients.mjs';
 import { parseCounts, applyCounts } from './inventory-counts.mjs';
 import { InventoryCountForm } from './inventory-count-form';
+import { InventoryPurchaseForm } from './inventory-purchase-form';
+import { parsePurchases, applyPurchases } from './inventory-purchases.mjs';
 import type { InventoryData, Part } from './inventory-fixture.ts';
 import { formatKstDateTime } from './floor-format';
 const unit = (value: string) => value === 'ea' ? '개' : value;
 const amount = (value: number | null, suffix: string) => value === null ? '—' : value.toLocaleString('ko-KR') + ' ' + suffix;
 const status: Record<string,string> = { ORDERED:'주문 중', RECEIVED:'입고 완료', RECORDED:'실사 기록', VOID:'취소됨' };
+type Purchase = InventoryData['entries'][number] & { receivedAt: string | null };
 export function InventoryWorkspace({ data: initial, canWrite = false }: { data: InventoryData; canWrite?: boolean }) {
   const [added, setAdded] = useState<{ id: string; name: string; unit: string }[]>([]);
   const [message, setMessage] = useState('');
   const [counts, setCounts] = useState<InventoryData['entries']>([]);
   const [countBroken, setCountBroken] = useState(false);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [purchaseBroken, setPurchaseBroken] = useState(false);
   const [ready, setReady] = useState(false);
   const [broken, setBroken] = useState(false);
   useEffect(() => {
     if (!canWrite) return;
-    try { const stored = sessionStorage.getItem('vintad3e-floor-ingredients'); const result = parseIngredients(stored); if (!result) { setBroken(true); setCountBroken(true); setMessage('입력값을 확인해주세요.'); } else { setAdded(result); const existing = parseCounts(sessionStorage.getItem('vintad3e-floor-counts'), [...initial.ingredients, ...result]); if (existing) setCounts(existing); else setCountBroken(true); } }
-    catch { setBroken(true); setCountBroken(true); setMessage('입력값을 확인해주세요.'); }
+    try { const stored = sessionStorage.getItem('vintad3e-floor-ingredients'); const result = parseIngredients(stored); if (!result) { setBroken(true); setCountBroken(true); setPurchaseBroken(true); setMessage('입력값을 확인해주세요.'); } else { setAdded(result); const all = [...initial.ingredients, ...result]; const existing = parseCounts(sessionStorage.getItem('vintad3e-floor-counts'), all); if (existing) setCounts(existing); else setCountBroken(true); const ordered = parsePurchases(sessionStorage.getItem('vintad3e-floor-purchases'), all); if (ordered) setPurchases(ordered); else setPurchaseBroken(true); } }
+    catch { setBroken(true); setCountBroken(true); setPurchaseBroken(true); setMessage('입력값을 확인해주세요.'); }
     setReady(true);
   }, [canWrite, initial.ingredients]);
-  const data: InventoryData = { ...initial, ingredients: [...initial.ingredients, ...added], rows: applyCounts([...initial.rows, ...added.map(item => ({ ...item, countQuantity: null, countAt: null, expectedQuantity: null, used30: 0, remainingDays: null }))], counts), entries: [...initial.entries, ...counts].sort((a,b) => b.occurredAt.localeCompare(a.occurredAt)) };
+  const data: InventoryData = { ...initial, ingredients: [...initial.ingredients, ...added], rows: applyPurchases(applyCounts([...initial.rows, ...added.map(item => ({ ...item, countQuantity: null, countAt: null, expectedQuantity: null, used30: 0, remainingDays: null }))], counts), purchases), entries: [...initial.entries, ...counts, ...purchases].sort((a,b) => b.occurredAt.localeCompare(a.occurredAt)).slice(0,100) };
   const writeCounts = (next: InventoryData['entries']) => { try { sessionStorage.setItem('vintad3e-floor-counts', JSON.stringify(next)); setCounts(next); return true; } catch { return false; } };
+  const writePurchases = (next: Purchase[]) => { try { sessionStorage.setItem('vintad3e-floor-purchases', JSON.stringify(next)); setPurchases(next); return true; } catch { return false; } };
 
   const ingredients = new Map(data.ingredients.map((i) => [i.id, i]));
   const partsLabel = (parts: Part[]) =>
@@ -93,7 +99,7 @@ export function InventoryWorkspace({ data: initial, canWrite = false }: { data: 
         const form = event.currentTarget, values = new FormData(form), item = newIngredient(String(values.get('name') ?? ''), String(values.get('unit') ?? ''), data.ingredients);
         if (!item) { setMessage('입력값을 확인해주세요.'); return; }
         try { const next = [...added, item]; sessionStorage.setItem('vintad3e-floor-ingredients', JSON.stringify(next)); setAdded(next); form.reset(); setMessage('저장했습니다.'); } catch { setMessage('입력값을 확인해주세요.'); }
-      }}><fieldset disabled={!ready || broken}><label>재료명<input name="name" required maxLength={160} placeholder="예: 우유" /></label><label>관리 단위<select name="unit"><option value="ml">ml</option><option value="g">g</option><option value="ea">개</option></select></label><p>구매량과 메뉴 사용량을 같은 단위로 입력합니다. 예: 750ml 두 병은 1,500ml.</p><Button type="submit" variant="primary" profile="timetable">저장</Button></fieldset><p role="status">{message}</p></form></details><InventoryCountForm ingredients={data.ingredients} disabled={!ready || countBroken} save={record => counts.length < 100 && writeCounts([...counts, record])} />{countBroken && <p role="alert">입력값을 확인해주세요.</p>}</section> : <p>현재 계정은 재고를 조회할 수 있습니다. 기록은 관리자 계정에서 가능합니다.</p>}
+      }}><fieldset disabled={!ready || broken}><label>재료명<input name="name" required maxLength={160} placeholder="예: 우유" /></label><label>관리 단위<select name="unit"><option value="ml">ml</option><option value="g">g</option><option value="ea">개</option></select></label><p>구매량과 메뉴 사용량을 같은 단위로 입력합니다. 예: 750ml 두 병은 1,500ml.</p><Button type="submit" variant="primary" profile="timetable">저장</Button></fieldset><p role="status">{message}</p></form></details><InventoryPurchaseForm ingredients={data.ingredients} disabled={!ready || purchaseBroken} save={record => purchases.length < 100 && writePurchases([...purchases, record])} />{purchaseBroken && <p role="alert">입력값을 확인해주세요.</p>}<InventoryCountForm ingredients={data.ingredients} disabled={!ready || countBroken} save={record => counts.length < 100 && writeCounts([...counts, record])} />{countBroken && <p role="alert">입력값을 확인해주세요.</p>}</section> : <p>현재 계정은 재고를 조회할 수 있습니다. 기록은 관리자 계정에서 가능합니다.</p>}
       <section className="dashboard-panel floor-section">
         <h2>메뉴별 재료</h2>
         {data.recipes.length ? (
@@ -131,6 +137,7 @@ export function InventoryWorkspace({ data: initial, canWrite = false }: { data: 
                   {formatKstDateTime(e.occurredAt)}{' '}
                   {e.reference && ' · ' + e.reference}
                 </small>
+                {canWrite && e.kind === 'PURCHASE' && e.status !== 'VOID' && <div className="inventory-actions">{e.status === 'ORDERED' && <Button type="button" variant="default" size="small" profile="timetable" disabled={!ready || purchaseBroken} onClick={() => { if (!writePurchases(purchases.map(item => item.id === e.id ? { ...item, status:'RECEIVED', receivedAt:new Date(Math.max(Date.now(), Date.parse(item.occurredAt))).toISOString() } : item))) setPurchaseBroken(true); }}>지금 입고 완료</Button>}<Button type="button" variant="default" size="small" profile="timetable" disabled={!ready || purchaseBroken} onClick={() => { if (!writePurchases(purchases.map(item => item.id === e.id ? { ...item, status:'VOID' } : item))) setPurchaseBroken(true); }}>기록 취소</Button></div>}
                 {canWrite && e.kind === 'COUNT' && e.status !== 'VOID' && <div className="inventory-actions"><Button type="button" variant="default" size="small" profile="timetable" disabled={!ready || countBroken} onClick={() => { if (!writeCounts(counts.map(item => item.id === e.id ? { ...item, status:'VOID' } : item))) setCountBroken(true); }}>기록 취소</Button></div>}
               </li>
             ))}

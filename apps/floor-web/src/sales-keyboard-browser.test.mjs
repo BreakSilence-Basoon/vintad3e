@@ -65,7 +65,10 @@ test('floor administrator adds synthetic ingredients and preserves data on stora
       await recipeEditor.locator('select[name=menu]').selectOption('음료 01'); await recipeEditor.locator('select[name=ingredientId]').selectOption({label:'재료 02 (g)'});
       await recipeEditor.getByLabel('수량',{exact:true}).fill('3.25'); await enter(page,recipeEditor.getByRole('button',{name:'저장'}));
       await recipeEditor.getByText('저장했습니다.').waitFor(); await page.locator('.inventory-list li').filter({hasText:'음료 01'}).getByText('재료 02 3.25 g').waitFor();
-      await page.reload(); await page.locator('.inventory-list li').filter({hasText:'음료 01'}).getByText('재료 02 3.25 g').waitFor();
+      await recipeEditor.locator('select[name=menu]').selectOption('음료 01'); await recipeEditor.locator('select[name=ingredientId]').selectOption({label:'재료 02 (g)'});
+      await recipeEditor.getByLabel('수량',{exact:true}).fill('4.5'); await enter(page,recipeEditor.getByRole('button',{name:'저장'}));
+      await page.locator('.inventory-list li').filter({hasText:'음료 01'}).getByText('재료 02 4.5 g').waitFor();
+      await page.reload(); await page.locator('.inventory-list li').filter({hasText:'음료 01'}).getByText('재료 02 4.5 g').waitFor();
       const countEditor=page.locator('.inventory-editor').filter({has:page.getByText('실제 재고 입력',{exact:true})}); await enter(page,countEditor.locator('summary'));
       const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10); await countEditor.getByLabel('실사일 (한국 시간)').fill(yesterday); await countEditor.getByLabel('시간',{exact:true}).fill('12:00');
       await countEditor.locator('select[name=ingredientId]').selectOption({label:'재료 02 (g)'}); await countEditor.getByLabel('수량',{exact:true}).fill('5.125'); await enter(page,countEditor.getByRole('button',{name:'저장'}));

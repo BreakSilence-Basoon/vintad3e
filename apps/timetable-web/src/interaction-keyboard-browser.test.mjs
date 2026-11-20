@@ -24,6 +24,8 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
       try {
         await page.goto(`${origin}/confirmations/proposal-01`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
+        await page.goto(`${origin}/kiosk/setup`);
+        await page.getByRole('link', { name: 'QR 관리로 이동' }).waitFor();
         await page.goto(`${origin}/admin/kiosks?view=devices`);
         const form = page.locator('.kiosk-registration-form');
         const input = form.locator('input[name=label]');
@@ -39,6 +41,11 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await page.unroute('**/api/fixture/kiosk/register');
         await enter(page, form.getByRole('button', { name: '등록' }));
         const device = page.locator('.kiosk-device-list li').filter({ hasText: '기기 01' });
+        await device.waitFor();
+        await page.goto(`${origin}/kiosk/setup`);
+        await page.waitForURL(`${origin}/kiosk`);
+        await page.locator('.kiosk-qr-code svg').waitFor();
+        await page.goto(`${origin}/admin/kiosks?view=devices`);
         await device.waitFor();
         await enter(page, page.getByRole('button', { name: 'QR 발급 보기' }));
         await page.locator('.kiosk-qr-code svg').waitFor();

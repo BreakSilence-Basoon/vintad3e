@@ -7,6 +7,12 @@ import { TimetableSlideSwitcher } from './timetable-slide-switcher';
 type Device = { id: string; label: string };
 type Challenge = { token: string; expiresAt: number; device: Device };
 const kioskKey = 'vintad3e-timetable-fixture-kiosk';
+
+export function FixtureKioskSetupReturn() {
+  const router = useRouter();
+  useEffect(() => { if (localStorage.getItem(kioskKey)) router.replace('/kiosk'); }, [router]);
+  return null;
+}
 async function post(action: string, body: object) { return fetch(`/api/fixture/kiosk/${action}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); }
 
 export function FixtureKioskBoard({ embedded = false, deviceId }: { embedded?: boolean; deviceId?: string }) {

@@ -22,7 +22,7 @@ test('public guides navigate languages, copy and open images on desktop and mobi
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       try {
         const page = await context.newPage();
-        await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.copiedGuide = text; } } }));
+        await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { if (window.failGuideCopy) throw new Error('clipboard unavailable'); window.copiedGuide = text; } } }));
         await page.goto(`${origin}/guide/dj`);
         await enter(page, page.getByRole('link', { name: 'English', exact: true }));
         await page.waitForURL('**/guide/dj/en');
@@ -30,8 +30,14 @@ test('public guides navigate languages, copy and open images on desktop and mobi
         await page.waitForURL('**/guide/dj/en-house');
         await page.getByRole('heading', { name: 'House music guide', exact: true }).waitFor();
         await page.goto(`${origin}/proj-bedroom/guide/ko`);
+        const disclosure = page.locator('#guide-disclosure-0');
+        await enter(page, disclosure.locator('summary'));
+        assert.equal(await disclosure.evaluate(element => element.open), true);
         await enter(page, page.getByRole('button', { name: '내용 복사', exact: true }));
         await page.waitForFunction(() => typeof window.copiedGuide === 'string' && window.copiedGuide.includes('# proj.bedroom'));
+        await page.evaluate(() => { window.failGuideCopy = true; });
+        await enter(page, page.getByRole('button', { name: '복사됨', exact: true }));
+        await page.getByRole('status').filter({ hasText: '복사하지 못했습니다. 다시 눌러 주세요.' }).waitFor();
         await enter(page, page.getByRole('button', { name: /사진 크게 보기/ }).first());
         const dialog = page.getByRole('dialog', { name: '사진 크게 보기' });
         await dialog.waitFor();
@@ -42,6 +48,7 @@ test('public guides navigate languages, copy and open images on desktop and mobi
         await enter(page, page.locator('.guest-language-float__choices button[lang=en]'));
         await page.waitForURL('**/proj-bedroom/guide/en');
         await page.getByText('Artist Brief', { exact: true }).waitFor();
+        await page.waitForFunction(() => document.querySelector('#guide-disclosure-0')?.open === true);
         await enter(page, page.getByRole('button', { name: 'Select language', exact: true }));
         await enter(page, page.locator('.guest-language-float__choices button[lang=ja]'));
         await page.waitForURL('**/proj-bedroom/guide/ja');

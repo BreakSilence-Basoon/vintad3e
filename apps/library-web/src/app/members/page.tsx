@@ -1,8 +1,10 @@
 import { LibrarySearch } from '../../library-search';
 import { getFixtureMembers, searchFixtureMembers } from '../../fixture-members';
+import { requireFixtureLibraryStaff } from '../../fixture-staff-access';
 
 export const dynamic = 'force-dynamic';
 export default async function MembersPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
+  await requireFixtureLibraryStaff('/members');
   const params = await searchParams;
   const query = typeof params.q === 'string' ? params.q.slice(0, 100) : '';
   const members = searchFixtureMembers(getFixtureMembers(process.env.NODE_ENV, process.env.VINTAD3E_LIBRARY_FIXTURE), query);

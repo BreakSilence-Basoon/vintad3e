@@ -34,6 +34,10 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await page.goto(`${origin}/kiosk/setup`);
         await page.getByRole('link', { name: 'QR 관리로 이동' }).waitFor();
         await page.goto(`${origin}/admin/kiosks?view=devices`);
+        await page.waitForURL('**/sign-in?next=%2Fadmin%2Fkiosks');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/admin/kiosks');
+        await page.goto(`${origin}/admin/kiosks?view=devices`);
         const form = page.locator('.kiosk-registration-form');
         const input = form.locator('input[name=label]');
         await input.waitFor();
@@ -49,6 +53,11 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await enter(page, form.getByRole('button', { name: '등록' }));
         const device = page.locator('.kiosk-device-list li').filter({ hasText: '기기 01' });
         await device.waitFor();
+        const kioskCookies = await context.cookies();
+        const kioskCookie = kioskCookies.find(cookie => cookie.name === 'vintad3e-kiosk-device');
+        assert.ok(kioskCookie);
+        await context.clearCookies();
+        await context.addCookies([kioskCookie]);
         await page.goto(origin);
         await page.waitForURL(`${origin}/kiosk`);
         await page.goto(`${origin}/?view=schedule`);
@@ -69,6 +78,9 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await page.waitForURL('**/sign-in?next=%2F%3Fview%3Dhistory');
         await page.addInitScript(() => { navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('denied', 'NotAllowedError'); }; });
         await page.goto(`${origin}/scan`);
+        await page.waitForURL('**/sign-in?next=%2Fscan');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/scan');
         await page.locator('.employee-scanner p[role=alert]').waitFor();
         await enter(page, page.getByRole('button', { name: '카메라 다시 켜기' }));
         await page.locator('.employee-scanner p[role=alert]').waitFor();

@@ -19,7 +19,7 @@ export function FixtureScanner() {
     if (busy.current) return;
     let token = '';
     try { const url = new URL(value); if (url.origin !== window.location.origin || url.pathname !== '/scan') throw new Error(); token = url.searchParams.get('token') ?? ''; if (!/^[\w-]{32}$/.test(token)) throw new Error(); }
-    catch { setNotice('QR 코드를 다시 확인해주세요.'); return; }
+    catch { setNotice('Timetable의 최신 QR 코드를 스캔해주세요.'); return; }
     if (lastScan.current?.token === token && Date.now() - lastScan.current.time < 1500) return;
     lastScan.current = { token, time: Date.now() };
     busy.current = true; setPhase('submitting');

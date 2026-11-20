@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { readSyntheticMeetings, type SyntheticMeeting } from './fixture-meeting-storage';
-import { AttachMeetingForm, MeetingStageForm } from './fixture-meeting-forms';
+import { FixtureMeetingDetail } from './fixture-meeting-forms';
 
 export function SyntheticMeetingList({ fallback }: { fallback: SyntheticMeeting }) {
   const [meetings, setMeetings] = useState<SyntheticMeeting[]>([]);
@@ -16,5 +16,5 @@ export function SyntheticMeetingDetail({ id }: { id: string }) {
   useEffect(() => { try { setMeeting(readSyntheticMeetings(sessionStorage)?.find(item => item.id === id) ?? null); } catch {} setLoaded(true); }, [id]);
   if (loaded && !meeting) notFound();
   if (!meeting) return null;
-  return <main className="library-home"><article className="library-page library-page--reader"><header className="library-page__header"><h1>{meeting.title}</h1></header><AttachMeetingForm /><MeetingStageForm /></article></main>;
+  return <FixtureMeetingDetail id={meeting.id} title={meeting.title} />;
 }

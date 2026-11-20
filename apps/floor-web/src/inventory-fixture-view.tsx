@@ -1,9 +1,25 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { Button } from '@vintad3e/ui/components';
+import { parseIngredients, newIngredient } from './inventory-ingredients.mjs';
 import type { InventoryData, Part } from './inventory-fixture.ts';
 import { formatKstDateTime } from './floor-format';
 const unit = (value: string) => value === 'ea' ? '개' : value;
 const amount = (value: number | null, suffix: string) => value === null ? '—' : value.toLocaleString('ko-KR') + ' ' + suffix;
 const status: Record<string,string> = { ORDERED:'주문 중', RECEIVED:'입고 완료', RECORDED:'실사 기록', VOID:'취소됨' };
-export function InventoryWorkspace({ data }: { data: InventoryData }) {
+export function InventoryWorkspace({ data: initial, canWrite = false }: { data: InventoryData; canWrite?: boolean }) {
+  const [added, setAdded] = useState<{ id: string; name: string; unit: string }[]>([]);
+  const [message, setMessage] = useState('');
+  const [ready, setReady] = useState(false);
+  const [broken, setBroken] = useState(false);
+  useEffect(() => {
+    if (!canWrite) return;
+    try { const stored = sessionStorage.getItem('vintad3e-floor-ingredients'); const result = parseIngredients(stored); if (!result) { setBroken(true); setMessage('입력값을 확인해주세요.'); } else setAdded(result); }
+    catch { setBroken(true); setMessage('입력값을 확인해주세요.'); }
+    setReady(true);
+  }, [canWrite]);
+  const data: InventoryData = { ...initial, ingredients: [...initial.ingredients, ...added], rows: [...initial.rows, ...added.map(item => ({ ...item, countQuantity: null, countAt: null, expectedQuantity: null, used30: 0, remainingDays: null }))] };
+
   const ingredients = new Map(data.ingredients.map((i) => [i.id, i]));
   const partsLabel = (parts: Part[]) =>
     parts
@@ -67,10 +83,12 @@ export function InventoryWorkspace({ data }: { data: InventoryData }) {
           부족하면 표시하지 않거나 실제와 다를 수 있습니다.
         </p>
       </section>
-      <p>
-        현재 계정은 재고를 조회할 수 있습니다. 기록은 관리자 계정에서
-        가능합니다.
-      </p>
+      {canWrite ? <section className="dashboard-panel floor-section"><h2>기록하기</h2><details className="inventory-editor"><summary>재료 등록</summary><form className="inventory-form" onSubmit={event => {
+        event.preventDefault(); if (!ready || broken) return;
+        const form = event.currentTarget, values = new FormData(form), item = newIngredient(String(values.get('name') ?? ''), String(values.get('unit') ?? ''), data.ingredients);
+        if (!item) { setMessage('입력값을 확인해주세요.'); return; }
+        try { const next = [...added, item]; sessionStorage.setItem('vintad3e-floor-ingredients', JSON.stringify(next)); setAdded(next); form.reset(); setMessage('저장했습니다.'); } catch { setMessage('입력값을 확인해주세요.'); }
+      }}><fieldset disabled={!ready || broken}><label>재료명<input name="name" required maxLength={160} placeholder="예: 우유" /></label><label>관리 단위<select name="unit"><option value="ml">ml</option><option value="g">g</option><option value="ea">개</option></select></label><p>구매량과 메뉴 사용량을 같은 단위로 입력합니다. 예: 750ml 두 병은 1,500ml.</p><Button type="submit" variant="primary" profile="timetable">저장</Button></fieldset><p role="status">{message}</p></form></details></section> : <p>현재 계정은 재고를 조회할 수 있습니다. 기록은 관리자 계정에서 가능합니다.</p>}
       <section className="dashboard-panel floor-section">
         <h2>메뉴별 재료</h2>
         {data.recipes.length ? (

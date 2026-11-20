@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { fixtureOrigin, fixtureSession } from '../../../fixture-session.mjs';
 import { FixtureConfirmationView } from '../../../fixture-confirmation-view';
+import { FixturePortalTopbar } from '../../../fixture-topbar';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '빈타제 > 변경 확인', robots: { index: false, follow: false } };
 export default async function Page({ params }: { params: Promise<{ proposalId: string }> }) {
@@ -12,5 +13,5 @@ export default async function Page({ params }: { params: Promise<{ proposalId: s
   const host = requestHeaders.get('host');
   if (host !== new URL(origin).host) notFound();
   if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect(`/sign-in?next=${encodeURIComponent('/confirmations/proposal-01')}`);
-  return <FixtureConfirmationView proposalId={proposalId} />;
+  return <><FixturePortalTopbar /><FixtureConfirmationView proposalId={proposalId} /></>;
 }

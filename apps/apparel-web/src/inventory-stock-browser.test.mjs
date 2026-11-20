@@ -22,7 +22,7 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-apparel-browser-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_APPAREL_FIXTURE:'1'}, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_APPAREL_FIXTURE:'1',VINTAD3E_APPAREL_FIXTURE_ORIGIN:origin}, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {
@@ -37,9 +37,16 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     closeBrowser = () => send('Browser.close');
     const evaluate = async (expression) => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     const run = async expression => { await evaluate(expression); await delay(150); };
+    await send('Page.navigate',{url:`${origin}/sign-in?next=%2Fadmin`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('form[action=\"/api/fixture/login\"] button'))"));
+    await evaluate("document.querySelector('form[action=\"/api/fixture/login\"]').requestSubmit()");
+    await waitFor(async () => evaluate("location.pathname === '/admin/products'"));
     await send('Page.navigate',{url:`${origin}/admin/audit`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.audit-page .audit-filter-bar[data-hydrated=true]'))"));
-    assert.equal(await evaluate("document.querySelectorAll('.audit-page .audit-card').length"), 3);
+    assert.equal(await evaluate("document.querySelectorAll('.audit-page .audit-card').length"), 10);
+    await evaluate("document.querySelector('.audit-page .load-more-pager a').click()");
+    await waitFor(async () => evaluate("document.querySelectorAll('.audit-page .audit-card').length === 13"));
+    assert.equal(await evaluate("document.querySelectorAll('.audit-page .load-more-pager').length"), 0);
     assert.deepEqual(await evaluate("[...document.querySelectorAll('[name=actor] option')].map(x=>x.textContent)"), ['실행자 전체', '구성원 1', '대표님', '구성원 2', 'AI', '시스템']);
     await evaluate("(()=>{const f=document.querySelector('.audit-filter-bar');f.querySelector('[name=keyword]').value='재고';f.querySelector('[name=actor]').value='staff1';f.requestSubmit()})()");
     await waitFor(async () => evaluate("location.search.includes('actor=staff1') && location.search.includes('keyword=')"));
@@ -93,7 +100,7 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     await run("window.confirm=()=>true;document.querySelector('.graphic-dialog__close').click()");
     await send('Page.navigate',{url:`${origin}/admin/sales`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.sales-history-page .audit-filter-bar[data-hydrated=true]'))"));
-    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card').length"), 2);
+    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card').length"), 18);
     assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card')[1].querySelector('summary strong').textContent"), '-');
     await evaluate("document.querySelector('.sales-audit-card details').open=true");
     assert.ok(await evaluate("document.querySelector('.sales-audit-card__snapshot').textContent.includes('POS-001')"));
@@ -105,9 +112,9 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     assert.ok(await evaluate("document.querySelector('.sales-audit-card').textContent.includes('42,000 KRW')"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.admin-toast--success')?.textContent.includes('Toss 동기화를 시작했습니다.'))return true;[...document.querySelectorAll('button')].find(x=>x.textContent==='수동 갱신')?.click();return false;})()"));
     await send('Page.navigate',{url:`${origin}/admin/sales?range=all`});
-    await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 3 && document.querySelector('.sales-history-page')?.textContent.includes('가방')"));
+    await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 18 && document.querySelector('.sales-history-page')?.textContent.includes('가방')"));
     await evaluate("[...document.querySelectorAll('button')].find(x=>x.textContent==='수동 갱신')?.click()");
-    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card').length"), 3);
+    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card').length"), 18);
     await waitFor(async () => evaluate("(()=>{if([...document.querySelectorAll('.admin-toast--error')].some(x=>x.textContent.includes('교차 검증 실행에 실패했습니다.')))return true;[...document.querySelectorAll('button')].find(x=>x.textContent==='교차 검증 즉시 실행')?.click();return false;})()"));
     await send('Page.navigate',{url:`${origin}/admin/support`});
     await waitFor(async () => evaluate("document.querySelectorAll('.support-results tbody tr').length > 30"));

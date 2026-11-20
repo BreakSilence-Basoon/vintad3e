@@ -1,0 +1,4 @@
+import { fixtureOrigin, fixtureSession } from '../../../fixture-session.mjs';
+import { searchFixture } from '../../../library-search-fixture';
+export const dynamic='force-dynamic';
+export function GET(request:Request) {const origin=fixtureOrigin(process.env),host=request.headers.get('host');if(!origin||host!==new URL(origin).host)return new Response(null,{status:404});if(!fixtureSession(request.headers.get('cookie'),host,process.env))return new Response(null,{status:401});const p=new URL(request.url).searchParams;if(['q','period','author'].some(key=>p.getAll(key).length>1))return new Response(null,{status:400});const data=searchFixture(process.env.NODE_ENV,process.env.VINTAD3E_LIBRARY_FIXTURE,p.get('q')??'',p.get('period')??'all',p.get('author')??'',Date.now());return data?Response.json(data,{headers:{'cache-control':'no-store'}}):new Response(null,{status:400});}

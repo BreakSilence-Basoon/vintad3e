@@ -9,6 +9,12 @@ test('resume accepts internal paths only', () => {
 });
 function post(action, headers = {}) { return new Request(`${origin}/api/fixture/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3829', origin, ...headers } }); }
 function cookie(response) { return response.headers.get('set-cookie').split(';')[0]; }
+test('login returns only to a known synthetic publication', () => {
+  const path = '/publications/00000000-0000-4000-8000-000000000001';
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, path).headers.get('location'), path);
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/mypage').headers.get('location'), '/mypage');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '//example.invalid/').headers.get('location'), '/');
+});
 
 test('fixture login and logout rotate and revoke only local synthetic sessions', () => {
   assert.equal(fixtureOrigin(env), origin);
@@ -29,6 +35,13 @@ test('fixture login and logout rotate and revoke only local synthetic sessions',
 test('fixture login only returns to known fixture paths', () => {
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/confirmations/proposal-01').headers.get('location'), '/confirmations/proposal-01');
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/objects/new').headers.get('location'), '/objects/new');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/objects/00000000-0000-4000-8000-000000000003').headers.get('location'), '/objects/00000000-0000-4000-8000-000000000003');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/objects/00000000-0000-4000-8000-000000000009').headers.get('location'), '/objects/00000000-0000-4000-8000-000000000009');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/objects/unknown').headers.get('location'), '/');
+  for (const next of ['/members', '/meetings/00000000-0000-4000-8000-000000000004']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), next);
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/meetings/unknown').headers.get('location'), '/');
+  for (const next of ['/ir/00000000-0000-4000-8000-000000000001', '/native/00000000-0000-4000-8000-000000000001']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), next);
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/ir/unknown').headers.get('location'), '/');
   for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/']) {
     assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
   }

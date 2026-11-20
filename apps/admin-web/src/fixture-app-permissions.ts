@@ -1,4 +1,4 @@
-import { fixtureApps, fixtureGrantActive, fixtureGrants, getFixtureMembers } from './members-fixture.ts';
+import { fixtureApps, fixtureGrantActive, fixtureGrants, getFixtureDirectory } from './members-fixture.ts';
 
 // Menu names mirror the source screens; displayed role values are synthetic.
 const menuNames: Record<string, readonly string[]> = {
@@ -21,7 +21,7 @@ export function fixtureMenuPermissions(env: string | undefined, enabled: string 
 }
 export function fixtureAppId(value: string | undefined): string { return fixtureApps.find(app => app.id === value)?.id ?? fixtureApps[0].id; }
 export function fixtureAppMembers(env: string | undefined, enabled: string | undefined, appId: string, now: number) {
-  return getFixtureMembers(env, enabled).flatMap(member => {
+  return getFixtureDirectory(env, enabled).flatMap(member => {
     const grant = fixtureGrants(env, enabled, member.staffId)?.find(item => item.appId === appId && fixtureGrantActive(item, now));
     if (!grant) return [];
     return [{ person: { id: member.staffId, name: member.displayName }, access: member.memberType === 'partner' ? '게스트' : grant.role === 'ADMIN' ? '어드민' : '크루' }];

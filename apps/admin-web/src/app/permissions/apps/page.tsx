@@ -1,10 +1,12 @@
 import { notFound } from 'next/navigation';
+import { requireFixtureAdminAccess } from '../../../fixture-access';
 import { fixtureApps, getFixtureMembers } from '../../../members-fixture';
 import { fixtureAppId, fixtureAppMembers, fixtureMenuPermissions } from '../../../fixture-app-permissions';
 import { Selector } from '../../../permission-selector';
 
 export const dynamic = 'force-dynamic';
 export default async function AppPermissions({ searchParams }: { searchParams: Promise<{ app?: string }> }) {
+  await requireFixtureAdminAccess('/permissions/apps');
   const env = process.env.NODE_ENV, enabled = process.env.VINTAD3E_ADMIN_FIXTURE;
   if (!getFixtureMembers(env, enabled).length) notFound();
   const appId = fixtureAppId((await searchParams).app);

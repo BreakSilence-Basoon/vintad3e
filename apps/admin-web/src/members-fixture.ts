@@ -11,6 +11,15 @@ export function getFixtureMembers(env: string | undefined, enabled: string | und
   ];
 }
 
+export function getFixtureDirectory(env: string | undefined, enabled: string | undefined): FixtureMember[] {
+  const base = getFixtureMembers(env, enabled);
+  if (!base.length) return [];
+  return [...base, ...Array.from({ length: 50 }, (_, index): FixtureMember => {
+    const number = index + 4;
+    return { staffId: `00000000-0000-4000-8000-${String(number).padStart(12, '0')}`, displayName: `직원 ${String(number).padStart(2, '0')}`, primaryEmail: `staff${String(number).padStart(2, '0')}@example.invalid`, memberType: 'employee', status: '재직', positionTitle: '직원', gradeLabel: null };
+  })];
+}
+
 export function fixtureMemberType(value: string | string[] | undefined): MemberType | null {
   if (Array.isArray(value)) return null;
   return value === 'partner' ? 'partner' : 'employee';
@@ -18,6 +27,13 @@ export function fixtureMemberType(value: string | string[] | undefined): MemberT
 
 export function membersOfType(members: FixtureMember[], type: MemberType): FixtureMember[] {
   return members.filter(member => member.memberType === type);
+}
+
+export function fixtureMemberPage(members: FixtureMember[], type: MemberType, cursor: string | string[] | undefined) {
+  const matching = membersOfType(members, type);
+  if (cursor === undefined) return { rows: matching.slice(0, 50), previous: false, next: matching.length > 50 ? `${type}:50` : null };
+  if (typeof cursor !== 'string' || cursor !== `${type}:50` || matching.length <= 50) return null;
+  return { rows: matching.slice(50, 100), previous: true, next: null };
 }
 
 export type FixtureGrant = { appId: string; appName: string; role: 'VIEWER' | 'ADMIN'; status: 'ACTIVE' | 'SUSPENDED' | 'REVOKED'; validFrom: string; validUntil: string | null };
@@ -29,7 +45,7 @@ export const fixtureApps = [
 ] as const;
 
 export function fixtureGrants(env: string | undefined, enabled: string | undefined, id: string): FixtureGrant[] | null {
-  const member = getFixtureMembers(env, enabled).find(item => item.staffId === id);
+  const member = getFixtureDirectory(env, enabled).find(item => item.staffId === id);
   if (!member) return null;
   if (member.staffId === '00000000-0000-4000-8000-000000000003') return fixtureApps.filter(app => ['portal', 'partners', 'admin'].includes(app.id)).map(app => ({ appId: app.id, appName: app.name, role: 'ADMIN', status: 'ACTIVE', validFrom: '2000-01-01T00:00:00.000Z', validUntil: null }));
   const app = member.memberType === 'employee' ? fixtureApps[0] : fixtureApps[4];

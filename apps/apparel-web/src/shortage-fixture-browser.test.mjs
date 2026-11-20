@@ -35,7 +35,7 @@ test('shortage edits persist only in fixture stock and appear in product detail'
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-apparel-shortage-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_APPAREL_FIXTURE:'1'}, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_APPAREL_FIXTURE:'1',VINTAD3E_APPAREL_FIXTURE_ORIGIN:origin}, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {
@@ -49,6 +49,10 @@ test('shortage edits persist only in fixture stock and appear in product detail'
     const send = (method,params={}) => new Promise((resolve,reject) => { const id = ++sequence; pending.set(id,{resolve,reject}); socket.send(JSON.stringify({id,method,params})); });
     closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
+    await send('Page.navigate',{url:`${origin}/sign-in?next=%2Fadmin`});
+    await waitFor(async () => evaluate("Boolean(document.querySelector('form[action=\"/api/fixture/login\"] button'))"));
+    await evaluate("document.querySelector('form[action=\"/api/fixture/login\"]').requestSubmit()");
+    await waitFor(async () => evaluate("location.pathname === '/admin/products'"));
     await send('Page.navigate',{url:`${origin}/admin/inventory/shortages`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('[data-hydrated=true] .shortage-editor'))"));
     await evaluate("window.stockWrites=0;window.originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{const path=new URL(typeof input==='string'?input:input.url,location.href).pathname;if(path.startsWith('/api/admin/')){window.stockWrites++;return Promise.reject(new Error('unexpected request'));}return window.originalFetch(input,init)}");
@@ -66,7 +70,7 @@ test('shortage edits persist only in fixture stock and appear in product detail'
     assert.equal(await evaluate("document.querySelector('.shortage-table__row').querySelectorAll('input[type=number]')[1].value"), '10');
     assert.equal(await evaluate("document.querySelector('.shortage-table__row').querySelectorAll('input[type=number]')[2].value"), '7');
     await evaluate("(()=>{const slot='vintad3e-apparel-fixture-stock';const rows=JSON.parse(sessionStorage.getItem(slot));rows['basic:hanam:TSHIRT-001-BK-M']={tracking:true,onHand:1,target:6,shortage:5};sessionStorage.setItem(slot,JSON.stringify(rows))})()");
-    assert.equal((await fetch(`${origin}/admin/inventory/graphics/UNKNOWN`)).status, 404);
+    assert.equal(await evaluate("fetch('/admin/inventory/graphics/UNKNOWN').then(response => response.status)"), 404);
     await send('Page.navigate',{url:`${origin}/admin/inventory/graphics/TSHIRT-001`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.console-page[data-hydrated=true] .shortage-editor'))"));
     await evaluate("window.stockWrites=0;window.originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{const path=new URL(typeof input==='string'?input:input.url,location.href).pathname;if(path.startsWith('/api/admin/')){window.stockWrites++;return Promise.reject(new Error('unexpected request'));}return window.originalFetch(input,init)}");

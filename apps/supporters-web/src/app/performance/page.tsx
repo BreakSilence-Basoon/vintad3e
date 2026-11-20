@@ -9,6 +9,6 @@ export default async function PerformancePage() {
   const requestHeaders = await headers();
   const host = requestHeaders.get('host');
   if (host !== new URL(origin).host) notFound();
-  if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect('/sign-in');
+  if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect('/sign-in?next=%2Fperformance');
   redirect('/');
 }

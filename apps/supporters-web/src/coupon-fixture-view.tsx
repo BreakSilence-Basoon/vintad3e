@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { showStaffToast, StaffToastViewport } from '@vintad3e/ui/toast';
+import { showStaffToast } from '@vintad3e/ui/toast';
 import { fixtureCouponLink, type CouponFixture } from './coupon-fixture';
 
 const malls = [{ name:'국내', value:'korea', available:true }, { name:'일본', value:'japan', available:true }, { name:'글로벌', value:'global', available:false }] as const;
@@ -25,6 +25,6 @@ export function CouponFixtureView({ fixtures, selected }: { fixtures: CouponFixt
       <section className="coupon-type" aria-label="추천인 코드"><div className="coupon-code-block"><div className="coupon-share-field"><span>추천인 코드</span><div><strong>{selected.code}</strong><button type="button" onClick={() => copy(selected.code, '추천인 코드를 복사했습니다.')} aria-label="추천인 코드 복사" title="추천인 코드 복사"><CopyIcon /></button></div></div></div><dl className="coupon-stats"><div><dt>이번 달</dt><dd>{count(selected.referralMonth)}</dd></div><div><dt>누적 사용</dt><dd>{count(selected.referralTotal)}</dd></div></dl></section>
       <section className="coupon-type" aria-label="회원 전용 쿠폰 발급 링크"><div className="coupon-type__heading"><h2>회원 전용 쿠폰 발급 링크</h2></div><div className="coupon-link-table-wrap"><table className="coupon-link-table" aria-label="개인 발급 쿠폰 링크 복사"><thead><tr><th scope="col">쇼핑몰</th>{languages.map(lang => <th scope="col" key={lang.name}>{lang.name}</th>)}</tr></thead><tbody>{malls.map(mall => <tr key={mall.value}><th scope="row">{mall.name}</th>{languages.map(lang => { const label = `${mall.name} · ${lang.name}`; const available = mall.available && lang.available; return <td key={lang.name}><button type="button" disabled={!available} aria-label={`${label} 링크 ${available ? '복사' : '사용 불가'}`} title={available ? `${label} 링크 복사` : `${label} 링크 사용 불가`} onClick={() => { if (mall.value !== 'global' && available) void copy(fixtureCouponLink(mall.value, lang.value), `${label} 링크를 복사했습니다.`); }}><CopyIcon /></button></td>; })}</tr>)}</tbody></table></div><dl className="coupon-stats"><div><dt>이번 달</dt><dd>{count(selected.personalMonth)}</dd></div><div><dt>누적 사용</dt><dd>{count(selected.personalTotal)}</dd></div></dl></section>
     </div> : null}
-    <StaffToastViewport />
+
   </>;
 }

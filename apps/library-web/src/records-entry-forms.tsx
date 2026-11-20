@@ -21,7 +21,7 @@ export function CreateMeetingForm({ fixture = false }: { fixture?: boolean }) {
   </section>;
 }
 
-export function ObjectUploadForm({ fixture = false }: { fixture?: boolean }) {
+export function ObjectUploadForm({ fixture = false, inputId = 'library-object-file', onComplete }: { fixture?: boolean; inputId?: string; onComplete?: (id: string) => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [stage, setStage] = useState<'select' | 'proposal' | 'loaded' | 'reviewed' | 'confirmed' | 'approved' | 'uploaded'>('select');
   const [error, setError] = useState(false);
@@ -40,13 +40,14 @@ export function ObjectUploadForm({ fixture = false }: { fixture?: boolean }) {
       const result = response.ok ? await response.json() : null;
       if (result?.id !== fixtureUpload.id) throw new Error('unavailable');
       setStage('uploaded');
+      onComplete?.(result.id);
     } catch { setError(true); } finally { setBusy(false); }
   }
   return <section className="library-register" aria-label="파일 올리기" aria-busy={busy} data-hydrated={hydrated}>
-    <div className="library-field"><Label htmlFor="library-object-file" appearance="native">파일</Label><Input id="library-object-file" appearance="native" type="file" disabled={busy || stage !== 'select'} onChange={event => { setFile(event.target.files?.[0] ?? null); setError(false); }} /></div>
+    <div className="library-field"><Label htmlFor={inputId} appearance="native">파일</Label><Input id={inputId} appearance="native" type="file" disabled={busy || stage !== 'select'} onChange={event => { setFile(event.target.files?.[0] ?? null); setError(false); }} /></div>
     {stage === 'select' && <Button profile="library" type="button" disabled={!file || busy} onClick={() => void prepare()}>업로드 내용 확인</Button>}
     {stage === 'proposal' && <Button profile="library" type="button" onClick={() => setStage('loaded')}>제안 불러오기</Button>}
-    {['loaded', 'reviewed', 'confirmed'].includes(stage) && <section className="staff-section" aria-labelledby="fixture-upload-summary"><h2 id="fixture-upload-summary">제안 내용</h2><dl><dt>앱</dt><dd>Library</dd><dt>작업</dt><dd>파일 올리기</dd><dt>대상</dt><dd>{fixtureUpload.filename}</dd></dl></section>}
+    {['loaded', 'reviewed', 'confirmed'].includes(stage) && <section className="staff-section" aria-labelledby={`${inputId}-summary`}><h2 id={`${inputId}-summary`}>제안 내용</h2><dl><dt>앱</dt><dd>Library</dd><dt>작업</dt><dd>파일 올리기</dd><dt>대상</dt><dd>{fixtureUpload.filename}</dd></dl></section>}
     {stage === 'loaded' && <Button profile="library" type="button" onClick={() => setStage('reviewed')}>제안 검토</Button>}
     {stage === 'reviewed' && <Button profile="library" type="button" onClick={() => setStage('confirmed')}>이 변경 확인</Button>}
     {stage === 'confirmed' && <Button profile="library" type="button" onClick={() => setStage('approved')}>업로드 승인</Button>}

@@ -8,7 +8,7 @@ export function getSalesFixtures(env: string | undefined, enabled: string | unde
     { id: 'sale-1', soldAt: when(0), sourceSystem: 'POS', paymentStatus: 'PAID', items: [{ name: '드립 커피', quantity: 1, netAmountValue: 5000, listUnitPrice: 5000 }, { name: '차', quantity: 1, netAmountValue: 2000, listUnitPrice: 2000 }, { name: '드립 커피', quantity: 1, netAmountValue: 5000, listUnitPrice: 5000 }], netAmountValue: 12000, currencyCode: 'KRW' },
     { id: 'sale-2', soldAt: when(1), sourceSystem: 'CAFE24', paymentStatus: 'PARTIALLY_CANCELLED', items: [{ name: '쿠키', quantity: 1, netAmountValue: 4000, listUnitPrice: 4000 }], netAmountValue: 4000, currencyCode: 'KRW' },
     { id: 'sale-3', soldAt: when(2), sourceSystem: 'OPENCLAW', paymentStatus: 'PAID', items: [{ name: '차', quantity: 1, netAmountValue: 0, listUnitPrice: null }], netAmountValue: 0, currencyCode: 'KRW' },
-    ...Array.from({ length: 18 }, (_, index): FixtureSale => ({ id: `sale-${index + 4}`, soldAt: when(index + 3), sourceSystem: 'POS', paymentStatus: 'PAID', items: [{ name: '주스', quantity: 1, netAmountValue: 5000, listUnitPrice: 5000 }], netAmountValue: 5000, currencyCode: 'KRW' })),
+    ...Array.from({ length: 18 }, (_, index): FixtureSale => ({ id: `sale-${index + 4}`, soldAt: when(index + 3), sourceSystem: 'POS', paymentStatus: 'PAID', items: index === 0 ? [] : [{ name: '주스', quantity: 1, netAmountValue: 5000, listUnitPrice: 5000 }], netAmountValue: 5000, currencyCode: 'KRW' })),
   ];
 }
 

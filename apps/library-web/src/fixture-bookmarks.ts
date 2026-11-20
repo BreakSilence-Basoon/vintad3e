@@ -2,7 +2,7 @@ import { getLibraryFixtures } from './library-fixture.ts';
 
 const key = 'vintad3e-library-fixture-bookmarks';
 const changedEvent = 'vintad3e-library-fixture-bookmarks-changed';
-const allowed = new Set(getLibraryFixtures('development', '1').map(document => document.id));
+const allowed = new Set([...getLibraryFixtures('development', '1').map(document => document.id), '00000000-0000-4000-8000-000000000004']);
 
 export function parseFixtureBookmarks(raw: string): string[] {
   if (raw.length > 2048) return [];

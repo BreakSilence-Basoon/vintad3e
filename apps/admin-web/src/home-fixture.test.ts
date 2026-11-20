@@ -11,5 +11,8 @@ test('synthetic home status and visits require explicit development opt-in', () 
   assert.equal(rows.find(row => row.id === 'portal')?.visit?.name, '직원 01');
   assert.equal(rows.find(row => row.id === 'partners')?.visit?.name, '외부 구성원 01');
   assert.equal(rows.find(row => row.id === 'creative')?.visit, null);
+  assert.equal(rows.find(row => row.id === 'apparel')?.href, 'http://127.0.0.1:3826/');
+  assert.equal(rows.find(row => row.id === 'ledger')?.href, null);
+  assert.equal(rows.find(row => row.id === 'chat')?.href, null);
   assert.ok(rows.every(row => row.status === '정상'));
 });

@@ -7,6 +7,8 @@ test('creative projects require explicit development opt-in', () => {
   assert.deepEqual(getCreativeFixtures('development', undefined), []);
   const projects = getCreativeFixtures('development', '1');
   assert.equal(projects.length, 2);
+  assert.deepEqual(getCreativeFixtures('development', '1', 'empty'), []);
+  assert.equal(getCreativeFixtures('production', '1', 'empty').length, 0);
   assert.equal(projectStatusLabel[projects[0].status], '제작 중');
 });
 test('date formatting uses Seoul time and handles invalid values', () => {

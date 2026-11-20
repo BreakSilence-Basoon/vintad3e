@@ -9,7 +9,7 @@ export const metadata = { title: '빈타제 > Partners > 협업 정산 계산' }
 export default async function Page({ searchParams }: { searchParams: Promise<{ from?: string | string[]; to?: string | string[] }> }) {
   const origin = fixtureOrigin(process.env); if (!origin) notFound();
   const h = await headers(), host = h.get('host'); if (host !== new URL(origin).host) notFound();
-  if (!fixtureSession(h.get('cookie'), host, process.env)) redirect('/sign-in');
+  if (!fixtureSession(h.get('cookie'), host, process.env)) redirect('/sign-in?next=%2Fproj-bedroom%2Fpartner-01%2Fsettlement');
   const params = await searchParams, from = typeof params.from === 'string' ? params.from : '', to = typeof params.to === 'string' ? params.to : '';
   const rows = periodRows(params.from, params.to);
   return <main className="staff-console"><section className="console-card">

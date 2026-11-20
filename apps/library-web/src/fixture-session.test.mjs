@@ -12,6 +12,7 @@ function cookie(response) { return response.headers.get('set-cookie').split(';')
 test('login returns only to a known synthetic publication', () => {
   const path = '/publications/00000000-0000-4000-8000-000000000001';
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, path).headers.get('location'), path);
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/mypage').headers.get('location'), '/mypage');
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '//example.invalid/').headers.get('location'), '/');
 });
 

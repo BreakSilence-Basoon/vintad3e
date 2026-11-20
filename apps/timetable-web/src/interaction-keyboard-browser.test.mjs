@@ -24,6 +24,11 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
       try {
         await page.goto(origin);
         await page.waitForURL('**/sign-in?next=%2F%3Fview%3Dhistory');
+        await page.goto(`${origin}/admin/schedule?month=2026-05`);
+        await page.waitForURL('**/sign-in?next=%2Fadmin%2Fschedule%3Fmonth%3D2026-05');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/?view=schedule&month=2026-05');
+        await context.clearCookies();
         await page.goto(`${origin}/confirmations/proposal-01`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
         await page.goto(`${origin}/auth/session-resume?next=%2Fadmin%2Fkiosks`);

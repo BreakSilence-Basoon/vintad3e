@@ -62,11 +62,10 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
     await waitFor(async () => evaluate("document.querySelector('main')?.textContent.includes('재료 01')"));
     assert.ok(await evaluate("document.querySelector('main').textContent.includes('음료 01')"));
     assert.equal(await evaluate("document.querySelectorAll('.inventory-editor').length"), 0);
-    await send('Page.navigate',{url: `${origin}/confirmations/proposal-01`});
+    await send('Page.navigate',{url: `${origin}/auth/session-resume?next=%2Fconfirmations%2Fproposal-01`});
     await waitFor(async () => evaluate("location.pathname === '/sign-in'"));
     await evaluate("document.querySelector('form button').click()");
-    await waitFor(async () => evaluate("location.pathname === '/'"));
-    await send('Page.navigate',{url: `${origin}/confirmations/proposal-01`});
+    await waitFor(async () => evaluate("location.pathname === '/confirmations/proposal-01'"));
     await waitFor(async () => evaluate("[...document.querySelectorAll('button')].some(b => b.textContent === '제안 불러오기')"));
     await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('재료 이름 변경'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '제안 불러오기')?.click();return false;})()"));
     await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('이 내용으로 확인'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '제안 검토')?.click();return false;})()"));

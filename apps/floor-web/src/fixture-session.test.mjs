@@ -7,6 +7,10 @@ test('resume accepts internal paths only', () => {
   assert.equal(fixtureResumePath('/documents?tab=all'), '/documents?tab=all');
   for (const path of ['//example.invalid/', '/\\example.invalid/', '/auth/session-resume', 'https://example.invalid/', undefined]) assert.equal(fixtureResumePath(path), '/');
 });
+test('login returns only to known local fixture screens', () => {
+  for (const path of ['/inventory','/sales','/confirmations/proposal-01']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, path).headers.get('location'), path);
+  for (const path of ['//example.invalid/', '/\\example.invalid/', 'https://example.invalid/']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, path).headers.get('location'), '/');
+});
 function post(action, headers = {}) { return new Request(`${origin}/api/fixture/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3830', origin, ...headers } }); }
 function cookie(response) { return response.headers.get('set-cookie').split(';')[0]; }
 

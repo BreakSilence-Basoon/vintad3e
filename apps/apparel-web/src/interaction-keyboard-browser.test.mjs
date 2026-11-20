@@ -58,6 +58,12 @@ test('apparel stock validation, saving and sales filters work with keyboard inpu
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 2);
         await enter(page, page.getByRole('button', { name: '교차 검증 즉시 실행' }));
         await page.locator('.admin-toast--error').filter({ hasText: '교차 검증 실행에 실패했습니다' }).waitFor();
+        await page.goto(`${origin}/admin/audit?actor=system`);
+        assert.equal(await page.locator('.audit-page .audit-card').count(), 10);
+        await enter(page, page.getByRole('navigation', { name: '수정 이력 더 불러오기' }).getByRole('link', { name: '더 불러오기' }));
+        await page.waitForURL(url => url.searchParams.get('auditPage') === '2' && url.searchParams.get('actor') === 'system');
+        assert.equal(await page.locator('.audit-page .audit-card').count(), 11);
+        assert.equal(await page.getByRole('navigation', { name: '수정 이력 더 불러오기' }).count(), 0);
       } finally { await context.close(); }
     }
   } finally {

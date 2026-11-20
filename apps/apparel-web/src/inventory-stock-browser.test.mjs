@@ -39,7 +39,10 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     const run = async expression => { await evaluate(expression); await delay(150); };
     await send('Page.navigate',{url:`${origin}/admin/audit`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.audit-page .audit-filter-bar[data-hydrated=true]'))"));
-    assert.equal(await evaluate("document.querySelectorAll('.audit-page .audit-card').length"), 3);
+    assert.equal(await evaluate("document.querySelectorAll('.audit-page .audit-card').length"), 10);
+    await evaluate("document.querySelector('.audit-page .load-more-pager a').click()");
+    await waitFor(async () => evaluate("document.querySelectorAll('.audit-page .audit-card').length === 13"));
+    assert.equal(await evaluate("document.querySelectorAll('.audit-page .load-more-pager').length"), 0);
     assert.deepEqual(await evaluate("[...document.querySelectorAll('[name=actor] option')].map(x=>x.textContent)"), ['실행자 전체', '구성원 1', '대표님', '구성원 2', 'AI', '시스템']);
     await evaluate("(()=>{const f=document.querySelector('.audit-filter-bar');f.querySelector('[name=keyword]').value='재고';f.querySelector('[name=actor]').value='staff1';f.requestSubmit()})()");
     await waitFor(async () => evaluate("location.search.includes('actor=staff1') && location.search.includes('keyword=')"));

@@ -14,6 +14,7 @@ export function getFixtureAudit(env: string | undefined, enabled: string | undef
     { id: 'audit-1', occurredAt: now.toISOString(), actor: 'staff1', actorLabel: '구성원 1', summary: '재고 수량을 수정했습니다.' },
     { id: 'audit-2', occurredAt: new Date(now.getTime() - 2 * DAY).toISOString(), actor: 'ai', actorLabel: 'AI', summary: '판매 기록을 정리했습니다.' },
     { id: 'audit-3', occurredAt: new Date(now.getTime() - 8 * DAY).toISOString(), actor: 'system', actorLabel: '시스템', summary: '상품 정보를 갱신했습니다.' },
+    ...Array.from({ length: 10 }, (_, index): FixtureAudit => ({ id: `audit-older-${index + 1}`, occurredAt: new Date(now.getTime() - (31 + index) * DAY).toISOString(), actor: 'system', actorLabel: '시스템', summary: '상품 정보를 갱신했습니다.' })),
   ];
 }
 export function filterFixtureAudit(entries: FixtureAudit[], filters: AuditFilterFormState, now: Date): FixtureAudit[] {

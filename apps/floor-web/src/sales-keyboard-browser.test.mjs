@@ -28,6 +28,7 @@ test('floor sales search, pagination and inventory read view work with keyboard 
         await page.waitForURL(origin + '/');
         await page.goto(`${origin}/sales?salesPage=wrong`);
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 18);
+        await page.getByText('판매 항목 없음', { exact: true }).waitFor();
         await enter(page, page.locator('[aria-label="판매내역 더 불러오기"] a'));
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 21);
         const form = page.locator('.audit-filter-bar');

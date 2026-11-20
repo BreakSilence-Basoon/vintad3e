@@ -39,6 +39,11 @@ test('portal login, navigation, confirmation and failures work in a browser', { 
         assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation')).status), 401);
         await press(page, 'button', '회사 계정으로 로그인');
         await page.waitForURL('**/confirmations/proposal-01');
+        await press(page, 'link', 'staff01@example.invalid 로그인 화면 보기');
+        await press(page, 'link', '빈타제로 돌아가기');
+        await page.waitForURL(origin + '/');
+        await page.goto(`${origin}/confirmations/proposal-01`);
+        await page.getByRole('link', { name: '빈타제 홈으로 이동' }).waitFor();
 
         // A proposal cannot be confirmed or reviewed before it is loaded.
         assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'confirm' }) })).status), 409);

@@ -58,6 +58,14 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
         await enter(page, form.getByRole('button', { name: '조회' }));
         await page.getByText('종료일은 시작일보다 빠를 수 없습니다.', { exact: false }).waitFor();
         assert.equal(new URL(page.url()).searchParams.get('from'), null);
+        await from.fill('2026-01-01'); await to.fill('2026-01-03');
+        await enter(page, form.getByRole('button', { name: '조회' }));
+        await page.waitForURL(url => url.searchParams.get('from') === '2026-01-01' && url.searchParams.get('to') === '2026-01-03');
+        const resultForm = page.locator('.coupon-analytics__date-filter:visible').first();
+        assert.equal(await resultForm.locator('input[name=from]').inputValue(), '2026-01-01');
+        assert.equal(await resultForm.locator('input[name=to]').inputValue(), '2026-01-03');
+        await page.reload();
+        assert.equal(await page.locator('.coupon-analytics__date-filter:visible').first().locator('input[name=from]').inputValue(), '2026-01-01');
 
         await page.goto(`${origin}/formula`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');

@@ -21,12 +21,12 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-admin-browser-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_ADMIN_FIXTURE:'1'}, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_ADMIN_FIXTURE:'1',VINTAD3E_ADMIN_FIXTURE_ORIGIN:origin}, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(`${origin}/members`)).ok);
-    assert.equal((await fetch(`${origin}/members/unknown`)).status, 404);
+    assert.equal((await fetch(`${origin}/members/unknown`, { redirect: 'manual' })).status, 307);
     await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
     const target = await (await fetch(`${debug}/json/new?about:blank`, {method:'PUT'})).json();
     socket = new WebSocket(target.webSocketDebuggerUrl);
@@ -37,7 +37,10 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     await send('Page.navigate',{url:origin});
+    await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
     await waitFor(async () => evaluate("document.querySelectorAll('.home-matrix tbody tr').length === 11"));
+    assert.equal(await evaluate("fetch('/members/unknown').then(response=>response.status)"), 404);
     assert.ok(await evaluate("document.querySelector('.home-matrix tbody').textContent.includes('직원 01')"));
     assert.ok(await evaluate("document.querySelector('.home-matrix tbody').textContent.includes('정상')"));
     assert.equal(await evaluate("document.querySelectorAll('.home-matrix a').length"),9);

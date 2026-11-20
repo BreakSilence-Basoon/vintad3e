@@ -39,6 +39,7 @@ try {
      if(!response || !response.ok()) throw new Error(`HTTP ${response?.status() ?? 'no response'}`);
      if(name==='timetable'&&new URL(page.url()).pathname==='/sign-in'){await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); await page.waitForURL(url=>url.pathname!=='/sign-in');}
      if(name==='portal'||name==='library'||name==='floor'){await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); await page.waitForURL(origin+'/');}
+     if(name==='admin'){await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); await page.waitForURL(origin+'/members');}
      if(name==='supporters'){await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); await page.waitForURL(origin+'/coupon');}
      if(name==='partners'){await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); await page.waitForURL(origin+'/');}
      await page.waitForTimeout(500);

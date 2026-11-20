@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { requireFixtureAdminAccess } from '../../fixture-access';
 import { fixtureApps, fixtureGrantActive, fixtureGrants, fixtureTier, getFixtureMembers } from '../../members-fixture';
 import { Selector } from '../../permission-selector';
 import { PermissionsMatrix } from '../../permissions-matrix';
@@ -6,6 +7,7 @@ import { PermissionsMatrix } from '../../permissions-matrix';
 const tiers = [{ key: 'admin', label: '어드민' }, { key: 'crew', label: '크루' }, { key: 'guest', label: '게스트' }] as const;
 export const dynamic = 'force-dynamic';
 export default async function PermissionsPage({ searchParams }: { searchParams: Promise<{ tier?: string }> }) {
+  await requireFixtureAdminAccess('/permissions');
   const members = getFixtureMembers(process.env.NODE_ENV, process.env.VINTAD3E_ADMIN_FIXTURE);
   if (!members.length) notFound();
   const params = await searchParams;

@@ -40,7 +40,7 @@ try {
      if(name==='portal'||name==='library'){await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); await page.waitForURL(origin+'/');}
      await page.waitForTimeout(500);
      if (process.env.SMOKE_SCREENSHOT_PREFIX) await page.screenshot({path:`${process.env.SMOKE_SCREENSHOT_PREFIX}${name}-${width}.png`});
-     const result=await page.evaluate(()=>({title:document.title, text:document.body.innerText.trim().length, viewport:innerWidth, scroll:document.documentElement.scrollWidth, clipped:[...document.querySelectorAll('h1,h2,h3,button,a')].filter(e=>{const s=getComputedStyle(e); return e.clientWidth>2 && e.scrollWidth>e.clientWidth+2 && s.overflowX==='hidden' && s.textOverflow!=='ellipsis';}).map(e=>(e.innerText||'').trim().slice(0,80)).filter(Boolean).slice(0,10)}));
+     const result=await page.evaluate(()=>({title:document.title, text:document.body.innerText.trim().length, viewport:innerWidth, scroll:document.documentElement.scrollWidth, clipped:[...document.querySelectorAll('h1,h2,h3,button,a')].filter(e=>{const s=getComputedStyle(e); if(e.matches('.topbar__logout')&&!e.closest('.is-confirming')){const label=e.querySelector('.topbar__logout-label');return label && label.clientWidth>2 && label.scrollWidth>label.clientWidth+2;} return e.clientWidth>2 && e.scrollWidth>e.clientWidth+2 && s.overflowX==='hidden' && s.textOverflow!=='ellipsis';}).map(e=>(e.innerText||'').trim().slice(0,80)).filter(Boolean).slice(0,10)}));
      if(!result.text || result.scroll>width+1 || result.clipped.length || errors.length)bad=true;
      console.log(JSON.stringify({app:name,width,...result,errors}));
     }finally{await context.close();}

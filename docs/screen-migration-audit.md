@@ -20,7 +20,7 @@
 
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
-| `/access-denied` | 동일 주소 | 상세 미대조 |
+| `/access-denied` | 동일 주소 | 일부 대조 |
 | `/admin/audit` | 동일 주소 | 상세 미대조 |
 | `/admin/inventory/graphics/[productCode]` | 동일 주소 | 일부 대조 |
 | `/admin/inventory/shortages` | 동일 주소 | 상세 미대조 |
@@ -42,18 +42,18 @@
 | --- | --- | --- |
 | `/confirmations/[proposalId]` | 동일 주소 | 상세 미대조 |
 | `/` | 동일 주소 | 일부 대조 |
-| `/sign-in` | 동일 주소 | 상세 미대조 |
+| `/sign-in` | 동일 주소 | 일부 대조 |
 
 ## Floor
 
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
-| `/access-denied` | 동일 주소 | 상세 미대조 |
+| `/access-denied` | 동일 주소 | 일부 대조 |
 | `/auth/session-resume` | 동일 주소 | 상세 미대조 |
 | `/confirmations/[proposalId]` | 동일 주소 | 상세 미대조 |
 | `/inventory` | 동일 주소 | 일부 대조 |
 | `/` | 동일 주소 | 상세 미대조 |
-| `/sales` | 동일 주소 | 상세 미대조 |
+| `/sales` | 동일 주소 | 일부 대조 |
 | `/sign-in` | 동일 주소 | 상세 미대조 |
 
 정책상 대조가 허용되지 않은 화면은 제외했습니다.
@@ -65,7 +65,7 @@
 | `/auth/session-resume` | 동일 주소 | 상세 미대조 |
 | `/bookmarks` | 동일 주소 | 상세 미대조 |
 | `/confirmations/[proposalId]` | 동일 주소 | 상세 미대조 |
-| `/documents/[slug]` | 동일 주소 | 상세 미대조 |
+| `/documents/[slug]` | 동일 주소 | 일부 대조 |
 | `/ir/[id]` | 동일 주소 | 일부 대조 |
 | `/meetings/[meetingId]` | 동일 주소 | 일부 대조 |
 | `/meetings` | 동일 주소 | 상세 미대조 |
@@ -93,7 +93,7 @@
 | `/[area]/[partner]/sign-in` | 동적 경로 등 추가 확인 | 상세 미대조 |
 | `/[area]` | 동일 주소 | 상세 미대조 |
 | `/accounts` | 동일 주소 | 상세 미대조 |
-| `/auth/session-resume` | 동일 주소 | 상세 미대조 |
+| `/auth/session-resume` | 동일 주소 | 일부 대조 |
 | `/guide/dj/[slug]` | 동일 주소 | 상세 미대조 |
 | `/guide/dj` | 동일 주소 | 상세 미대조 |
 | `/` | 동일 주소 | 상세 미대조 |
@@ -109,7 +109,7 @@
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
 | `/about` | 동일 주소 | 일부 대조 |
-| `/auth/session-resume` | 동일 주소 | 상세 미대조 |
+| `/auth/session-resume` | 동일 주소 | 일부 대조 |
 | `/confirmations/[proposalId]` | 동일 주소 | 상세 미대조 |
 | `/` | 동일 주소 | 상세 미대조 |
 | `/sign-in` | 동일 주소 | 상세 미대조 |
@@ -136,7 +136,7 @@
 
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
-| `/access-denied` | 동일 주소 | 상세 미대조 |
+| `/access-denied` | 동일 주소 | 일부 대조 |
 | `/admin/attendance` | 동일 주소 | 상세 미대조 |
 | `/admin/kiosks` | 동일 주소 | 상세 미대조 |
 | `/admin/schedule` | 동일 주소 | 상세 미대조 |

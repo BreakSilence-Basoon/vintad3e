@@ -20,9 +20,10 @@ test('development inventory renders fixture products in the selected collection'
       await delay(300);
     }
     assert.equal(response?.status, 200);
-    const denied = await fetch(`${origin}/admin/products`, { redirect: 'manual' });
+    const denied = await fetch(`${origin}/admin/products`, { redirect: 'manual', headers: { 'x-vintad3e-apparel-return-path': '//example.invalid' } });
     assert.equal(denied.status, 307);
     assert.equal(new URL(denied.headers.get('location'), origin).pathname, '/sign-in');
+    assert.equal(new URL(denied.headers.get('location'), origin).searchParams.get('next'), '/admin/products');
     const login = await fetch(`${origin}/api/fixture/login`, { method: 'POST', headers: { origin }, body: new URLSearchParams({ next: '/admin' }), redirect: 'manual' });
     assert.equal(login.status, 303);
     const cookie = login.headers.get('set-cookie')?.split(';')[0];

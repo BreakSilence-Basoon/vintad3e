@@ -22,8 +22,11 @@ test('apparel stock validation, saving and sales filters work with keyboard inpu
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       const page = await context.newPage();
       try {
-        await page.goto(`${origin}/admin/sales`);
-        await page.waitForURL('**/sign-in?next=%2Fadmin');
+        await page.goto(`${origin}/admin/sales?range=all`);
+        await page.waitForURL('**/sign-in?next=%2Fadmin%2Fsales%3Frange%3Dall');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/admin/sales?range=all');
+        await context.clearCookies();
         await page.goto(`${origin}/access-denied`);
         await page.getByText('로그인 필요', { exact: true }).waitFor();
         await enter(page, page.getByRole('button', { name: '다른 계정으로 로그인' }));

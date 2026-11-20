@@ -65,8 +65,14 @@ test('floor administrator adds synthetic ingredients and preserves data on stora
       const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10); await countEditor.getByLabel('실사일 (한국 시간)').fill(yesterday); await countEditor.getByLabel('시간',{exact:true}).fill('12:00');
       await countEditor.locator('select[name=ingredientId]').selectOption({label:'재료 02 (g)'}); await countEditor.getByLabel('수량',{exact:true}).fill('5.125'); await enter(page,countEditor.getByRole('button',{name:'저장'}));
       await countEditor.getByText('저장했습니다.').waitFor(); assert.ok((await page.getByRole('row').filter({has:page.getByRole('rowheader',{name:/재료 02/})}).innerText()).includes('5.125'));
-      await page.reload(); await page.getByText('재고 실사',{exact:true}).waitFor(); await enter(page,page.getByRole('button',{name:'기록 취소'}));
-      await page.getByText('취소됨',{exact:true}).waitFor(); assert.ok((await page.getByRole('row').filter({has:page.getByRole('rowheader',{name:/재료 02/})}).innerText()).includes('—'));
+      const purchaseEditor=page.locator('.inventory-editor').filter({has:page.getByText('구매·입고 기록',{exact:true})}); await enter(page,purchaseEditor.locator('summary'));
+      await purchaseEditor.getByLabel('구매처').fill('가게 01'); await purchaseEditor.getByLabel('기록일 (한국 시간)').fill(yesterday); await purchaseEditor.getByLabel('시간',{exact:true}).fill('13:00');
+      await purchaseEditor.locator('select[name=ingredientId]').selectOption({label:'재료 02 (g)'}); await purchaseEditor.getByLabel('수량',{exact:true}).fill('2'); await enter(page,purchaseEditor.getByRole('button',{name:'저장'}));
+      await purchaseEditor.getByText('저장했습니다.').waitFor(); const purchase=page.locator('.inventory-list li').filter({hasText:'가게 01'}); await purchase.getByText('주문 중',{exact:true}).waitFor();
+      await enter(page,purchase.getByRole('button',{name:'지금 입고 완료'})); await purchase.getByText('입고 완료',{exact:true}).waitFor(); assert.ok((await page.getByRole('row').filter({has:page.getByRole('rowheader',{name:/재료 02/})}).innerText()).includes('7.125'));
+      await enter(page,purchase.getByRole('button',{name:'기록 취소'})); await purchase.getByText('취소됨',{exact:true}).waitFor();
+      await page.reload(); await page.getByText('재고 실사',{exact:true}).waitFor(); await enter(page,page.locator('.inventory-list li').filter({hasText:'재고 실사'}).getByRole('button',{name:'기록 취소'}));
+      await page.locator('.inventory-list li').filter({hasText:'재고 실사'}).getByText('취소됨',{exact:true}).waitFor(); assert.ok((await page.getByRole('row').filter({has:page.getByRole('rowheader',{name:/재료 02/})}).innerText()).includes('—'));
       await page.evaluate(()=>sessionStorage.setItem('vintad3e-floor-counts','{bad')); await page.reload();
       await page.getByRole('alert').filter({hasText:'입력값을 확인해주세요.'}).waitFor(); await enter(page,countEditor.locator('summary')); assert.equal(await countEditor.getByRole('button',{name:'저장'}).isDisabled(),true);
       assert.equal(await page.evaluate(()=>sessionStorage.getItem('vintad3e-floor-counts')),'{bad'); await page.evaluate(()=>sessionStorage.removeItem('vintad3e-floor-counts'));

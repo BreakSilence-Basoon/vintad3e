@@ -1,9 +1,11 @@
 import { getFixtureInventory } from './inventory-fixture.ts';
 import { readFixtureStock, writeFixtureStock } from './inventory-fixture-session.ts';
 import { defaultRow, toDraft, validateDraft } from './inventory-stock.ts';
+import { fixtureDashboardRequest } from './dashboard-fixture-request.ts';
 
 const reply = (status: number, body: object) => Response.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } });
 export async function fixtureInventoryRequest(path: string, init: RequestInit): Promise<Response> {
+  if (path === '/api/admin/seongsu-work-quantities') return fixtureDashboardRequest(path, init);
   if (init.method !== 'POST' || typeof init.body !== 'string' || init.body.length > 4096) return reply(400, {});
   let input: Record<string, unknown>;
   try { const value: unknown = JSON.parse(init.body); if (!value || typeof value !== 'object' || Array.isArray(value)) return reply(400, {}); input = value as Record<string, unknown>; } catch { return reply(400, {}); }

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import './admin-return-path.test.mjs';
 import { fixtureOrigin, fixtureSession, handleFixtureSession, fixtureResumePath } from './fixture-session.mjs';
 const origin = 'http://127.0.0.1:3826';
 const env = { NODE_ENV: 'development', VINTAD3E_APPAREL_FIXTURE: '1' };
@@ -26,8 +27,10 @@ test('fixture login and logout rotate and revoke only local synthetic sessions',
   assert.equal(fixtureSession(secondCookie, '127.0.0.1:3826', env, 1005), false);
 });
 
-test('fixture login only returns to the known confirmation path', () => {
+test('fixture login only returns to known local paths', () => {
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/confirmations/proposal-01').headers.get('location'), '/confirmations/proposal-01');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/admin/products').headers.get('location'), '/admin/products');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/admin/sales?range=all').headers.get('location'), '/admin/sales?range=all');
   for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
 });
 

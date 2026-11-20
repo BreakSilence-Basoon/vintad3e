@@ -12,7 +12,7 @@ async function waitFor(fn) { for(let i=0;i<120;i++){try{const result=await fn();
 test('self fixture shows only own schedule and attendance without edit controls', {timeout:120000}, async()=>{
   const port=await freePort(),debugPort=await freePort(),origin=`http://127.0.0.1:${port}`,debug=`http://127.0.0.1:${debugPort}`;
   const profile=await mkdtemp(join(tmpdir(),'vintad3e-timetable-self-'));
-  const server=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)],{env:{...process.env,NODE_ENV:'development',VINTAD3E_TIMETABLE_FIXTURE:'1',VINTAD3E_TIMETABLE_FIXTURE_ADMIN:'',VINTAD3E_TIMETABLE_FIXTURE_SELF:'1'},stdio:'ignore'});
+  const server=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)],{env:{...process.env,NODE_ENV:'development',VINTAD3E_TIMETABLE_FIXTURE:'1',VINTAD3E_TIMETABLE_FIXTURE_ORIGIN:origin,VINTAD3E_TIMETABLE_FIXTURE_ADMIN:'',VINTAD3E_TIMETABLE_FIXTURE_SELF:'1'},stdio:'ignore'});
   const chrome=spawn('google-chrome',['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debugPort}`,'about:blank'],{stdio:'ignore'});
   let socket,closeBrowser;
   try {
@@ -22,6 +22,9 @@ test('self fixture shows only own schedule and attendance without edit controls'
     let sequence=0;const pending=new Map();socket.addEventListener('message',event=>{const message=JSON.parse(event.data);if(message.id&&pending.has(message.id)){const {resolve,reject}=pending.get(message.id);pending.delete(message.id);message.error?reject(new Error(message.error.message)):resolve(message.result);}});
     const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));});closeBrowser=()=>send('Browser.close');
     const evaluate=async expression=>{const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw new Error(result.exceptionDetails.text);return result.result.value;};
+    await send('Page.navigate',{url:`${origin}/sign-in`});
+    await waitFor(async()=>evaluate("Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()"); await waitFor(async()=>evaluate("location.pathname === '/'"));
     await send('Page.navigate',{url:`${origin}/?view=schedule&month=2026-02`});
     await waitFor(async()=>evaluate("Boolean(document.querySelector('[data-calendar-month] button[data-hydrated=true]'))"));
     await evaluate(`sessionStorage.setItem('vintad3e:timetable-schedule', JSON.stringify({

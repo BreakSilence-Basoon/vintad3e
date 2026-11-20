@@ -1,10 +1,12 @@
 import { SalesFilterForm } from '../../sales-filter-form';
+import { requireFixtureFloorAccess } from '../../fixture-access';
 import { buildSalesHref, parseSalesFilters, parseSalesPage } from '../../sales-filters';
 import { getSalesFixtures, filterSalesFixtures, paginateSalesFixtures } from '../../sales-fixture';
 import { SalesFixtureList } from '../../sales-fixture-list';
 import { LoadMorePager } from '../../load-more-pager';
 export const dynamic = 'force-dynamic';
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string,string|string[]|undefined>> }) {
+  await requireFixtureFloorAccess('/');
   const params = await searchParams;
   const filters = parseSalesFilters(params);
   const page = parseSalesPage(params.salesPage);

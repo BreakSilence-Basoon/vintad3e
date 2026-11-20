@@ -1,0 +1,67 @@
+name: Windows and macOS first run
+on:
+  pull_request:
+    paths:
+      - 'scripts/start.ps1'
+      - 'scripts/start.sh'
+      - 'docs/first-run.md'
+      - 'apps/portal-web/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/first-run-platforms.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: corepack enable
+      - name: Start from a clean clone
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'vintad3e-first-windows'
+          git clone --no-local $env:GITHUB_WORKSPACE $target
+          if ($LASTEXITCODE -ne 0) { throw 'clone failed' }
+          $out = Join-Path $env:RUNNER_TEMP 'vintad3e-start-out.log'
+          $err = Join-Path $env:RUNNER_TEMP 'vintad3e-start-err.log'
+          $script = Join-Path $target 'scripts/start.ps1'
+          $proc = Start-Process powershell -ArgumentList @('-NoProfile','-File', $script) -WindowStyle Hidden -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
+          try {
+            $ready = $false
+            for ($i = 0; $i -lt 180; $i++) {
+              try { if ((Invoke-WebRequest 'http://127.0.0.1:3825' -UseBasicParsing -TimeoutSec 2).StatusCode -eq 200) { $ready = $true; break } } catch {}
+              $proc.Refresh(); if ($proc.HasExited) { break }; Start-Sleep -Seconds 1
+            }
+            if (-not $ready) { Get-Content $out, $err -ErrorAction SilentlyContinue; throw 'Windows first run failed' }
+          } finally { $proc.Refresh(); if (-not $proc.HasExited) { taskkill /PID $proc.Id /T /F | Out-Null } }
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: corepack enable
+      - name: Start from a clean clone
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="$RUNNER_TEMP/vintad3e-first-macos"
+          git clone --no-local "$GITHUB_WORKSPACE" "$target"
+          sh "$target/scripts/start.sh" > "$RUNNER_TEMP/vintad3e-start.log" 2>&1 &
+          pid=$!
+          trap 'pkill -TERM -P "$pid" 2>/dev/null || true; kill "$pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 180); do
+            if curl --fail --silent --location --output /dev/null http://127.0.0.1:3825; then ready=1; break; fi
+            if ! kill -0 "$pid" 2>/dev/null; then break; fi
+            sleep 1
+          done
+          if [ "$ready" != 1 ]; then cat "$RUNNER_TEMP/vintad3e-start.log"; exit 1; fi

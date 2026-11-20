@@ -56,12 +56,19 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-library-browser-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_LIBRARY_FIXTURE:'1'}, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_LIBRARY_FIXTURE:'1',VINTAD3E_LIBRARY_FIXTURE_ORIGIN:origin}, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(origin)).ok);
-    assert.equal((await fetch(`${origin}/documents/legacy-document`)).status, 404);
+    for (const path of ['/bookmarks', '/meetings', '/meetings/00000000-0000-4000-8000-000000000004', '/members', '/mypage', '/objects']) {
+      const response = await fetch(`${origin}${path}`, { redirect: 'manual' });
+      assert.equal(response.status, 307);
+      assert.equal(new URL(response.headers.get('location'), origin).searchParams.get('next'), path);
+    }
+    const legacyDocument = await fetch(`${origin}/documents/legacy-document`, {redirect:'manual'});
+    assert.equal(legacyDocument.status, 307);
+    assert.equal(new URL(legacyDocument.headers.get('location'), origin).pathname, '/sign-in');
     await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
     const target = await (await fetch(`${debug}/json/new?about:blank`, {method:'PUT'})).json();
     socket = new WebSocket(target.webSocketDebuggerUrl);
@@ -73,15 +80,29 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     const run = async expression => { await evaluate(expression); await delay(150); };
     await send('Page.navigate',{url:origin});
-    await waitFor(async () => evaluate("document.querySelectorAll('.library-feed li').length === 3"));
-    assert.equal(await evaluate("document.querySelectorAll('.library-post').length"), 3);
+    await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
+    await waitFor(async () => evaluate("document.querySelectorAll('.library-feed li').length === 5"));
+    assert.equal(await evaluate("document.querySelectorAll('.library-post').length"), 5);
     assert.ok(await evaluate("Boolean(document.querySelector('.library-feed a[href=\"/objects/00000000-0000-4000-8000-000000000003\"]'))"));
     await send('Page.navigate',{url:`${origin}/?q=${encodeURIComponent('운영')}`});
     await waitFor(async () => evaluate("location.search.includes('q=') && document.querySelectorAll('.library-feed li').length === 1"));
     assert.ok(await evaluate("document.querySelector('.library-feed').textContent.includes('매장 운영 안내')"));
     await evaluate("document.querySelector('.library-feed a').click()");
+    await waitFor(async () => evaluate("location.pathname === '/publications/00000000-0000-4000-8000-000000000001' && Boolean(document.querySelector('.publication-content'))"));
+    await send('Network.clearBrowserCookies');
+    await send('Page.navigate',{url:`${origin}/publications/00000000-0000-4000-8000-000000000001`});
+    await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('.publication-content'))"));
+    assert.equal(await evaluate("location.pathname"), '/publications/00000000-0000-4000-8000-000000000001');
     assert.ok(await evaluate("document.querySelector('.publication-content').textContent.includes('업무를 시작하기')"));
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.library-source__trigger'))"));
+    assert.equal(await evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded')"), 'false');
+    await waitFor(async () => evaluate("(()=>{const button=document.querySelector('.library-source__trigger');if(button?.getAttribute('aria-expanded')==='true')return true;button?.click();return false;})()"));
+    assert.ok(await evaluate("document.querySelector('.library-source__body').textContent.includes('Markdown')"));
+    await run("document.querySelector('.library-source__trigger').click()");
+    await waitFor(async () => evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded') === 'false'"));
     const sourcePath = await evaluate("document.querySelector('.publication-actions a').getAttribute('href')");
     assert.equal(sourcePath, '/api/publications/00000000-0000-4000-8000-000000000001/source');
     const download = await fetch(`${origin}${sourcePath}`);
@@ -91,7 +112,7 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     assert.equal(await download.text(), '업무를 시작하기 전에 필요한 사항을 확인합니다.');
     assert.equal((await fetch(`${origin}/api/publications/unknown/source`)).status, 404);
     const objectPath = '/objects/00000000-0000-4000-8000-000000000003';
-    assert.equal((await fetch(`${origin}${objectPath}?documentId=00000000-0000-4000-8000-000000000001`)).status, 404);
+    assert.equal((await fetch(`${origin}${objectPath}?documentId=00000000-0000-4000-8000-000000000099`)).status, 404);
     assert.equal((await fetch(`${origin}/api/objects/unknown/source`)).status, 404);
     await send('Page.navigate',{url:`${origin}/objects`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.library-attachment-card'))"));

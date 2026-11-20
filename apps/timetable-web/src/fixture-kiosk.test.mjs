@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fixtureKioskOrigin, handleFixtureKiosk } from './fixture-kiosk.mjs';
+import { fixtureKioskDevice, fixtureKioskOrigin, handleFixtureKiosk } from './fixture-kiosk.mjs';
 const origin = 'http://127.0.0.1:3824';
 const env = { NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '1', VINTAD3E_TIMETABLE_FIXTURE_ADMIN: '1' };
 function post(action, body, extra = {}) { return new Request(`${origin}/api/fixture/kiosk/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3824', origin, 'content-type': 'application/json', ...extra }, body: JSON.stringify(body) }); }
@@ -8,6 +8,11 @@ test('a synthetic device issues one-use, expiring challenges and can be revoked'
   const registered = await handleFixtureKiosk(post('register', { label: '기기 01' }), env, 'register', 1000);
   assert.equal(registered.status, 201);
   const device = await registered.json();
+  const deviceCookie = `vintad3e-kiosk-device=${device.id}`;
+  assert.equal(fixtureKioskDevice(deviceCookie, '127.0.0.1:3824', env), true);
+  assert.equal(fixtureKioskDevice(`${deviceCookie}; ${deviceCookie}`, '127.0.0.1:3824', env), false);
+  assert.equal(fixtureKioskDevice(deviceCookie, 'example.invalid', env), false);
+  assert.equal(fixtureKioskDevice(deviceCookie, '127.0.0.1:3824', { ...env, NODE_ENV: 'production' }), false);
   const issued = await handleFixtureKiosk(post('challenge', { id: device.id }), env, 'challenge', 1000);
   const challenge = await issued.json();
   const accepted = await handleFixtureKiosk(post('scan', { token: challenge.token }), env, 'scan', 1001);
@@ -23,6 +28,7 @@ test('a synthetic device issues one-use, expiring challenges and can be revoked'
   assert.equal((await handleFixtureKiosk(post('scan', { token: expired.token }), env, 'scan', 31003)).status, 404);
   const revoked = await (await handleFixtureKiosk(post('challenge', { id: device.id }), env, 'challenge', 32000)).json();
   assert.equal((await handleFixtureKiosk(post('revoke', { id: device.id }), env, 'revoke', 32001)).status, 204);
+  assert.equal(fixtureKioskDevice(deviceCookie, '127.0.0.1:3824', env), false);
   assert.equal((await handleFixtureKiosk(post('scan', { token: revoked.token }), env, 'scan', 32002)).status, 404);
 });
 test('fixture cannot enable production, nonlocal hosts or cross-origin mutations', async () => {

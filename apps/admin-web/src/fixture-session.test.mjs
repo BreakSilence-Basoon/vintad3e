@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fixtureOrigin, fixtureSession, handleFixtureSession } from './fixture-session.mjs';
+import { fixtureCoverNext, fixtureOrigin, fixtureSession, handleFixtureSession } from './fixture-session.mjs';
 const origin = 'http://127.0.0.1:3832';
 const env = { NODE_ENV: 'development', VINTAD3E_ADMIN_FIXTURE: '1' };
+test('cover returns only to a known local screen while preserving its filters', () => {
+  assert.equal(fixtureCoverNext('/permissions?tier=guest'), '/permissions?tier=guest');
+  for (const path of ['//example.invalid/', '/\\example.invalid/', 'https://example.invalid/', '/sign-in', '/members/unknown']) assert.equal(fixtureCoverNext(path), '/');
+});
 function post(action, headers = {}) { return new Request(`${origin}/api/fixture/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3832', origin, ...headers } }); }
 function cookie(response) { return response.headers.get('set-cookie').split(';')[0]; }
 
@@ -33,4 +37,9 @@ test('fixture cannot activate in production or accept nonlocal and cross-origin 
   assert.equal(fixtureOrigin({ ...env, VINTAD3E_ADMIN_FIXTURE_ORIGIN: 'http://example.invalid:3832' }), null);
   const response = handleFixtureSession(post('login'), 'login', env, 1000);
   assert.equal(fixtureSession(cookie(response), '127.0.0.1:3832', env, 1000 + 30 * 60 * 1000), false);
+});
+
+test('login returns only to known synthetic admin screens', () => {
+  for (const next of ['/members', '/permissions', '/permissions/apps', '/audit', '/members/00000000-0000-4000-8000-000000000001']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), next);
+  for (const next of ['//example.invalid/', 'https://example.invalid/', '/members/unknown', '/members?next=//example.invalid/']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
 });

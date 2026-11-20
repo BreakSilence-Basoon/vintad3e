@@ -1,11 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fixtureOrigin, fixtureSession, handleFixtureSession, fixtureResumePath } from './fixture-session.mjs';
+import { fixtureCoverNext, fixtureOrigin, fixtureSession, handleFixtureSession, fixtureResumePath } from './fixture-session.mjs';
 const origin = 'http://127.0.0.1:3827';
 const env = { NODE_ENV: 'development', VINTAD3E_SUPPORTERS_FIXTURE: '1' };
 test('resume accepts internal paths only', () => {
   assert.equal(fixtureResumePath('/documents?tab=all'), '/documents?tab=all');
   for (const path of ['//example.invalid/', '/\\example.invalid/', '/auth/session-resume', 'https://example.invalid/', undefined]) assert.equal(fixtureResumePath(path), '/');
+});
+test('cover returns to known local screens with their selected filters', () => {
+  assert.equal(fixtureCoverNext('/coupon?staff=supporter-1'), '/coupon?staff=supporter-1');
+  for (const path of ['//example.invalid/', '/\\example.invalid/', 'https://example.invalid/', '/sign-in', '/unknown']) assert.equal(fixtureCoverNext(path), '/');
 });
 function post(action, headers = {}) { return new Request(`${origin}/api/fixture/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3827', origin, ...headers } }); }
 function cookie(response) { return response.headers.get('set-cookie').split(';')[0]; }
@@ -26,9 +30,11 @@ test('fixture login and logout rotate and revoke only local synthetic sessions',
   assert.equal(fixtureSession(secondCookie, '127.0.0.1:3827', env, 1005), false);
 });
 
-test('fixture login only returns to the known confirmation path', () => {
-  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/confirmations/proposal-01').headers.get('location'), '/confirmations/proposal-01');
-  for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
+test('fixture login only returns to known local paths', () => {
+  for (const next of ['/confirmations/proposal-01', '/formula', '/formula-info', '/performance', '/coupon', '/instagram', '/tiktok', '/settlements', '/settlements?staff=supporter-1']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), next);
+  const home = '/?staff=supporter-1&from=2026-01-01&to=2026-01-03';
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, home).headers.get('location'), home);
+  for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/', '/?next=https%3A%2F%2Fexample.invalid', '/?staff=a&staff=b', '/?staff=%2F%2Fexample.invalid', '/settlements?staff=a&next=//example.invalid']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
 });
 
 test('fixture cannot activate in production or accept nonlocal and cross-origin requests', () => {

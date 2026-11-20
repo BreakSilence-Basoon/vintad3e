@@ -13,7 +13,7 @@ async function waitFor(fn) { for(let i=0;i<120;i++){try{const value=await fn();i
 test('synthetic self registration and connections stay in this tab without SNS requests', { timeout: 120000 }, async () => {
   const port=await freePort(),debugPort=await freePort(),origin=`http://127.0.0.1:${port}`,debug=`http://127.0.0.1:${debugPort}`;
   const profile=await mkdtemp(join(tmpdir(),'vintad3e-supporters-self-'));
-  const server=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)],{env:{...process.env,NODE_ENV:'development',VINTAD3E_SUPPORTERS_FIXTURE:'1',VINTAD3E_SUPPORTERS_FIXTURE_SELF:'1'},stdio:'ignore'});
+  const server=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)],{env:{...process.env,NODE_ENV:'development',VINTAD3E_SUPPORTERS_FIXTURE:'1',VINTAD3E_SUPPORTERS_FIXTURE_ORIGIN:origin,VINTAD3E_SUPPORTERS_FIXTURE_SELF:'1'},stdio:'ignore'});
   const chrome=spawn('google-chrome',['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debugPort}`,'about:blank'],{stdio:'ignore'});
   let socket,closeBrowser;
   try {
@@ -25,6 +25,8 @@ test('synthetic self registration and connections stay in this tab without SNS r
     const evaluate=async expression=>{const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw new Error(result.exceptionDetails.text);return result.result.value;};
     const guard=async()=>evaluate("window.snsRequests=0;window.originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{if(new URL(typeof input==='string'?input:input.url,location.href).pathname.startsWith('/api/')){window.snsRequests++;return Promise.reject(new Error('unexpected request'));}return window.originalFetch(input,init)}");
     await send('Page.navigate',{url:`${origin}/instagram`});
+    await waitFor(async()=>evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
     await waitFor(async()=>evaluate("document.querySelectorAll('.register-toggle-button:not(:disabled)').length===2"));
     await guard();
     assert.equal(await evaluate("Boolean(document.querySelector('.gtm-page select[name=staff]'))"),false);

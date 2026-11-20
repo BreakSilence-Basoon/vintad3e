@@ -25,13 +25,36 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { if (window.failCopy) throw new Error('clipboard unavailable'); window.copiedText = text; } } }));
         await page.goto(`${origin}/accounts`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
+        await page.goto(`${origin}/proj-bedroom/partner-01`);
+        await page.waitForURL('**/sign-in?next=%2Fproj-bedroom%2Fpartner-01');
+        await page.goto(`${origin}/proj-bedroom/partner-02`);
+        await page.waitForURL('**/sign-in?next=%2Fproj-bedroom%2Fpartner-02');
         await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
         assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-01/sign-in');
+        await page.goto(`${origin}/dj`);
+        await page.waitForURL('**/sign-in?next=%2Fdj');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/dj');
+        await enter(page, page.getByRole('link', { name: 'staff01@example.invalid 로그인 전 화면 보기' }));
+        await enter(page, page.getByRole('link', { name: 'Partners로 돌아가기' }));
+        await page.waitForURL('**/dj');
+        if (width === 390) {
+          await enter(page, page.locator('summary[aria-label="메뉴"]'));
+          await enter(page, page.getByRole('navigation', { name: 'Partners 모바일 메뉴' }).getByRole('link', { name: '계정 추가' }));
+        } else {
+          await enter(page, page.getByRole('navigation', { name: 'Partners 메뉴' }).getByRole('link', { name: '계정 추가' }));
+        }
+        await page.waitForURL('**/accounts');
+        await page.goto(`${origin}/proj-bedroom/partner-01/sign-in`);
+        assert.equal(await page.locator('.partners-staff-shell').count(), 0);
+        await page.goto(`${origin}/guide/dj/ko`);
+        assert.equal(await page.locator('.partners-staff-shell').count(), 0);
         await page.goto(`${origin}/dj`);
         const form = page.locator('.partners-accountant');
         await enter(page, form.getByRole('button', { name: '전달문 복사' }));
         await form.locator('input[aria-invalid="true"]').first().waitFor();
         assert.ok(await form.locator('input[aria-invalid="true"]').count() >= 3);
+        await page.waitForFunction(() => document.activeElement?.getAttribute('aria-invalid') === 'true');
         const row = form.locator('.partners-accountant__row').first();
         const name = row.getByLabel('이름', { exact: true });
         const id = row.getByLabel('주민등록번호', { exact: true });
@@ -42,6 +65,7 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await enter(page, form.getByRole('button', { name: '전달문 복사' }));
         assert.equal(await id.getAttribute('aria-invalid'), 'true');
         assert.equal(await amount.getAttribute('aria-invalid'), 'true');
+        await page.waitForFunction(() => document.activeElement?.getAttribute('aria-invalid') === 'true');
         await id.fill('0000000000000'); await amount.fill('10000');
         await page.locator('.partners-accountant__preview').waitFor();
         assert.ok(!(await page.locator('.partners-accountant__preview').innerText()).includes('0000000000000'));
@@ -49,8 +73,9 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await enter(page, form.getByRole('button', { name: '전달문 복사' }));
         await form.getByRole('alert').waitFor();
         await page.evaluate(() => { window.failCopy = false; });
-        await enter(page, form.getByRole('button', { name: '전달문 복사' }));
-        await page.waitForFunction(() => window.copiedText?.includes('DJ A 000000-0000000 10,000원'));
+        await form.getByRole('button', { name: '전달문 복사' }).click();
+        await form.getByRole('status').filter({ hasText: '복사했습니다.' }).waitFor();
+        assert.ok(await page.evaluate(() => window.copiedText?.includes('DJ A 000000-0000000 10,000원')));
         await enter(page, form.getByRole('button', { name: 'DJ 추가' }));
         assert.equal(await form.locator('.partners-accountant__row').count(), 2);
         await enter(page, form.getByRole('button', { name: 'DJ 2 삭제' }));
@@ -68,6 +93,54 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await ledger.locator('input[name=query]').fill('찾을 수 없는 협업처');
         await enter(page, ledger.getByRole('button', { name: '조회' }));
         await ledger.locator('.staff-empty').waitFor();
+
+        await page.goto(`${origin}/proj-bedroom/partner-01`);
+        await enter(page,page.locator('.partners-history summary'));
+        await page.getByRole('region',{name:'정산 항목'}).getByText('123,460원').waitFor();
+        const settlement=page.getByRole('region',{name:'정산',exact:true});
+        await settlement.locator('input[type=search]').fill('없는 협업처'); await settlement.getByText('브랜드를 찾을 수 없습니다.').waitFor();
+        await settlement.locator('input[type=search]').fill('브랜드 01'); await settlement.getByRole('combobox',{name:'기간'}).selectOption('custom');
+        await settlement.getByLabel('시작일').fill('2026-11-19'); await settlement.getByLabel('종료일').fill('2026-11-19'); await settlement.getByRole('button',{name:'닫기'}).click();
+        await enter(page,settlement.getByRole('button',{name:'적용'})); await settlement.getByText('24,690원',{exact:true}).first().waitFor();
+        assert.ok((await settlement.innerText()).includes('1,235원'));
+        await enter(page,settlement.getByRole('button',{name:/판매액/})); await page.getByRole('dialog',{name:/판매 내역/}).waitFor();
+        await enter(page,page.getByRole('button',{name:'판매 내역 창 닫기'})); assert.equal(await page.getByRole('dialog').count(),0);
+        await enter(page,page.getByRole('button',{name:'숨김 0'})); await page.getByText('숨긴 상품이 없습니다.').waitFor();
+        await enter(page,page.getByRole('button',{name:'진열 1'})); await enter(page,page.getByRole('button',{name:'협업 티셔츠 재고 상세 보기'}));
+        await page.getByRole('dialog').waitFor(); assert.equal(await page.getByRole('dialog').getByRole('row').count(),3);
+        await enter(page,page.getByRole('button',{name:'재고 상세 창 닫기'})); assert.equal(await page.getByRole('dialog').count(),0);
+        await context.clearCookies();
+        await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
+        assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-01/sign-in');
+        await enter(page, page.getByRole('button', { name: '게스트 계정으로 로그인하기' }));
+        await page.waitForURL('**/proj-bedroom/partner-01/guest');
+        await page.getByRole('heading', { name: /협업처 01/ }).waitFor();
+        await page.goto(`${origin}/proj-bedroom/partner-01`);
+        await page.waitForURL('**/sign-in?next=%2Fproj-bedroom%2Fpartner-01');
+        await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
+        await page.getByRole('tab', { name: '하의' }).click();
+        assert.equal(await page.getByRole('tab', { name: '하의' }).getAttribute('aria-selected'), 'true');
+        await page.getByRole('status').filter({ hasText: '이 분류에 등록된 상품이 없습니다.' }).waitFor();
+        await page.getByRole('tab', { name: '상의' }).click();
+        await page.getByRole('button', { name: '협업 티셔츠' }).click();
+        await page.getByRole('dialog').waitFor();
+        assert.equal(await page.getByRole('dialog').getByRole('row').count(), 3);
+        await page.keyboard.press('Escape');
+        assert.equal(await page.getByRole('dialog').count(), 0);
+        if (width === 390) {
+          await page.getByRole('button', { name: '정산 내역 보기' }).click();
+          await page.waitForFunction(() => document.querySelector('[aria-label="정산 내역 보기"]')?.getAttribute('aria-current') === 'true');
+        } else {
+          await page.getByRole('region', { name: '정산 내역', exact: true }).waitFor();
+        }
+        await page.goto(`${origin}/proj-bedroom/partner-02/guest`);
+        assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-02/sign-in');
+        await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
+        await page.getByRole('button', { name: '로그아웃', exact: true }).click();
+        if (width === 390) await page.getByRole('button', { name: '로그아웃 하시겠습니까?' }).click();
+        await page.waitForURL('**/proj-bedroom/partner-01/sign-in');
+        await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
+        assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-01/sign-in');
       } finally { await context.close(); }
     }
   } finally {

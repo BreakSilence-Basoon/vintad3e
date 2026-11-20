@@ -1,0 +1,14 @@
+import test from 'node:test'; import assert from 'node:assert/strict'; import { createServer } from 'node:net'; import { spawn } from 'node:child_process'; import { once } from 'node:events'; import { setTimeout as delay } from 'node:timers/promises'; import { chromium } from 'playwright';
+async function port(){const s=createServer();s.listen(0,'127.0.0.1');await once(s,'listening');const p=s.address().port;await new Promise(r=>s.close(r));return p;}
+test('internal readers require login and show synthetic documents', {timeout:120000}, async()=>{
+ const origin=`http://127.0.0.1:${await port()}`,child=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',new URL(origin).port],{env:{...process.env,NODE_ENV:'development',VINTAD3E_LIBRARY_FIXTURE:'1',VINTAD3E_LIBRARY_FIXTURE_ORIGIN:origin},stdio:'ignore'});let browser;
+ try{let ready=false;for(let i=0;i<120;i++){try{if((await fetch(origin+'/sign-in')).ok){ready=true;break;}}catch{}await delay(250);}assert.ok(ready);assert.equal((await fetch(origin+'/documents/legacy-document',{redirect:'manual'})).status,307);browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+ for(const width of [1440,390])for(const kind of ['ir','native']){const context=await browser.newContext({viewport:{width,height:844}});try{const page=await context.newPage(),target=`/${kind}/00000000-0000-4000-8000-000000000001`;
+ await page.goto(origin);await page.waitForURL('**/sign-in?**');await page.getByRole('button',{name:'회사 계정으로 로그인'}).click();await page.waitForURL(origin+'/');
+ const documentLink=page.getByRole('link',{name:kind==='ir'?'가게 안내 기록':'매장 인수인계 자료'});await documentLink.waitFor();await context.clearCookies();await documentLink.click();await page.waitForURL('**/sign-in?**');await page.getByRole('button',{name:'회사 계정으로 로그인'}).click();await page.waitForURL(origin+target);
+ await page.getByRole('heading',{name:kind==='ir'?'가게 안내 기록':'매장 인수인계 자료'}).waitFor();await page.getByRole('heading',{name:'업무 시작'}).waitFor();await page.locator('.library-reader-toc summary').click();await page.getByRole('link',{name:'업무 시작'}).click();assert.equal(new URL(page.url()).hash,'#library-section-1');
+ if(kind==='native'){const info=page.getByRole('button',{name:'문서 정보'});await info.click();assert.equal(await info.getAttribute('aria-expanded'),'true');await page.getByText('작성 날짜').waitFor();await info.click();assert.equal(await info.getAttribute('aria-expanded'),'false');}
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.equal((await page.goto(origin+`/${kind}/unknown`)).status(),404);assert.equal((await page.goto(origin+'/documents/legacy-document')).status(),404);
+ }finally{await context.close();}}
+ }finally{await browser?.close();child.kill('SIGTERM');if(child.exitCode===null)await Promise.race([once(child,'exit'),delay(5000)]);if(child.exitCode===null)child.kill('SIGKILL');}
+});

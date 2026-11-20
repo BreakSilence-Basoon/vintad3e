@@ -3,7 +3,7 @@ import { getLibraryFixtures } from './library-fixture.ts';
 export type FixtureComment = { id: string; body: string; createdAt: string };
 const prefix = 'vintad3e-library-fixture-comments:';
 const changedEvent = 'vintad3e-library-fixture-comments-changed';
-const allowed = new Set(getLibraryFixtures('development', '1').map(document => document.id));
+const allowed = new Set([...getLibraryFixtures('development', '1').map(document => document.id), '00000000-0000-4000-8000-000000000004']);
 
 export function parseFixtureComments(raw: string): FixtureComment[] {
   if (raw.length > 3_000_000) return [];

@@ -11,3 +11,5 @@
 합성 화면에서는 제안 15분, 검토 5분의 기한과 합성 데이터의 digest를 표시하며 기한이 지나면 확인을 막습니다. 숫자와 기한은 예시이며 실제 서버 권한·만료·오류 복구는 검증하지 않습니다.
 
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/creative-web dev`를 실행하고 `http://127.0.0.1:3831`을 엽니다.
+
+개발용 합성 자료를 켠 상태에서 `VINTAD3E_CREATIVE_FIXTURE_STATE=empty` 또는 `error`를 설정하면 프로젝트 목록의 빈 상태 또는 읽기 오류를 확인할 수 있습니다. 실제 서버와 연결하지 않습니다.

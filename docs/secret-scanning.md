@@ -1,42 +1,32 @@
-# Secret scanning before publication
+# 공개 전 비밀값 검사
 
-Install the official Gitleaks CLI version 8.30.1 and put it on your PATH. Verify
-the release archive against its SHA-256 before extracting it. The official Linux
-x64 archive has SHA-256
-`551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb`;
-the Windows x64 ZIP has SHA-256
-`d29144deff3a68aa93ced33dddf84b7fdc26070add4aa0f4513094c8332afc4e`.
-Get these archives only from the [official release](https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1).
+이 문서는 코드를 GitHub에 공개하거나 수정본을 올리는 사람을 위한 안내입니다. 화면만 살펴볼 때는 실행할 필요가 없습니다. 비밀번호나 접속 열쇠가 함께 공개되지 않도록 검사하지만, 검사 통과만으로 안전한 공개가 보장되지는 않습니다.
 
-Install pre-commit in your own checkout, then enable its pre-commit hook:
+## 검사 도구 설치
+
+공식 Gitleaks 명령줄 도구 8.30.1을 설치하고 터미널에서 실행할 수 있도록 PATH에 추가합니다. 압축을 풀기 전에 내려받은 파일의 SHA-256이 아래 값과 같은지 확인하세요. SHA-256은 파일이 안내된 파일과 같은지 확인하는 긴 지문입니다.
+
+- Linux x64: `551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb`
+- Windows x64: `d29144deff3a68aa93ced33dddf84b7fdc26070add4aa0f4513094c8332afc4e`
+
+파일은 [공식 배포 페이지](https://github.com/gitleaks/gitleaks/releases/tag/v8.30.1)에서만 받습니다. 다음 명령으로 pre-commit을 설치하면 커밋 전에 검사를 실행하도록 설정할 수 있습니다.
 
 ```sh
 python -m pip install pre-commit==4.3.0
 pre-commit install --hook-type pre-commit
 ```
 
-Before publishing, run both checks from a checkout containing only the reviewed
-public candidate:
+## 공개하기 전에 실행
+
+검토가 끝난 공개 대상 파일만 있는 저장소에서 다음 두 명령을 실행합니다. 비공개 원본 저장소에서는 실행하지 마세요.
 
 ```sh
 python scripts/gitleaks_check.py staged
 python scripts/gitleaks_check.py files
 ```
 
-The staged check examines the Git changes currently staged for commit. The files
-check scans both the complete Git index and the current working-tree contents of
-indexed files. It includes staged new files, tracked files even if ignored, and
-both versions when a file has further unstaged edits. It excludes files absent
-from the Git index, such as ignored build outputs and untracked files. A file is
-not protected by this check until it is staged; stage intended files and run both
-checks again before publishing. Resolve merge conflicts before scanning. Do not
-run either check over a private source tree. Review a failed scan privately before pushing.
-The commands intentionally suppress scanner details in logs; for diagnosis, use
-the CLI locally in a private environment and avoid exposing its output.
-Inline Gitleaks allow comments do not suppress findings in these commands.
+첫 번째 검사는 커밋하도록 준비한 변경을 확인합니다. 두 번째 검사는 Git이 관리하는 전체 파일의 커밋 준비본과 현재 파일 내용을 모두 확인합니다. 새로 커밋 준비한 파일과 무시 규칙에 들어 있어도 이미 Git이 관리하는 파일을 포함하며, 커밋 준비 후 추가로 수정했다면 두 상태를 모두 검사합니다. Git에 아직 등록하지 않은 파일과 무시된 빌드 결과물은 검사하지 않습니다. 새로 공개할 파일은 커밋 준비한 뒤 두 검사를 다시 실행하세요. 충돌이 있다면 먼저 해결해야 합니다.
 
-CI repeats the files check only after changes reach GitHub, so it cannot prevent
-the initial publication of a secret. Local hooks require installation and can be
-skipped. Neither check covers every secret, all Git history, personal information,
-company-specific information, or asset rights. A low-entropy synthetic comment
-was not detected in independent testing. A pass is not permission to publish.
+검사가 실패하면 공개하기 전에 비공개 환경에서 원인을 검토하세요. 위 명령은 로그에 세부 내용을 표시하지 않습니다. 자세한 원인이 필요하면 비공개 환경에서 도구를 직접 실행하고 결과가 공개되지 않도록 주의하세요. 코드 안의 Gitleaks 허용 주석으로는 이 검사 결과를 숨길 수 없습니다.
+
+GitHub의 자동 검사는 변경이 이미 올라간 뒤에 실행되므로 최초 공개를 막지 못합니다. 로컬 자동 검사는 별도로 설치해야 하고 건너뛸 수도 있습니다. 이 검사들은 모든 비밀값, Git 전체 이력, 개인정보, 회사 고유 정보나 자료의 공개 권한을 확인하지 않습니다. 독립 시험에서 단순한 합성 주석 하나를 찾지 못한 사례도 있었습니다. 검사에 통과해도 공개할 파일을 사람이 직접 검토해야 합니다.

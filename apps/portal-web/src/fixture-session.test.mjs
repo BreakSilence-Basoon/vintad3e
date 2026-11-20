@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import { fixtureNext, fixtureOrigin, fixtureSession, handleFixtureSession, fixtureResumePath } from './fixture-session.mjs';
 const origin = 'http://127.0.0.1:3825';
 const env = { NODE_ENV: 'development', VINTAD3E_PORTAL_FIXTURE: '1' };
-test('only the known fixture confirmation can be a post-login destination', () => {
+test('only known fixture paths can be a post-login destination', () => {
   assert.equal(fixtureNext('/confirmations/proposal-01'), '/confirmations/proposal-01');
+  assert.equal(fixtureNext('/about'), '/about');
   for (const path of ['//example.invalid', '/\\example.invalid', '/confirmations/unknown', undefined]) assert.equal(fixtureNext(path), '/');
 });
 test('resume accepts internal paths only', () => {

@@ -81,6 +81,11 @@ test('portal login, navigation, confirmation and failures work in a browser', { 
         await press(page, 'button', '로그아웃');
         await page.waitForURL('**/sign-in');
         assert.equal((await page.goto(`${origin}/confirmations/unknown`)).status(), 404);
+        await page.goto(origin + '/auth/session-resume?next=%2Fabout');
+        await page.waitForURL('**/sign-in?next=%2Fabout');
+        await press(page, 'button', '회사 계정으로 로그인');
+        await page.waitForURL('**/about');
+        await page.getByText('업무 앱과 사이트를 한곳에서 찾을 수 있습니다.').waitFor();
       } finally { await context.close(); }
     }
   } finally {

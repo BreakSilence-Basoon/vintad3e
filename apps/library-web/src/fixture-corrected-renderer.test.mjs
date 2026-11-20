@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs';
 import Module, { createRequire } from 'node:module';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fixtureCorrectedUpload } from './fixture-upload-spec.mjs';
+import { parsePublicationHtml } from './fixture-publication-content.ts';
 
 const require = createRequire(import.meta.url), ts = require('typescript'), React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
@@ -20,6 +22,13 @@ test('corrected transcript splits synthetic speakers and connects unique notes i
   assert.equal((html.match(/class="library-transcript__speaker"/g) ?? []).length, 2);
   assert.ok(html.includes('href="#meeting-note-¹"') && html.includes('id="meeting-note-¹"'));
   assert.ok(html.includes('href="#meeting-reference-1"') && html.includes('href="#meeting-reference-2"'));
+});
+
+test('the exact synthetic upload renders its correction reference and return link', () => {
+  const html = render(parsePublicationHtml(fixtureCorrectedUpload.body, fixtureCorrectedUpload.id, []));
+  assert.ok(html.includes('href="#meeting-note-¹"'));
+  assert.ok(html.includes('href="#meeting-reference-1"'));
+  assert.ok(html.includes('업무 순서를 확인한 근거'));
 });
 
 test('ambiguous notes stay text and untrusted content is escaped', () => {

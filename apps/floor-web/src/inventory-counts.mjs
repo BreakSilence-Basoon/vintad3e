@@ -10,7 +10,15 @@ export function newCount(date,time,ids,quantities,ingredients,now=Date.now()) {
  const records=[{id:'fixture-'+crypto.randomUUID(),kind:'COUNT',status:'RECORDED',supplier:null,reference:null,occurredAt:when.toISOString(),lines:ids.map((ingredientId,i)=>({ingredientId,quantity:Number(quantities[i])}))}];
  if(ids.length!==quantities.length || quantities.some(q=>typeof q!=='string' || !/^\d+(?:\.\d{1,3})?$/.test(q)))return null;return parseCounts(JSON.stringify(records),ingredients)?.[0]??null;
 }
-export function applyCounts(rows,counts,now=Date.now()) {
- return rows.map(row=>{const record=counts.filter(r=>r.status==='RECORDED' && Date.parse(r.occurredAt)<=now && r.lines.some(p=>p.ingredientId===row.id) && (!row.countAt || r.occurredAt>row.countAt)).sort((a,b)=>b.occurredAt.localeCompare(a.occurredAt))[0];if(!record)return row;
- const qty=record.lines.find(p=>p.ingredientId===row.id).quantity, age=now-Date.parse(record.occurredAt);const usageAt=Date.parse('2026-11-05T00:00:00.000Z'), usedAfter=Date.parse(record.occurredAt)<usageAt && usageAt<=now?row.used30:0, used30=usageAt<=now && usageAt>=now-30*86400000?row.used30:0;const expected=age>366*86400000?null:Math.round((qty-usedAfter)*1000)/1000;return {...row,countQuantity:qty,countAt:record.occurredAt,expectedQuantity:expected,used30,remainingDays:expected!==null && expected>=0 && used30>0 ? Math.round(expected/(used30/30)):null};});
+export function applyCounts(rows, counts, now=Date.now()) {
+ const usageAt=Date.parse('2026-11-05T00:00:00.000Z');
+ return rows.map(row=>{
+  const record=counts.filter(r=>r.status==='RECORDED' && Date.parse(r.occurredAt)<=now && r.lines.some(p=>p.ingredientId===row.id) && (!row.countAt || r.occurredAt>row.countAt)).sort((a,b)=>b.occurredAt.localeCompare(a.occurredAt))[0];
+  const countAt=record?.occurredAt??row.countAt, qty=record?.lines.find(p=>p.ingredientId===row.id)?.quantity??row.countQuantity;
+  const used30=usageAt<=now && usageAt>=now-30*86400000?row.used30:0;
+  if(countAt===null||qty===null||Date.parse(countAt)>now)return {...row,countQuantity:null,countAt:null,expectedQuantity:null,used30,remainingDays:null};
+  const countTime=Date.parse(countAt), usedAfter=countTime<usageAt && usageAt<=now?row.used30:0;
+  const expected=now-countTime>366*86400000?null:Math.round((qty-usedAfter)*1000)/1000;
+  return {...row,countQuantity:qty,countAt,expectedQuantity:expected,used30,remainingDays:expected!==null && expected>=0 && used30>0?Math.round(expected/(used30/30)):null};
+ });
 }

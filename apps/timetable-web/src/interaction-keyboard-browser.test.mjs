@@ -76,6 +76,11 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await device.waitFor({ state: 'detached' });
         await context.clearCookies(); await page.goto(origin);
         await page.waitForURL('**/sign-in?next=%2F%3Fview%3Dhistory');
+        await page.goto(`${origin}/admin/attendance`);
+        await page.waitForURL('**/sign-in?next=%2Fadmin%2Fattendance');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/admin/attendance');
+        await context.clearCookies();
         await page.addInitScript(() => { navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('denied', 'NotAllowedError'); }; });
         await page.goto(`${origin}/scan`);
         await page.waitForURL('**/sign-in?next=%2Fscan');

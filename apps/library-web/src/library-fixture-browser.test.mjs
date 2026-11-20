@@ -82,6 +82,13 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     await evaluate("document.querySelector('.library-feed a').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('.publication-content'))"));
     assert.ok(await evaluate("document.querySelector('.publication-content').textContent.includes('업무를 시작하기')"));
+    await waitFor(async () => evaluate("Boolean(document.querySelector('.library-source__trigger'))"));
+    assert.equal(await evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded')"), 'false');
+    await run("document.querySelector('.library-source__trigger').click()");
+    await waitFor(async () => evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded') === 'true'"));
+    assert.ok(await evaluate("document.querySelector('.library-source__body').textContent.includes('Markdown')"));
+    await run("document.querySelector('.library-source__trigger').click()");
+    await waitFor(async () => evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded') === 'false'"));
     const sourcePath = await evaluate("document.querySelector('.publication-actions a').getAttribute('href')");
     assert.equal(sourcePath, '/api/publications/00000000-0000-4000-8000-000000000001/source');
     const download = await fetch(`${origin}${sourcePath}`);

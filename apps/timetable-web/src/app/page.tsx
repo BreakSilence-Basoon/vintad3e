@@ -33,7 +33,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const { view, month } = params;
-  const initialView = timetableInitialView(view);
+  const requestedView = Array.isArray(view) ? view[0] : view;
+  const initialView = timetableInitialView(requestedView);
   const selectedMonth = normalizeMonth(typeof month === 'string' ? month : undefined);
   const fixtureEnabled = process.env.NODE_ENV === 'development' && process.env.VINTAD3E_TIMETABLE_FIXTURE === '1';
   if (fixtureEnabled && !process.env.VINTAD3E_TIMETABLE_API_ORIGIN) {
@@ -43,7 +44,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
     const host = requestHeaders.get('host'), cookie = requestHeaders.get('cookie');
     if (host !== new URL(origin).host) notFound();
     if (!fixtureSession(cookie, host, process.env)) {
-      if (view === undefined && fixtureKioskDevice(cookie, host, process.env)) redirect('/kiosk');
+      if (!requestedView && fixtureKioskDevice(cookie, host, process.env)) redirect('/kiosk');
       redirect(`/sign-in?${new URLSearchParams({ next: `/?view=${initialView}` })}`);
     }
   }

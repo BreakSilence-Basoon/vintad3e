@@ -42,7 +42,10 @@ test('creative login, confirmation and failures work in a browser', { timeout: 1
         await page.getByRole('link', { name:'staff01@example.invalid 로그인 화면 보기' }).click();
         await page.getByRole('link', { name:'Creative로 돌아가기' }).click();
         await page.waitForURL(origin + '/');
+        await page.goto(origin + '/confirmations/proposal-01');
         await page.getByRole('link', { name:'Creative 홈으로 이동' }).click();
+        await page.waitForURL(origin + '/');
+        await page.getByText('매장 촬영', { exact:true }).waitFor();
         await page.goto(origin + '/confirmations/proposal-01');
 
         // Invalid actions must not skip the review or change the stored proposal.

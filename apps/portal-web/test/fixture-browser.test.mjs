@@ -67,6 +67,17 @@ test('portal login, navigation, confirmation and failures work in a browser', { 
         await page.locator('button[aria-label="SNS·외부 링크 보기"][aria-current="true"]').waitFor();
         await press(page, 'button', '업무 앱 보기');
         await page.locator('button[aria-label="업무 앱 보기"][aria-current="true"]').waitFor();
+        assert.equal(await page.getByRole('link', { name:'Apparel', exact:true }).getAttribute('href'), 'http://127.0.0.1:3826/');
+        await press(page, 'button', '관리 바로가기 보기');
+        await page.locator('button[aria-label="관리 바로가기 보기"][aria-current="true"]').waitFor();
+        await press(page, 'button', '이전 페이지');
+        await page.locator('button[aria-label="SNS·외부 링크 보기"][aria-current="true"]').waitFor();
+        await page.locator('.portal-carousel').focus(); await page.keyboard.press('ArrowLeft');
+        await page.locator('button[aria-label="업무 앱 보기"][aria-current="true"]').waitFor();
+        await page.goto(origin + '/auth/session-resume?next=%2Fabout');
+        await page.waitForURL('**/about'); await page.getByText('업무 앱과 사이트를 한곳에서 찾을 수 있습니다.').waitFor();
+        await page.goto(origin + '/auth/session-resume?next=%2F%2Fevil.invalid');
+        await page.waitForURL(origin + '/');
         await press(page, 'button', '로그아웃');
         await page.waitForURL('**/sign-in');
         assert.equal((await page.goto(`${origin}/confirmations/unknown`)).status(), 404);

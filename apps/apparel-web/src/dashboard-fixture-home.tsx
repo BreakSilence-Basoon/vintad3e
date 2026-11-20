@@ -18,7 +18,7 @@ const orders: OnlinePreparationCard[] = [{ id: 'fixture-online-01', requestIds: 
 export function DashboardFixtureHome({ products, reauthError }: { products: FixtureProduct[]; reauthError: boolean }) {
   const [version, setVersion] = useState(0);
   const [loaded, setLoaded] = useState(false);
-  const [syncError, setSyncError] = useState<string | null>(reauthError ? 'Cafe24 인증 시작 URL을 만들지 못했습니다.' : null);
+  const [syncError, setSyncError] = useState<string | null>(null);
   useEffect(() => {
     setLoaded(true);
     const refresh = () => setVersion(value => value + 1);
@@ -41,7 +41,7 @@ export function DashboardFixtureHome({ products, reauthError }: { products: Fixt
   return <main className="dashboard-monitor" data-hydrated={loaded}>
     <section className="dashboard-monitor__quantity-copy" aria-label="준비 수량 요약"><div className="dashboard-monitor__freshness"><p>안녕하세요 <strong>관리자</strong>님!</p></div><div className="dashboard-monitor__quantity-summary"><p>성수 매장에서는 총 <span className="dashboard-monitor__quantity-number"><strong>{data.shortage}</strong>장이</span> 부족하고, 온라인 주문으로는 총 <span className="dashboard-monitor__quantity-number"><strong>{data.online}</strong>장이</span> 주문 들어와</p><p>작업이 필요한 수량은 총 <span className="dashboard-monitor__quantity-number"><strong>{data.shortage + data.online}</strong>장입니다.</span></p></div></section>
     <section className="dashboard-priority-grid"><DashboardInventorySwitcher shortagePanel={<GraphicInventoryHome draftOwner="fixture" groups={data.groups} isAdmin />} trackingPanel={<InventoryTrackingPanel rows={data.rows} />} />
-      <article className="dashboard-panel dashboard-panel--online-prep"><div className="dashboard-panel__header"><div className="dashboard-panel__title-line"><h2>Cafe24 온라인 주문 준비 요청</h2><div className="dashboard-panel__title-action"><button type="button" className="button button--ghost button--small" onClick={failSync}>수동 갱신</button><Link href="/admin/integrations/cafe24/connect" className="button button--ghost button--small">Cafe24 재인증</Link></div></div></div><div className="order-list"><OnlinePreparationList orders={products.length ? orders : []} canEdit syncError={syncError} /></div></article>
+      <article className="dashboard-panel dashboard-panel--online-prep"><div className="dashboard-panel__header"><div className="dashboard-panel__title-line"><h2>Cafe24 온라인 주문 준비 요청</h2><div className="dashboard-panel__title-action"><button type="button" className="button button--ghost button--small" onClick={failSync}>수동 갱신</button><Link href="/admin/integrations/cafe24/connect" className="button button--ghost button--small">Cafe24 재인증</Link></div></div></div><div className="order-list"><OnlinePreparationList orders={products.length ? orders : []} canEdit syncError={reauthError ? 'Cafe24 인증 시작 URL을 만들지 못했습니다.' : syncError} /></div></article>
     </section><AdminToastViewport />
   </main>;
 }

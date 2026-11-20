@@ -36,6 +36,8 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
     closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     await send('Page.navigate',{url:origin});
+    await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
     await waitFor(async () => evaluate("document.querySelector('.floor-summary__value')?.textContent.includes('12,000원')"));
     assert.ok(await evaluate("document.querySelector('#floor-menus-title')?.textContent.includes('메뉴별 판매')"));
     assert.ok(await evaluate("document.querySelector('.floor-table--menus')?.textContent.includes('드립 커피')"));
@@ -62,6 +64,7 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
     await waitFor(async () => evaluate("document.querySelector('main')?.textContent.includes('재료 01')"));
     assert.ok(await evaluate("document.querySelector('main').textContent.includes('음료 01')"));
     assert.equal(await evaluate("document.querySelectorAll('.inventory-editor').length"), 0);
+    await send('Network.clearBrowserCookies');
     await send('Page.navigate',{url: `${origin}/auth/session-resume?next=%2Fconfirmations%2Fproposal-01`});
     await waitFor(async () => evaluate("location.pathname === '/sign-in'"));
     await evaluate("document.querySelector('form button').click()");

@@ -40,7 +40,8 @@ test('fixture member type navigation in Chrome', { timeout: 90000 }, async () =>
     await waitFor(async () => evaluate("document.querySelectorAll('.home-matrix tbody tr').length === 11"));
     assert.ok(await evaluate("document.querySelector('.home-matrix tbody').textContent.includes('직원 01')"));
     assert.ok(await evaluate("document.querySelector('.home-matrix tbody').textContent.includes('정상')"));
-    assert.equal(await evaluate("document.querySelectorAll('.home-matrix a').length"),0);
+    assert.equal(await evaluate("document.querySelectorAll('.home-matrix a').length"),9);
+    assert.ok(await evaluate("[...document.querySelectorAll('.home-matrix a')].every(a => a.href.startsWith('http://127.0.0.1:'))"));
     await send('Page.navigate',{url:`${origin}/members`});
     await waitFor(async () => evaluate("document.querySelector('.staff-table tbody')?.textContent.includes('staff01@example.invalid')"));
     assert.equal(await evaluate("document.querySelectorAll('.staff-table tbody tr').length"),2);

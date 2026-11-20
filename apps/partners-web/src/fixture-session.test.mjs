@@ -26,9 +26,10 @@ test('fixture login and logout rotate and revoke only local synthetic sessions',
   assert.equal(fixtureSession(secondCookie, '127.0.0.1:3828', env, 1005), false);
 });
 
-test('fixture login only returns to the accounts path', () => {
+test('fixture login only returns to known local staff paths', () => {
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/accounts').headers.get('location'), '/accounts');
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/proj-bedroom/partner-01/settlement').headers.get('location'), '/proj-bedroom/partner-01/settlement');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/proj-bedroom/partner-01').headers.get('location'), '/proj-bedroom/partner-01');
   for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
 });
 

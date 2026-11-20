@@ -25,6 +25,9 @@ test('inventory CSV stays local, previews, rejects bad data and restores previou
       const page = await context.newPage();
       try {
         await page.goto(`${origin}/admin/products`);
+        await page.waitForURL('**/sign-in?next=%2Fadmin%2Fproducts');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/admin/products');
         const widget = page.locator('.inventory-file-import');
         await enter(page, widget.locator('summary'));
         const capture = async label => { if (process.env.VINTAD3E_CAPTURE_DIR) await widget.screenshot({ path: join(process.env.VINTAD3E_CAPTURE_DIR, `${width}-${label}.png`) }); };

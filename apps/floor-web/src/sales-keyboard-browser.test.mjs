@@ -45,3 +45,25 @@ test('floor sales search, pagination and inventory read view work with keyboard 
     if (child.exitCode === null) child.kill('SIGKILL');
   }
 });
+
+
+test('floor administrator adds synthetic ingredients and preserves data on storage errors', { timeout: 90000 }, async () => {
+  const port = await freePort(), origin = `http://127.0.0.1:${port}`;
+  const child = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV:'development', VINTAD3E_FLOOR_FIXTURE:'1', VINTAD3E_FLOOR_FIXTURE_ADMIN:'1' }, stdio:'ignore' }); let browser;
+  try {
+    let ready=false; for(let i=0;i<120;i++){try{if((await fetch(origin+'/inventory')).ok){ready=true;break;}}catch{} await delay(250);} assert.ok(ready);
+    browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+    for(const width of [1440,390]) { const context=await browser.newContext({viewport:{width,height:844}}),page=await context.newPage(); try {
+      await page.goto(origin+'/inventory'); const editor=page.locator('.inventory-editor'); await enter(page,editor.locator('summary'));
+      const input=editor.getByLabel('재료명'); assert.equal(await input.evaluate(el=>el.validity.valueMissing),true);
+      await input.fill('재료 02'); await editor.getByLabel('관리 단위').selectOption('g'); await enter(page,editor.getByRole('button',{name:'저장'}));
+      await editor.getByText('저장했습니다.').waitFor(); await page.getByRole('rowheader',{name:'재료 02'}).waitFor();
+      await page.reload(); await page.getByRole('rowheader',{name:'재료 02'}).waitFor(); await enter(page,editor.locator('summary'));
+      await input.fill('재료 02'); await enter(page,editor.getByRole('button',{name:'저장'})); await editor.getByText('입력값을 확인해주세요.').waitFor();
+      assert.equal(await page.getByRole('rowheader',{name:'재료 02'}).count(),1);
+      await page.evaluate(()=>sessionStorage.setItem('vintad3e-floor-ingredients','{bad')); await page.reload(); await enter(page,editor.locator('summary'));
+      await editor.getByText('입력값을 확인해주세요.').waitFor(); assert.equal(await editor.getByRole('button',{name:'저장'}).isDisabled(),true);
+      assert.equal(await page.evaluate(()=>sessionStorage.getItem('vintad3e-floor-ingredients')),'{bad');
+    } finally {await context.close();} }
+  } finally {await browser?.close();child.kill('SIGTERM');if(child.exitCode===null)await Promise.race([once(child,'exit'),delay(5000)]);if(child.exitCode===null)child.kill('SIGKILL');}
+});

@@ -30,8 +30,16 @@ test('apparel stock validation, saving and sales filters work with keyboard inpu
         await page.waitForURL('**/sign-in?next=%2Fadmin%2Fproducts');
         await enter(page,page.getByRole('button',{name:'회사 계정으로 로그인'}));
         await page.waitForURL('**/admin/products');
+        const navigation = page.getByRole('navigation', { name: '관리 메뉴' });
+        await enter(page, navigation.getByRole('link', { name: '통계' }));
+        await page.waitForURL('**/admin/stats');
+        await enter(page, page.getByRole('link', { name: '로그인 전 화면 보기' }));
+        await page.waitForURL('**/sign-in?mode=cover&next=%2Fadmin%2Fstats');
+        await enter(page, page.getByRole('link', { name: '어드민 콘솔로 돌아가기' }));
+        await page.waitForURL('**/admin/stats');
         await page.goto(`${origin}/access-denied`);
-        await page.getByText('viewer@example.invalid', { exact: true }).waitFor();
+        await page.locator('main').getByText('viewer@example.invalid', { exact: true }).waitFor();
+        assert.equal(await page.getByRole('navigation', { name: '관리 메뉴' }).count(), 0);
         await enter(page, page.locator('main').getByRole('link', { name: '홈으로 이동' }));
         await page.waitForURL('**/admin/products');
         await enter(page, page.locator('.product-card__view-button').first());
@@ -72,6 +80,9 @@ test('apparel stock validation, saving and sales filters work with keyboard inpu
         await page.waitForURL(url => url.searchParams.get('auditPage') === '2' && url.searchParams.get('actor') === 'system');
         assert.equal(await page.locator('.audit-page .audit-card').count(), 11);
         assert.equal(await page.getByRole('navigation', { name: '수정 이력 더 불러오기' }).count(), 0);
+        await enter(page, page.getByRole('button', { name: '로그아웃' }));
+        await page.waitForURL('**/sign-in');
+        assert.equal(await page.getByRole('navigation', { name: '관리 메뉴' }).count(), 0);
       } finally { await context.close(); }
     }
   } finally {

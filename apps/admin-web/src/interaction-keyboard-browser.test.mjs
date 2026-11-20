@@ -44,6 +44,16 @@ test('admin lists, audit filters and invalid addresses work with keyboard input'
         await page.waitForFunction(() => document.querySelectorAll('.audit-card').length === 0);
         await enter(page, form.getByRole('button', { name: '초기화' }));
         await page.locator('.audit-card').first().waitFor();
+        await form.getByLabel('기간', { exact:true }).selectOption('custom');
+        await form.getByLabel('시작일').fill('2000-01-01'); await form.getByLabel('종료일').fill('2000-01-02');
+        await enter(page, form.getByRole('button', { name:'적용' }));
+        assert.equal(await page.locator('.audit-card').count(), 0);
+        await enter(page, form.getByRole('button', { name:'초기화' }));
+        await page.locator('.audit-card').first().waitFor();
+        const latest = await page.locator('.audit-card').first().innerText();
+        await form.getByLabel('정렬', { exact:true }).selectOption('asc'); await enter(page, form.getByRole('button', { name:'적용' }));
+        assert.notEqual(await page.locator('.audit-card').first().innerText(), latest);
+        await enter(page, form.getByRole('button', { name:'초기화' }));
         const details = page.locator('.audit-card details').first();
         await enter(page, details.locator('summary'));
         assert.equal(await details.evaluate(el => el.open), true);

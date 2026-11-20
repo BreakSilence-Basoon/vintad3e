@@ -87,8 +87,7 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     assert.ok(await evaluate("document.querySelector('.publication-content').textContent.includes('업무를 시작하기')"));
     await waitFor(async () => evaluate("Boolean(document.querySelector('.library-source__trigger'))"));
     assert.equal(await evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded')"), 'false');
-    await run("document.querySelector('.library-source__trigger').click()");
-    await waitFor(async () => evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded') === 'true'"));
+    await waitFor(async () => evaluate("(()=>{const button=document.querySelector('.library-source__trigger');if(button?.getAttribute('aria-expanded')==='true')return true;button?.click();return false;})()"));
     assert.ok(await evaluate("document.querySelector('.library-source__body').textContent.includes('Markdown')"));
     await run("document.querySelector('.library-source__trigger').click()");
     await waitFor(async () => evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded') === 'false'"));

@@ -106,6 +106,17 @@ test('admin lists, audit filters and invalid addresses work with keyboard input'
         await enter(page, form.getByRole('button', { name:'적용' }));
         assert.equal(await page.locator('.audit-card').count(), 0);
         await enter(page, form.getByRole('button', { name:'초기화' }));
+        await form.locator('select').first().selectOption('custom');
+        await form.getByLabel('시작일').fill('2100-01-01'); await form.getByLabel('종료일').fill('2000-01-01');
+        await enter(page, form.getByRole('button', { name:'적용' }));
+        await page.getByText('아직 표시할 수정 이력이 없습니다.').waitFor();
+        await enter(page, form.getByRole('button', { name:'초기화' }));
+        await form.locator('select').first().selectOption('custom');
+        await form.getByLabel('종료일').fill('2100-01-01');
+        await enter(page, form.getByRole('button', { name:'닫기' }));
+        await enter(page, form.getByRole('button', { name:'적용' }));
+        await page.waitForFunction(() => document.querySelectorAll('.audit-card').length === 10);
+        await enter(page, form.getByRole('button', { name:'초기화' }));
         await page.locator('.audit-card').first().waitFor();
         const latest = await page.locator('.audit-card').first().innerText();
         await form.locator('select').last().selectOption('asc'); await enter(page, form.getByRole('button', { name:'적용' }));

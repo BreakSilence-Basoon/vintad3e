@@ -39,6 +39,11 @@ test('creative login, confirmation and failures work in a browser', { timeout: 1
         assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation')).status), 401);
         await press(page, 'button', '회사 계정으로 로그인');
         await page.waitForURL('**/confirmations/proposal-01');
+        await page.getByRole('link', { name:'staff01@example.invalid 로그인 화면 보기' }).click();
+        await page.getByRole('link', { name:'Creative로 돌아가기' }).click();
+        await page.waitForURL(origin + '/');
+        await page.getByRole('link', { name:'Creative 홈으로 이동' }).click();
+        await page.goto(origin + '/confirmations/proposal-01');
 
         // Invalid actions must not skip the review or change the stored proposal.
         assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'confirm' }) })).status), 409);
@@ -64,7 +69,8 @@ test('creative login, confirmation and failures work in a browser', { timeout: 1
         await page.getByText('확인 기록이 저장되었습니다.', { exact: false }).waitFor();
         await page.goto(origin);
         await page.getByText('매장 촬영', { exact: true }).waitFor();
-        await page.evaluate(async () => { await fetch('/api/fixture/logout', { method: 'POST', redirect: 'manual' }); });
+        await page.getByRole('button', { name:'로그아웃' }).click();
+        await page.waitForURL('**/sign-in');
         await page.goto(`${origin}/confirmations/proposal-01`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
         assert.equal((await page.goto(`${origin}/confirmations/unknown`)).status(), 404);

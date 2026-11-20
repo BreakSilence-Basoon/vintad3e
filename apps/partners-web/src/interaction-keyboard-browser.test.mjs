@@ -49,8 +49,9 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await enter(page, form.getByRole('button', { name: '전달문 복사' }));
         await form.getByRole('alert').waitFor();
         await page.evaluate(() => { window.failCopy = false; });
-        await enter(page, form.getByRole('button', { name: '전달문 복사' }));
-        await page.waitForFunction(() => window.copiedText?.includes('DJ A 000000-0000000 10,000원'));
+        await form.getByRole('button', { name: '전달문 복사' }).click();
+        await form.getByRole('status').filter({ hasText: '복사했습니다.' }).waitFor();
+        assert.ok(await page.evaluate(() => window.copiedText?.includes('DJ A 000000-0000000 10,000원')));
         await enter(page, form.getByRole('button', { name: 'DJ 추가' }));
         assert.equal(await form.locator('.partners-accountant__row').count(), 2);
         await enter(page, form.getByRole('button', { name: 'DJ 2 삭제' }));

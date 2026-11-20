@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { requireFixtureAdminAccess } from '../../fixture-access';
-import { fixtureMemberPage, fixtureMemberType, getFixtureMembers, memberTypeLabel } from '../../members-fixture';
+import { fixtureMemberPage, fixtureMemberType, getFixtureDirectory, memberTypeLabel } from '../../members-fixture';
 
 export const dynamic = 'force-dynamic';
 export default async function Page({ searchParams }: { searchParams: Promise<{ type?: string | string[]; cursor?: string | string[] }> }) {
   await requireFixtureAdminAccess('/members');
-  const fixtures = getFixtureMembers(process.env.NODE_ENV, process.env.VINTAD3E_ADMIN_FIXTURE);
+  const fixtures = getFixtureDirectory(process.env.NODE_ENV, process.env.VINTAD3E_ADMIN_FIXTURE);
   const params = await searchParams;
   const type = fixtures.length ? fixtureMemberType(params.type) : 'employee';
   const selected = type ?? 'employee', label = memberTypeLabel[selected];

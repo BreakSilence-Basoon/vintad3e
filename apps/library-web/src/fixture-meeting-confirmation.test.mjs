@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { handleFixtureSession } from './fixture-session.mjs';
 import { handleFixtureUpload } from './fixture-upload.mjs';
-import { fixtureUpload } from './fixture-upload-spec.mjs';
+import { fixtureCorrectedUpload, fixtureUpload } from './fixture-upload-spec.mjs';
 import { handleFixtureMeetingConfirmation } from './fixture-meeting-confirmation.mjs';
 
 const origin = 'http://127.0.0.1:3829', host = '127.0.0.1:3829';
@@ -38,4 +38,16 @@ test('fixture meeting confirmation enforces session, frozen changes and ordered 
   assert.equal((await handleFixtureMeetingConfirmation(request('/api/fixture/meeting-confirmation', { action: 'load', proposalId: proposal.proposalId, changeDigest: proposal.changeDigest }, cookie), env, proposal.expiresAt + 1)).status, 404);
   assert.equal((await handleFixtureMeetingConfirmation(request('/api/fixture/meeting-confirmation', { ...prepare, change: { kind: 'stage', objectId: fixtureUpload.id, step: 'TRANSCRIPT', title: '\u202eunsafe', sourceKind: 'IMPORTED', sourceDetail: '회의', parentRevision: null } }, cookie), env)).status, 400);
   assert.equal((await handleFixtureMeetingConfirmation(request('/api/fixture/meeting-confirmation', { action: 'prepare', meetingId, change: 'x'.repeat(5000) }, cookie), env)).status, 413);
+});
+
+test('corrected fixture must be uploaded in the same synthetic session', async () => {
+  const cookie = login(), other = login();
+  const change = { kind: 'stage', objectId: fixtureCorrectedUpload.id, step: 'CORRECTED', title: '회의 보정', sourceKind: 'HUMAN', sourceDetail: '회의 기록', parentRevision: 1 };
+  const prepare = { action: 'prepare', meetingId, change };
+  assert.equal((await handleFixtureMeetingConfirmation(request('/api/fixture/meeting-confirmation', prepare, cookie), env)).status, 400);
+  const upload = new Request(`${origin}/api/fixture/upload`, { method: 'POST', headers: { host, origin, cookie, 'content-type': 'application/octet-stream' }, body: fixtureCorrectedUpload.body });
+  assert.equal((await handleFixtureUpload(upload, env)).status, 200);
+  assert.equal((await handleFixtureMeetingConfirmation(request('/api/fixture/meeting-confirmation', prepare, other), env)).status, 400);
+  assert.equal((await handleFixtureMeetingConfirmation(request('/api/fixture/meeting-confirmation', prepare, cookie), env)).status, 200);
+  assert.equal((await handleFixtureMeetingConfirmation(request('/api/fixture/meeting-confirmation', { ...prepare, change: { kind: 'attach', objectId: fixtureCorrectedUpload.id } }, cookie), env)).status, 400);
 });

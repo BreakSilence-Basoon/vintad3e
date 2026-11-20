@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { fixtureOrigin, fixtureSessionKey } from './fixture-session.mjs';
 import { getFixtureUpload } from './fixture-upload.mjs';
-import { fixtureUpload } from './fixture-upload-spec.mjs';
+import { fixtureUpload, fixtureUploads } from './fixture-upload-spec.mjs';
 
 const recordsKey = Symbol.for('vintad3e.library.fixture.meeting.confirmations');
 const records = globalThis[recordsKey] ??= new Map();
@@ -9,8 +9,8 @@ const sha = value => createHash('sha256').update(value).digest('hex');
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const text = (value, max) => typeof value === 'string' && value.length > 0 && value.length <= max && value === value.trim() && !/[\u0000-\u001f\u007f\p{Cf}\u2028\u2029]/u.test(value);
 function validChange(change) {
-  if (!change || typeof change !== 'object' || Array.isArray(change) || change.objectId !== fixtureUpload.id) return false;
-  if (change.kind === 'attach') return Object.keys(change).sort().join(',') === 'kind,objectId';
+  if (!change || typeof change !== 'object' || Array.isArray(change) || !fixtureUploads.some(item => item.id === change.objectId)) return false;
+  if (change.kind === 'attach') return change.objectId === fixtureUpload.id && Object.keys(change).sort().join(',') === 'kind,objectId';
   if (change.kind !== 'stage' || Object.keys(change).sort().join(',') !== 'kind,objectId,parentRevision,sourceDetail,sourceKind,step,title') return false;
   if (!['TRANSCRIPT', 'CORRECTED', 'SUMMARY'].includes(change.step) || !['IMPORTED', 'HUMAN', 'AI'].includes(change.sourceKind) || !text(change.title, 255) || !text(change.sourceDetail, 500)) return false;
   return change.step === 'TRANSCRIPT' ? change.parentRevision === null : Number.isSafeInteger(change.parentRevision) && change.parentRevision > 0 && change.parentRevision <= 30;
@@ -35,7 +35,7 @@ export async function handleFixtureMeetingConfirmation(request, env, now = Date.
   for (const [id, record] of records) if (record.expiresAt <= now) records.delete(id);
   let record;
   if (body.action === 'prepare') {
-    if (Object.keys(body).sort().join(',') !== 'action,change,meetingId' || !uuid.test(body.meetingId) || !validChange(body.change) || !getFixtureUpload(request.headers.get('cookie'), host, env, now)) return new Response(null, { status: 400 });
+    if (Object.keys(body).sort().join(',') !== 'action,change,meetingId' || !uuid.test(body.meetingId) || !validChange(body.change) || !getFixtureUpload(request.headers.get('cookie'), host, env, now, body.change.objectId)) return new Response(null, { status: 400 });
     if (records.size >= 128) return new Response(null, { status: 503 });
     const canonical = JSON.stringify(body.change), id = randomUUID();
     record = { id, session, meetingId: body.meetingId, change: JSON.parse(canonical), canonical, changeDigest: sha(canonical), permissionDigest: sha(`fixture-session:${session}:allowed`), checkedAt: now, expiresAt: now + 15 * 60_000, state: 'proposal' };

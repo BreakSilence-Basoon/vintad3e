@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fixtureUpload } from './fixture-upload-spec.mjs';
-import { getFixtureUpload, handleFixtureUpload } from './fixture-upload.mjs';
+import { fixtureCorrectedUpload, fixtureUpload } from './fixture-upload-spec.mjs';
+import { getFixtureUpload, handleFixtureUpload, listFixtureUploads } from './fixture-upload.mjs';
 import { handleFixtureSession } from './fixture-session.mjs';
 
 const origin = 'http://127.0.0.1:3829', host = '127.0.0.1:3829';
@@ -19,6 +19,12 @@ test('only the fixed synthetic content can be uploaded to the same local session
   const response = await handleFixtureUpload(upload(cookie, fixtureUpload.body), env, 1001);
   assert.equal(response.status, 200); assert.deepEqual(await response.json(), { id: fixtureUpload.id });
   assert.deepEqual(getFixtureUpload(`${cookie}; other=1`, host, env, 1002), fixtureUpload);
+  assert.equal(getFixtureUpload(cookie, host, env, 1002, fixtureCorrectedUpload.id), null);
+  const corrected = await handleFixtureUpload(upload(cookie, fixtureCorrectedUpload.body), env, 1002);
+  assert.equal(corrected.status, 200); assert.deepEqual(await corrected.json(), { id: fixtureCorrectedUpload.id });
+  assert.deepEqual(listFixtureUploads(cookie, host, env, 1003), [fixtureUpload, fixtureCorrectedUpload]);
+  assert.equal(getFixtureUpload(other, host, env, 1003, fixtureCorrectedUpload.id), null);
+  assert.equal(getFixtureUpload(cookie, host, env, 1003, 'unknown'), null);
   assert.equal(getFixtureUpload(other, host, env, 1002), null);
   assert.equal(getFixtureUpload(cookie, host, env, 1000 + 30 * 60_000), null);
 });

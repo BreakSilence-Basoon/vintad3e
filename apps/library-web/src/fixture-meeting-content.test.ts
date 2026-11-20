@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { applyFixtureMeetingChange, readFixtureMeetingContent, type MeetingChange } from './fixture-meeting-content.ts';
-import { fixtureUpload } from './fixture-upload-spec.mjs';
+import { fixtureCorrectedUpload, fixtureUpload } from './fixture-upload-spec.mjs';
 
 test('meeting attachments and stages stay in supplied storage and validate parent stages', () => {
   const data = new Map<string, string>();
@@ -14,7 +14,7 @@ test('meeting attachments and stages stay in supplied storage and validate paren
   const stage: MeetingChange = { kind: 'stage', objectId: fixtureUpload.id, step: 'TRANSCRIPT', title: '업무 회의', sourceKind: 'IMPORTED', sourceDetail: '회의 기록', parentRevision: null };
   assert.equal(applyFixtureMeetingChange(store, id, { ...stage, step: 'CORRECTED', parentRevision: 1 }, now), null);
   assert.equal(applyFixtureMeetingChange(store, id, stage, now)?.stages[0].revision, 1);
-  assert.equal(applyFixtureMeetingChange(store, id, { ...stage, step: 'CORRECTED', parentRevision: 1 }, now)?.stages[1].revision, 1);
+  assert.equal(applyFixtureMeetingChange(store, id, { ...stage, objectId: fixtureCorrectedUpload.id, step: 'CORRECTED', parentRevision: 1 }, now)?.stages[1].revision, 1);
   assert.equal(readFixtureMeetingContent(store, other)?.stages.length, 0);
   assert.equal(applyFixtureMeetingChange(store, id, { ...stage, objectId: 'unknown' }, now), null);
   const key = [...data.keys()][0]; data.set(key, '{broken');

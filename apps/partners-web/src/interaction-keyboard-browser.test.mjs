@@ -35,7 +35,7 @@ test('public guides navigate languages, copy and open images on desktop and mobi
         await enter(page, page.getByRole('button', { name: /사진 크게 보기/ }).first());
         const dialog = page.getByRole('dialog', { name: '사진 크게 보기' });
         await dialog.waitFor();
-        await enter(page, dialog.getByRole('button', { name: '확대', exact: true }));
+        await enter(page, dialog.locator('.bedroom-zoom-controls').getByRole('button', { name: '확대', exact: true }));
         await enter(page, dialog.getByRole('button', { name: '닫기', exact: true }));
         await dialog.waitFor({ state: 'hidden' });
         await enter(page, page.getByRole('button', { name: '언어 선택', exact: true }));

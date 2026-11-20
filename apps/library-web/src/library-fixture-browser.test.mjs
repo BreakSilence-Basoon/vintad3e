@@ -107,7 +107,7 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     assert.equal(await download.text(), '업무를 시작하기 전에 필요한 사항을 확인합니다.');
     assert.equal((await fetch(`${origin}/api/publications/unknown/source`)).status, 404);
     const objectPath = '/objects/00000000-0000-4000-8000-000000000003';
-    assert.equal((await fetch(`${origin}${objectPath}?documentId=00000000-0000-4000-8000-000000000001`)).status, 404);
+    assert.equal((await fetch(`${origin}${objectPath}?documentId=00000000-0000-4000-8000-000000000099`)).status, 404);
     assert.equal((await fetch(`${origin}/api/objects/unknown/source`)).status, 404);
     await send('Page.navigate',{url:`${origin}/objects`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.library-attachment-card'))"));

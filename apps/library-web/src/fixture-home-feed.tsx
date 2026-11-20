@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react';
 import { publishedDocument, publishedSnapshot, publishedServerSnapshot, subscribePublished } from './fixture-published-state';
 type Item={id:string;title:string;href:string;publisher:string;publishedAt:string};
 export function FixtureHomeFeed({items,query,fixture}:{items:Item[];query:string;fixture:boolean}) {
- const published=useSyncExternalStore(subscribePublished,publishedSnapshot,publishedServerSnapshot);
+ const published=useSyncExternalStore<boolean | null>(subscribePublished,publishedSnapshot,publishedServerSnapshot);
  const matches=fixture&&published&&publishedDocument.title.toLocaleLowerCase('ko').includes(query.trim().toLocaleLowerCase('ko'));
  const list=matches?[{id:publishedDocument.id,title:publishedDocument.title,href:`/publications/${publishedDocument.id}`,publisher:publishedDocument.publisher,publishedAt:publishedDocument.createdAt},...items].sort((a,b)=>b.publishedAt.localeCompare(a.publishedAt)||a.id.localeCompare(b.id)):items;
  const format=new Intl.DateTimeFormat('ko-KR',{year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'Asia/Seoul'});

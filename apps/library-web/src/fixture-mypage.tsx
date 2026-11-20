@@ -7,7 +7,7 @@ import { libraryDate, type FixtureDocument } from './library-fixture';
 import { publishedDocument, publishedSnapshot, publishedServerSnapshot, subscribePublished } from './fixture-published-state';
 
 export function FixtureMypage({ documents: initial }: { documents: FixtureDocument[] }) {
-  const published=useSyncExternalStore(subscribePublished,publishedSnapshot,publishedServerSnapshot);
+  const published=useSyncExternalStore<boolean | null>(subscribePublished,publishedSnapshot,publishedServerSnapshot);
   const documents=useMemo(()=>initial.length && published ? [publishedDocument,...initial] : initial,[initial,published]);
   const getSnapshot = useCallback(() => JSON.stringify(documents.map(document => commentSnapshot(document.id))), [documents]);
   const getServerSnapshot = useCallback(() => JSON.stringify(documents.map(() => '[]')), [documents]);

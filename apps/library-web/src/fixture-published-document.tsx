@@ -9,7 +9,8 @@ import { LibraryReaderTools } from './library-reader-tools';
 
 export function FixturePublishedDocument() {
   const router=useRouter(); const [error,setError]=useState(false);
-  const published = useSyncExternalStore(subscribePublished, publishedSnapshot, publishedServerSnapshot);
+  const published = useSyncExternalStore<boolean | null>(subscribePublished, publishedSnapshot, publishedServerSnapshot);
+  if (published === null) return null;
   if (!published) return <main className="library-home"><section className="library-page"><p>문서를 찾을 수 없습니다.</p><Link href="/">홈</Link></section></main>;
   return <main className="library-home"><section className="library-page library-page--reader"><header className="library-page__header"><h1>{publishedDocument.title}</h1><p className="library-reader-byline"><span>{publishedDocument.publisher}</span><span aria-hidden="true">·</span> {new Intl.DateTimeFormat('ko-KR',{dateStyle:'medium',timeZone:'Asia/Seoul'}).format(new Date(publishedDocument.createdAt))}</p></header><LibraryReaderTools /><article className="publication-content"><p>{publishedDocument.body}</p></article><LibraryDocumentInfo><dl><div><dt>형식</dt><dd>Markdown</dd></div><div><dt>등록 날짜</dt><dd><time dateTime={publishedDocument.createdAt}>{new Intl.DateTimeFormat('ko-KR',{year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'Asia/Seoul'}).format(new Date(publishedDocument.createdAt))}</time></dd></div></dl></LibraryDocumentInfo><div className="publication-actions"><Button profile="library" type="button" onClick={()=>{if(archivePublished()){router.push('/mypage');router.refresh();}else setError(true);}}>목록에서 제외</Button></div>{error&&<div className="publication-toast publication-toast--error" role="alert"><span>문서를 목록에서 제외하지 못했습니다.</span><Button variant="ghost" size="small" profile="library" onClick={()=>setError(false)} aria-label="알림 닫기">×</Button></div>}</section></main>;
 }

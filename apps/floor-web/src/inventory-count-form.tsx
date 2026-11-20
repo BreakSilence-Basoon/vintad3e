@@ -1,0 +1,10 @@
+'use client';
+import { useState } from 'react';
+import { Button } from '@vintad3e/ui/components';
+import { newCount } from './inventory-counts.mjs';
+import type { InventoryData } from './inventory-fixture';
+export function InventoryCountForm({ ingredients, disabled, save }: { ingredients:InventoryData['ingredients']; disabled:boolean; save:(record:InventoryData['entries'][number])=>boolean }) {
+ const [keys,setKeys]=useState([0]),[message,setMessage]=useState('');
+ return <details className="inventory-editor"><summary>실제 재고 입력</summary><form className="inventory-form" onSubmit={event=>{event.preventDefault();const form=event.currentTarget, fields=new FormData(form);const record=newCount(String(fields.get('date')??''),String(fields.get('time')??''),fields.getAll('ingredientId').map(String),fields.getAll('quantity').map(String),ingredients);if(!record||!save(record)){setMessage('입력값을 확인해주세요.');return;}form.reset();setKeys([0]);setMessage('저장했습니다.');}}><fieldset disabled={disabled}>
+ <label>실사일 (한국 시간)<input name="date" type="date" required /></label><label>시간<input name="time" type="time" required /></label><p>직접 센 양을 입력합니다. 이 시점을 새 기준으로 예상 재고를 계산합니다.</p><div className="inventory-parts">{keys.map((key,index)=><div className="inventory-part" key={key}><label>재료<select name="ingredientId" required defaultValue=""><option value="" disabled>재료 선택</option>{ingredients.map(item=><option key={item.id} value={item.id}>{item.name} ({item.unit==='ea'?'개':item.unit})</option>)}</select></label><label>수량<input name="quantity" type="number" min="0" step="0.001" required /></label>{index>0 && <Button type="button" variant="default" size="small" profile="timetable" onClick={()=>setKeys(keys.filter(item=>item!==key))}>빼기</Button>}</div>)}<Button type="button" variant="default" size="small" profile="timetable" disabled={keys.length>=ingredients.length} onClick={()=>setKeys([...keys,Math.max(...keys)+1])}>재료 추가</Button></div><Button type="submit" variant="primary" profile="timetable">저장</Button></fieldset><p role="status">{message}</p></form></details>;
+}

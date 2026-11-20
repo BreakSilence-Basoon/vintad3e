@@ -48,6 +48,19 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/settlements?staff=supporter-1');
         await page.locator('[data-fixture-staff="supporter-1"]').waitFor();
+        await enter(page, page.getByRole('link', { name: '로그인 전 화면 보기' }));
+        await enter(page, page.getByRole('link', { name: '콘솔로 돌아가기' }));
+        await page.waitForURL('**/settlements?staff=supporter-1');
+        if (width === 390) {
+          await enter(page, page.getByRole('button', { name: '메뉴 열기' }));
+          await enter(page, page.getByRole('navigation', { name: '모바일 메뉴' }).getByRole('button', { name: '앱 다운로드' }));
+          await page.getByRole('status').filter({ hasText: '브라우저 메뉴' }).waitFor();
+          await enter(page, page.getByRole('button', { name: '메뉴 열기' }));
+          await enter(page, page.getByRole('navigation', { name: '모바일 메뉴' }).getByRole('link', { name: '쿠폰', exact: true }));
+        } else {
+          await enter(page, page.getByRole('navigation', { name: '메뉴' }).getByRole('link', { name: '쿠폰', exact: true }));
+        }
+        await page.waitForURL('**/coupon');
         await context.clearCookies();
         await page.goto(`${origin}/coupon?staff=supporter-1`);
         await page.waitForURL('**/sign-in?next=%2Fcoupon');
@@ -108,6 +121,9 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
         assert.ok(await page.evaluate(()=>window.copiedText?.includes('쿠폰 판매')));
         await enter(page,page.getByRole('button',{name:'언어 선택'})); await enter(page,page.getByRole('button',{name:'English'}));
         await page.waitForURL('**/formula-info?lang=en'); await page.getByRole('heading',{name:'Coupon sales'}).waitFor();
+        await enter(page, page.getByRole('button', { name: '로그아웃', exact: true }));
+        if (width === 390) await enter(page, page.getByRole('button', { name: '로그아웃 하시겠습니까?' }));
+        await page.waitForURL('**/sign-in');
       } finally { await context.close(); }
     }
   } finally {

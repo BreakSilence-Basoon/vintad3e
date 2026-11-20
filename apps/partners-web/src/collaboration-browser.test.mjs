@@ -8,7 +8,7 @@ test('collaboration period screen requires a session and filters synthetic sales
     browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
     for(const width of [1440,390]) { const context=await browser.newContext({viewport:{width,height:844}}), page=await context.newPage(); try {
       const path='/proj-bedroom/partner-01/settlement'; await page.goto(origin+'/proj-bedroom/partner-01');
-      await page.getByRole('link',{name:'협업 정산 계산'}).click(); assert.equal(new URL(page.url()).pathname,'/sign-in');
+      await page.getByRole('link',{name:'협업 정산 계산'}).click(); await page.waitForURL(url => url.pathname === '/sign-in');
       await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); await page.waitForURL(origin+path);
       assert.equal(await page.locator('tbody tr').count(),2);
       await page.locator('[name=from]').fill('2026-01-03'); await page.locator('[name=to]').fill('2026-01-03'); await page.getByRole('button',{name:'조회'}).click(); await page.waitForURL(/from=2026-01-03/); assert.equal(await page.locator('tbody tr').count(),1);

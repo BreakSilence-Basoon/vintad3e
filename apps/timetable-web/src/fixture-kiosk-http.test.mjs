@@ -23,7 +23,14 @@ test('local kiosk issues a one-use QR challenge and records its synthetic event'
     const events = await (await fetch(`${origin}/api/fixture/kiosk/events`)).json();
     assert.equal(events.events.length, 1);
     assert.equal(events.events[0].eventType, 'CHECK_IN');
-    assert.equal((await fetch(`${origin}/admin/attendance`)).status, 200);
+    const denied = await fetch(`${origin}/admin/attendance`, { redirect: 'manual' });
+    assert.equal(denied.status, 307);
+    assert.match(denied.headers.get('location'), /\/sign-in\?next=%2Fadmin%2Fattendance/);
+    const login = await fetch(`${origin}/api/fixture/login`, { method: 'POST', headers: { origin }, body: new URLSearchParams({ next: '/admin/attendance' }), redirect: 'manual' });
+    assert.equal(login.status, 303);
+    const cookie = login.headers.get('set-cookie')?.split(';')[0];
+    assert.ok(cookie);
+    assert.equal((await fetch(`${origin}/admin/attendance`, { headers: { cookie }, redirect: 'manual' })).status, 200);
     assert.equal((await post('revoke', { id: device.id })).status, 204);
   } finally {
     server.kill('SIGTERM');
@@ -47,6 +54,8 @@ test('synthetic video frame is scanned through the browser and records attendanc
     const context = await browser.newContext({ permissions: ['camera'], viewport: { width: 390, height: 844 } });
     const kiosk = await context.newPage();
     await kiosk.goto(origin);
+    await kiosk.getByRole('button', { name: '회사 계정으로 로그인' }).click();
+    await kiosk.waitForURL('**/?view=history');
     await kiosk.evaluate(async () => {
       const response = await fetch('/api/fixture/kiosk/register', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ label: '기기 01' }) });
       if (!response.ok) throw new Error('Registration failed');

@@ -12,7 +12,7 @@ test('collaboration period screen requires a session and filters synthetic sales
       await page.goto(origin+path); assert.equal(await page.locator('tbody tr').count(),2);
       await page.locator('[name=from]').fill('2026-01-03'); await page.locator('[name=to]').fill('2026-01-03'); await page.getByRole('button',{name:'조회'}).click(); await page.waitForURL(/from=2026-01-03/); assert.equal(await page.locator('tbody tr').count(),1);
       await page.goto(origin+path+'?from=2027-01-01'); await page.getByText('조회 기간에 협업 제품 판매가 없습니다.').waitFor();
-      await page.goto(origin+path+'?from=2026-02-30'); await page.getByRole('alert').waitFor();
+      await page.goto(origin+path+'?from=2026-02-30'); await page.getByRole('alert').filter({ hasText: '조회 기간을 확인해 주세요.' }).waitFor();
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
     } finally {await context.close();} }
   } finally { await browser?.close(); child.kill('SIGTERM'); if(child.exitCode===null) await Promise.race([once(child,'exit'),delay(5000)]); if(child.exitCode===null) child.kill('SIGKILL'); }

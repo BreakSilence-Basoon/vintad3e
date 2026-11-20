@@ -61,6 +61,11 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
   let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(origin)).ok);
+    for (const path of ['/bookmarks', '/meetings', '/meetings/00000000-0000-4000-8000-000000000004', '/members', '/mypage', '/objects']) {
+      const response = await fetch(`${origin}${path}`, { redirect: 'manual' });
+      assert.equal(response.status, 307);
+      assert.equal(new URL(response.headers.get('location'), origin).searchParams.get('next'), path);
+    }
     const legacyDocument = await fetch(`${origin}/documents/legacy-document`, {redirect:'manual'});
     assert.equal(legacyDocument.status, 307);
     assert.equal(new URL(legacyDocument.headers.get('location'), origin).pathname, '/sign-in');

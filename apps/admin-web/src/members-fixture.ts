@@ -8,6 +8,10 @@ export function getFixtureMembers(env: string | undefined, enabled: string | und
     { staffId: '00000000-0000-4000-8000-000000000001', displayName: '직원 01', primaryEmail: 'staff01@example.invalid', memberType: 'employee', status: '재직', positionTitle: '직원', gradeLabel: null },
     { staffId: '00000000-0000-4000-8000-000000000002', displayName: '외부 구성원 01', primaryEmail: 'partner01@example.invalid', memberType: 'partner', status: '활동 중', positionTitle: null, gradeLabel: null },
     { staffId: '00000000-0000-4000-8000-000000000003', displayName: '관리자 01', primaryEmail: 'admin01@example.invalid', memberType: 'employee', status: '재직', positionTitle: '관리자', gradeLabel: null },
+    ...Array.from({ length: 50 }, (_, index): FixtureMember => {
+      const number = index + 4;
+      return { staffId: `00000000-0000-4000-8000-${String(number).padStart(12, '0')}`, displayName: `직원 ${String(number).padStart(2, '0')}`, primaryEmail: `staff${String(number).padStart(2, '0')}@example.invalid`, memberType: 'employee', status: '재직', positionTitle: '직원', gradeLabel: null };
+    }),
   ];
 }
 
@@ -18,6 +22,13 @@ export function fixtureMemberType(value: string | string[] | undefined): MemberT
 
 export function membersOfType(members: FixtureMember[], type: MemberType): FixtureMember[] {
   return members.filter(member => member.memberType === type);
+}
+
+export function fixtureMemberPage(members: FixtureMember[], type: MemberType, cursor: string | string[] | undefined) {
+  const matching = membersOfType(members, type);
+  if (cursor === undefined) return { rows: matching.slice(0, 50), previous: false, next: matching.length > 50 ? `${type}:50` : null };
+  if (typeof cursor !== 'string' || cursor !== `${type}:50` || matching.length <= 50) return null;
+  return { rows: matching.slice(50, 100), previous: true, next: null };
 }
 
 export type FixtureGrant = { appId: string; appName: string; role: 'VIEWER' | 'ADMIN'; status: 'ACTIVE' | 'SUSPENDED' | 'REVOKED'; validFrom: string; validUntil: string | null };

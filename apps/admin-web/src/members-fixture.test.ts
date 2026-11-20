@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { fixtureGrantActive, fixtureGrantDisplay, fixtureGrants, fixtureMemberType, fixtureTier, getFixtureMembers, membersOfType } from './members-fixture.ts';
+import { fixtureGrantActive, fixtureGrantDisplay, fixtureGrants, fixtureMemberPage, fixtureMemberType, fixtureTier, getFixtureMembers, membersOfType } from './members-fixture.ts';
 
 test('members are restricted to an explicit development fixture', () => {
   assert.deepEqual(getFixtureMembers('production', '1'), []);
   assert.deepEqual(getFixtureMembers('development', undefined), []);
   const members = getFixtureMembers('development', '1');
-  assert.equal(members.length, 3);
+  assert.equal(members.length, 53);
   assert.ok(members.every(member => member.primaryEmail.endsWith('@example.invalid')));
 });
 test('fixture details fail closed outside development and use separate employee and guest grants', () => {
@@ -44,6 +44,22 @@ test('member type selects only the corresponding synthetic members', () => {
   assert.equal(fixtureMemberType('partner'), 'partner');
   assert.equal(fixtureMemberType('unknown'), 'employee');
   assert.equal(fixtureMemberType(['employee', 'partner']), null);
-  assert.deepEqual(membersOfType(members, 'employee').map(member => member.displayName), ['직원 01', '관리자 01']);
+  assert.equal(membersOfType(members, 'employee').length, 52);
+  assert.deepEqual(membersOfType(members, 'employee').slice(0, 2).map(member => member.displayName), ['직원 01', '관리자 01']);
   assert.deepEqual(membersOfType(members, 'partner').map(member => member.displayName), ['외부 구성원 01']);
+});
+
+test('directory pages preserve member type and reject invalid cursors', () => {
+  const members = getFixtureMembers('development', '1');
+  const first = fixtureMemberPage(members, 'employee', undefined)!;
+  assert.equal(first.rows.length, 50);
+  assert.equal(first.next, 'employee:50');
+  const second = fixtureMemberPage(members, 'employee', first.next!)!;
+  assert.equal(second.rows.length, 2);
+  assert.equal(second.previous, true);
+  assert.equal(second.next, null);
+  assert.ok(second.rows.every(row => !first.rows.some(previous => previous.staffId === row.staffId)));
+  assert.equal(fixtureMemberPage(members, 'partner', 'employee:50'), null);
+  assert.equal(fixtureMemberPage(members, 'employee', ['employee:50', 'employee:50']), null);
+  assert.equal(fixtureMemberPage(members, 'employee', 'employee:100'), null);
 });

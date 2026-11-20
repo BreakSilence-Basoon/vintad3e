@@ -76,6 +76,11 @@ test('creative login, confirmation and failures work in a browser', { timeout: 1
         await page.waitForURL('**/sign-in');
         await page.goto(`${origin}/confirmations/proposal-01`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
+        await press(page, 'button', '회사 계정으로 로그인');
+        await page.waitForURL('**/confirmations/proposal-01');
+        await page.getByRole('button', { name: '제안 불러오기' }).waitFor();
+        assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation')).json().then(r => r.state)), 'idle');
+        assert.equal(await page.getByText('확인 기록이 저장되었습니다.', { exact: false }).count(), 0);
         assert.equal((await page.goto(`${origin}/confirmations/unknown`)).status(), 404);
       } finally { await context.close(); }
     }

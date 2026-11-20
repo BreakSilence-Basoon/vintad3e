@@ -5,7 +5,7 @@ import { access, unlink } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { resolve } from 'node:path';
+import { resolve, join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright';
 
@@ -34,11 +34,15 @@ test('local SQLite import previews, persists, rejects invalid input and undoes s
         const widget = page.locator('.local-inventory-import'); await enter(page, widget.locator('summary'));
         await widget.getByRole('button', { name: '현재 재고 다시 불러오기' }).waitFor();
         await page.waitForFunction(() => !document.querySelector('.local-inventory-import input[type=file]')?.disabled);
+        const capture = async label => { if (process.env.VINTAD3E_CAPTURE_DIR) await widget.screenshot({ path: join(process.env.VINTAD3E_CAPTURE_DIR, `${width}-${label}.png`) }); };
+        await capture('before');
         const input = widget.locator('input[type=file]');
         await input.setInputFiles(csv('SKU,상품명,현재수량,이메일\nA,셔츠,3,x@example.invalid'));
         await widget.locator('p[role=alert]').waitFor();
+        await capture('warning');
         await input.setInputFiles(csv('SKU,상품명,현재수량\nA,셔츠,3'));
         await widget.getByRole('region', { name: '가져올 재고' }).getByText('A', { exact: true }).waitFor();
+        await capture('preview');
         await enter(page, widget.getByRole('button', { name: '재고 적용' }));
         await widget.getByRole('region', { name: '가져온 재고' }).getByText('A', { exact: true }).waitFor();
         await page.reload(); await enter(page, widget.locator('summary'));
@@ -49,8 +53,10 @@ test('local SQLite import previews, persists, rejects invalid input and undoes s
         await widget.getByRole('region', { name: '가져올 재고' }).getByText('B', { exact: true }).waitFor();
         await enter(page, widget.getByRole('button', { name: '재고 적용' }));
         await widget.getByRole('region', { name: '가져온 재고' }).getByText('B', { exact: true }).waitFor();
+        await capture('applied');
         await enter(page, widget.getByRole('button', { name: '가져오기 되돌리기' }));
         await widget.getByRole('region', { name: '가져온 재고' }).getByText('A', { exact: true }).waitFor();
+        await capture('undo');
       } finally { await context.close(); }
     }
   } finally {

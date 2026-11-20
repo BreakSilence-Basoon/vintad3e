@@ -1,11 +1,14 @@
 'use client';
 import Link from 'next/link';
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { commentSnapshot, subscribeComments } from './fixture-comments';
 import { fixtureActivity } from './fixture-activity';
 import { libraryDate, type FixtureDocument } from './library-fixture';
+import { publishedDocument, publishedSnapshot, publishedServerSnapshot, subscribePublished } from './fixture-published-state';
 
-export function FixtureMypage({ documents }: { documents: FixtureDocument[] }) {
+export function FixtureMypage({ documents: initial }: { documents: FixtureDocument[] }) {
+  const published=useSyncExternalStore(subscribePublished,publishedSnapshot,publishedServerSnapshot);
+  const documents=useMemo(()=>initial.length && published ? [publishedDocument,...initial] : initial,[initial,published]);
   const getSnapshot = useCallback(() => JSON.stringify(documents.map(document => commentSnapshot(document.id))), [documents]);
   const getServerSnapshot = useCallback(() => JSON.stringify(documents.map(() => '[]')), [documents]);
   const snapshot = useSyncExternalStore(subscribeComments, getSnapshot, getServerSnapshot);

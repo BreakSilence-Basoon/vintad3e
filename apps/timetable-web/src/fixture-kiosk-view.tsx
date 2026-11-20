@@ -7,7 +7,7 @@ import { TimetableSlideSwitcher } from './timetable-slide-switcher';
 type Device = { id: string; label: string };
 type Challenge = { token: string; expiresAt: number; device: Device };
 const kioskKey = 'vintad3e-timetable-fixture-kiosk';
-function selectDevice(id: string) { localStorage.setItem(kioskKey, id); document.cookie = `vintad3e-kiosk-device=${id}; Path=/; SameSite=Strict`; }
+function selectDevice(id: string) { localStorage.setItem(kioskKey, id); document.cookie = `vintad3e-kiosk-device=${id}; Path=/; Max-Age=31536000; SameSite=Strict`; }
 function clearDevice() { localStorage.removeItem(kioskKey); document.cookie = 'vintad3e-kiosk-device=; Path=/; Max-Age=0; SameSite=Strict'; }
 
 export function FixtureKioskSetupReturn() {

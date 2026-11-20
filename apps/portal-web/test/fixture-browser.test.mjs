@@ -120,6 +120,22 @@ test('portal login, navigation, confirmation and failures work in a browser', { 
         await page.locator('button[aria-label="SNS·외부 링크 보기"][aria-current="true"]').waitFor();
         await page.locator('.portal-carousel').focus(); await page.keyboard.press('ArrowLeft');
         await page.locator('button[aria-label="업무 앱 보기"][aria-current="true"]').waitFor();
+        const viewport = page.locator('.portal-carousel__viewport');
+        const box = await viewport.boundingBox(); assert.ok(box);
+        const y = box.y + box.height * 0.5;
+        async function drag(from, to) {
+          await page.mouse.move(box.x + box.width * from, y);
+          await page.mouse.down();
+          await page.mouse.move(box.x + box.width * to, y, { steps: 12 });
+          await page.mouse.up();
+        }
+        await drag(0.7, 0.25);
+        await page.locator('button[aria-label="SNS·외부 링크 보기"][aria-current="true"]').waitFor();
+        await drag(0.25, 0.7);
+        await page.locator('button[aria-label="업무 앱 보기"][aria-current="true"]').waitFor();
+        await drag(0.25, 0.7);
+        await page.locator('button[aria-label="업무 앱 보기"][aria-current="true"]').waitFor();
+        assert.equal(await page.locator('.portal-carousel__page[aria-hidden="true"][inert]').count(), 2);
         await page.goto(origin + '/auth/session-resume?next=%2Fabout');
         await page.waitForURL('**/about'); await page.getByText('업무 앱과 사이트를 한곳에서 찾을 수 있습니다.').waitFor();
         await page.goto(origin + '/auth/session-resume?next=%2F%2Fevil.invalid');

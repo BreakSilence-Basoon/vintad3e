@@ -24,8 +24,20 @@ test('library keyboard actions validate inputs and recover from storage and serv
       try {
         await page.goto(`${origin}/objects/new`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
+        assert.equal(await page.evaluate(async () => (await fetch('/api/search?q=매장')).status),401);
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/objects/new');
+        assert.equal(await page.evaluate(async () => (await fetch('/api/search?q=one&q=two')).status),400);
+        await enter(page, page.getByRole('link', {name:'로그인 전 화면 보기'}));
+        await page.getByRole('link', {name:'Library로 돌아가기'}).click(); await page.waitForURL('**/objects/new');
+        await enter(page, page.getByRole('button', {name:'게시물 검색'}));
+        const dialog=page.getByRole('dialog',{name:'게시물 검색'}), search=dialog.getByRole('combobox',{name:'게시물 제목 검색'});
+        await search.fill('매장'); await dialog.getByRole('option',{name:/매장 운영 안내/}).waitFor();
+        await search.fill('찾을수없는항목'); await dialog.getByText('검색 결과가 없습니다.').waitFor();
+        await page.route('**/api/search?*',route=>route.fulfill({status:503,body:''}));
+        await search.fill('오류'); await dialog.getByRole('alert').waitFor(); await page.unroute('**/api/search?*');
+        await page.keyboard.press('Escape'); assert.equal(await dialog.isVisible(),false);
+        if(width===390){await enter(page,page.getByRole('button',{name:'메뉴 열기'}));await page.getByRole('navigation',{name:'모바일 메뉴'}).getByRole('link',{name:'보관함'}).click();await page.waitForURL('**/bookmarks');await page.goto(origin+'/objects/new');}
         const picker = page.locator('#library-object-file');
         const prepare = page.getByRole('button', { name: '업로드 내용 확인' });
         assert.equal(await prepare.isDisabled(), true);

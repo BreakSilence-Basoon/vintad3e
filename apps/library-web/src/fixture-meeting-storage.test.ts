@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { addSyntheticMeeting, readSyntheticMeetings } from './fixture-meeting-storage.ts';
 import './fixture-meeting-content.test.ts';
+import './fixture-meeting-confirmation.test.mjs';
+import './fixture-confirmation-display.test.ts';
 
 test('synthetic meetings are validated and kept only in the supplied storage', () => {
   let raw: string | null = null;

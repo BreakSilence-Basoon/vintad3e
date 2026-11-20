@@ -1,24 +1,45 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { Button } from '@vintad3e/ui/components';
 import { ObjectUploadForm } from './records-entry-forms';
 import { applyFixtureMeetingChange, readFixtureMeetingContent, type MeetingChange, type MeetingContent, type MeetingStage } from './fixture-meeting-content';
 import { fixtureUpload } from './fixture-upload-spec.mjs';
+import { confirmationPayloadText, escapeConfirmationText } from './fixture-confirmation-display';
 
 const names = { TRANSCRIPT: '전사본', CORRECTED: '보정본', SUMMARY: '요약' } as const;
+type Proposal = { proposalId: string; meetingId: string; change: MeetingChange; canonical: string; changeDigest: string; permissionDigest: string; checkedAt: number; expiresAt: number; state: 'proposal' | 'loaded' | 'reviewed' | 'confirmed' | 'executed' };
+const date = (time: number) => new Date(time).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+const preStyle: CSSProperties = { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: '28rem', overflow: 'auto', padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm, 8px)' };
 
 function FixtureMeetingChange({ change, label, meetingId, apply, done }: { change: MeetingChange | null; label: string; meetingId: string; apply: (change: MeetingChange) => boolean; done: () => void }) {
-  const [proposal, setProposal] = useState<MeetingChange | null>(null);
+  const [proposal, setProposal] = useState<Proposal | null>(null);
   const [phase, setPhase] = useState<'idle' | 'proposal' | 'loaded' | 'reviewed' | 'confirmed' | 'done'>('idle');
-  const [error, setError] = useState(false);
-  return <section aria-busy={false}>
-    {phase === 'idle' && <Button profile="library" type="button" disabled={!change} onClick={() => { if (change) { setProposal(change); setPhase('proposal'); setError(false); } }}>{label}</Button>}
-    {phase === 'proposal' && <Button profile="library" type="button" onClick={() => setPhase('loaded')}>제안 불러오기</Button>}
-    {proposal && ['loaded', 'reviewed', 'confirmed'].includes(phase) && <section className="staff-section"><h2>제안 내용</h2><dl><dt>앱</dt><dd>Library</dd><dt>작업</dt><dd>{label}</dd><dt>대상</dt><dd>{meetingId}</dd></dl><h3>실제 변경 데이터</h3><pre>{JSON.stringify(proposal, null, 2)}</pre></section>}
-    {phase === 'loaded' && <Button profile="library" type="button" onClick={() => setPhase('reviewed')}>제안 검토</Button>}
-    {phase === 'reviewed' && <Button profile="library" type="button" onClick={() => setPhase('confirmed')}>이 변경 확인</Button>}
-    {phase === 'confirmed' && <Button profile="library" type="button" onClick={() => { if (!proposal || !apply(proposal)) { setError(true); return; } setError(false); setPhase('done'); done(); }}>등록</Button>}
+  const [error, setError] = useState(false), [busy, setBusy] = useState(false);
+  const active = useRef(false);
+  async function transition(action: 'prepare' | 'load' | 'review' | 'confirm' | 'execute') {
+    if (active.current || (action === 'prepare' ? !change : !proposal)) return;
+    active.current = true; setBusy(true); setError(false);
+    try {
+      const payload = action === 'prepare' ? { action, meetingId, change } : { action, proposalId: proposal!.proposalId, changeDigest: proposal!.changeDigest };
+      const response = await fetch('/api/fixture/meeting-confirmation', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload), cache: 'no-store' });
+      if (!response.ok) throw new Error('unavailable');
+      const value = await response.json() as Proposal;
+      const expected = action === 'prepare' ? change : proposal!.change;
+      const expectedState = { prepare: 'proposal', review: 'reviewed', confirm: 'confirmed', execute: 'executed' } as const;
+      if (!value || value.meetingId !== meetingId || !/^[0-9a-f-]{36}$/.test(value.proposalId) || !/^[a-f0-9]{64}$/.test(value.changeDigest) || !/^[a-f0-9]{64}$/.test(value.permissionDigest) || value.canonical !== JSON.stringify(expected) || JSON.stringify(value.change) !== value.canonical || !Number.isFinite(value.checkedAt) || !Number.isFinite(value.expiresAt) || !['proposal', 'loaded', 'reviewed', 'confirmed', 'executed'].includes(value.state) || (action !== 'load' && value.state !== expectedState[action]) || (action === 'load' && value.state === 'proposal') || (proposal && (value.proposalId !== proposal.proposalId || value.changeDigest !== proposal.changeDigest || value.permissionDigest !== proposal.permissionDigest))) throw new Error('invalid proposal');
+      setProposal(value);
+      if (action === 'execute') { if (!apply(value.change)) throw new Error('storage unavailable'); setPhase('done'); done(); }
+      else setPhase(value.state === 'executed' ? 'confirmed' : value.state);
+    } catch { setError(true); } finally { active.current = false; setBusy(false); }
+  }
+  return <section aria-busy={busy}>
+    {phase === 'idle' && <Button profile="library" type="button" disabled={!change || busy} onClick={() => void transition('prepare')}>{label}</Button>}
+    {proposal && phase !== 'done' && <Button profile="library" type="button" disabled={busy} onClick={() => void transition('load')}>{phase === 'proposal' ? '제안 불러오기' : '최신 상태 다시 불러오기'}</Button>}
+    {proposal && ['loaded', 'reviewed', 'confirmed'].includes(phase) && <section className="staff-section"><h2>제안 내용</h2><dl><dt>앱</dt><dd>Library</dd><dt>작업</dt><dd>library.meeting.write</dd><dt>대상</dt><dd style={{ overflowWrap: 'anywhere' }}>library:meetings</dd><dt>제안 번호</dt><dd>{proposal.proposalId}</dd><dt>제안 만료</dt><dd>{date(proposal.expiresAt)} (한국 시간){proposal.expiresAt <= Date.now() ? ' · 만료됨' : ''}</dd><dt>현재 권한</dt><dd>이 대상의 작업 권한 확인됨 · {date(proposal.checkedAt)} (한국 시간)</dd><dt>처리 상태</dt><dd role="status">{phase === 'confirmed' ? '확인됨 · 아직 실행되지 않음' : '확인 대기'}</dd><dt>제안 digest</dt><dd style={{ overflowWrap: 'anywhere' }}>{proposal.changeDigest}</dd><dt>권한 digest</dt><dd style={{ overflowWrap: 'anywhere' }}>{proposal.permissionDigest}</dd></dl><p>보이지 않는 문자는 {'\\uXXXX'} 또는 {'\\u{XXXXX}'}, 원래 역슬래시는 {'\\\\'}로 표시합니다. 검증에 사용하는 원문과 digest는 바꾸지 않습니다.</p><h3>실제 변경 데이터</h3><pre style={preStyle}>{confirmationPayloadText(proposal.change)}</pre><h3>서버에 저장된 제안 원문</h3><pre style={preStyle}>{escapeConfirmationText(proposal.canonical)}</pre></section>}
+    {phase === 'loaded' && <Button profile="library" type="button" disabled={busy} onClick={() => void transition('review')}>제안 검토</Button>}
+    {phase === 'reviewed' && <Button profile="library" type="button" disabled={busy} onClick={() => void transition('confirm')}>이 변경 확인</Button>}
+    {phase === 'confirmed' && <Button profile="library" type="button" disabled={busy || proposal!.expiresAt <= Date.now()} onClick={() => void transition('execute')}>등록</Button>}
     {phase === 'done' && <p role="status">등록했습니다.</p>}
     {error && <p role="alert">처리하지 못했습니다. 다시 시도해 주세요.</p>}
   </section>;

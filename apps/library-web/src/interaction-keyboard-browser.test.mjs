@@ -103,6 +103,10 @@ test('library keyboard actions validate inputs and recover from storage and serv
           await section.getByText('파일을 올렸습니다.', { exact: true }).waitFor();
         }
         await uploadFixture(attach, '#meeting-attachment-file');
+        await page.route('**/api/fixture/meeting-confirmation', route => route.fulfill({ status: 503, body: '' }));
+        await enter(page, attach.getByRole('button', { name: '회의에 첨부', exact: true }));
+        await attach.getByRole('alert').waitFor();
+        await page.unroute('**/api/fixture/meeting-confirmation');
         for (const label of ['회의에 첨부', '제안 불러오기', '제안 검토', '이 변경 확인']) await enter(page, attach.getByRole('button', { name: label, exact: true }));
         await page.evaluate(() => { window.oldSetItem = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new Error('unavailable'); }; });
         await enter(page, attach.getByRole('button', { name: '등록', exact: true }));

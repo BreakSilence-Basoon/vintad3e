@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3829",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/library-fixture.test.ts src/fixture-object.test.ts src/fixture-bookmarks.test.ts src/fixture-comments.test.ts src/fixture-activity.test.ts src/fixture-members.test.ts src/fixture-meeting-storage.test.ts src/fixture-session.test.mjs src/fixture-upload.test.mjs",
+    "test": "node --test src/library-fixture.test.ts src/fixture-object.test.ts src/fixture-bookmarks.test.ts src/fixture-comments.test.ts src/fixture-activity.test.ts src/fixture-members.test.ts src/fixture-meeting-storage.test.ts src/fixture-session.test.mjs src/fixture-upload.test.mjs src/fixture-corrected-renderer.test.mjs src/fixture-publication-content.test.ts",
     "test:fixture-browser": "node --test --test-concurrency=1 src/library-fixture-browser.test.mjs src/library-records-browser.test.mjs src/interaction-keyboard-browser.test.mjs src/internal-document-browser.test.mjs"
   },
   "dependencies": {

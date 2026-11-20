@@ -50,6 +50,12 @@ test('admin lists, audit filters and invalid addresses work with keyboard input'
         await page.locator('.staff-error[role=alert]').waitFor();
         await enter(page, page.getByRole('link', { name: '처음부터 보기' }));
         await page.locator('.staff-table tbody a').first().waitFor();
+        assert.equal(await page.locator('.staff-table tbody tr').count(), 50);
+        await enter(page, page.getByRole('link', { name: '다음 목록' }));
+        await page.waitForURL('**/members?type=employee&cursor=employee%3A50');
+        assert.equal(await page.locator('.staff-table tbody tr').count(), 2);
+        await enter(page, page.getByRole('link', { name: '처음부터 보기' }));
+        await page.waitForURL('**/members?type=employee');
         await enter(page, page.locator('.staff-table tbody a').first());
         await page.waitForURL(/\/members\/[0-9a-f-]+$/);
         await page.locator('main').getByText('staff01@example.invalid', { exact: true }).waitFor();

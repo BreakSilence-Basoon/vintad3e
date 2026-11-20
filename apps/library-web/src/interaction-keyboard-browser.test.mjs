@@ -152,6 +152,18 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await page.getByRole('heading', { name: '전사본 · 1' }).waitFor();
         await page.getByLabel('단계').selectOption('CORRECTED');
         assert.equal(await page.getByLabel('근거 문서').getByRole('option', { name: '전사본 · 1' }).count(), 1);
+        await page.getByLabel('근거 문서').selectOption('1');
+        await uploadFixture(stage, '#meeting-stage-file');
+        await stage.getByLabel('제목').fill('보정 기록');
+        await stage.getByLabel('출처').fill('회의 내용');
+        for (const label of ['회의 문서 확인', '제안 불러오기', '제안 검토', '이 변경 확인', '등록']) await enter(page, stage.getByRole('button', { name: label, exact: true }));
+        await page.getByRole('heading', { name: '보정본 · 1' }).waitFor();
+        await enter(page, page.getByRole('link', { name: '보정본 열기', exact: true }));
+        await page.waitForURL('**/objects/00000000-0000-4000-8000-000000000009?documentId=00000000-0000-4000-8000-000000000010&view=corrected');
+        await enter(page, page.getByRole('button', { name: '파일 열기', exact: true }));
+        await page.locator('pre.publication-content').waitFor();
+        assert.equal(await page.locator('pre.publication-content').textContent(), '업무를 시작하기 전에 필요한 사항을 확인합니다.');
+        assert.equal(await page.evaluate(async () => (await fetch('/objects/00000000-0000-4000-8000-000000000009?documentId=00000000-0000-4000-8000-000000000099&view=corrected')).status), 404);
         await page.goto(`${origin}/confirmations/proposal-01`);
         for (const label of ['제안 검토','이 변경 확인','문서 발행']) await enter(page,page.getByRole('button',{name:label,exact:true}));
         await enter(page,page.getByRole('link',{name:'발행한 문서 열기'}));

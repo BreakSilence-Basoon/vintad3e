@@ -26,13 +26,13 @@
 | Apparel | 14 | 13 | 개인정보 문서는 각 가게가 준비 |
 | Creative | 3 | 3 | 경로 일치 |
 | Floor | 8 | 7 | 정책 차단 1개 제외 |
-| Library | 21 | 19 | 내부 문서 2개는 [PR #245](https://github.com/BreakSilence-Basoon/vintad3e/pull/245)에서 검사 중 |
+| Library | 21 | 21 | 내부 문서 두 경로를 [PR #245](https://github.com/BreakSilence-Basoon/vintad3e/pull/245)에서 이관 |
 | Partners | 15 | 13 | 동적 협업처 경로와 합성 정산 경로로 처리하는 주소가 있어 일대일 숫자로 비교할 수 없음; 개인정보 문서는 각 가게가 준비 |
 | Portal | 5 | 5 | 경로 일치 |
 | Supporters | 13 | 11 | 개인정보 문서·약관은 각 가게가 준비 |
 | Timetable | 16 | 14 | 개인정보 문서·약관은 각 가게가 준비 |
 
-코드 기반 대조로 Creative 홈의 로그인 메뉴·빈 상태·오류를 복원했고, Floor 재고 화면은 재료 등록까지 복원했습니다. Floor의 구매·입고와 재료 구성 및 저장은 아직 이관이 필요하며, 실사는 [PR #247](https://github.com/BreakSilence-Basoon/vintad3e/pull/247)에서 검사 중입니다. 다른 경로도 개별 내용과 상호작용의 원본 일치 여부는 계속 확인해야 합니다.
+코드 기반 대조로 Creative 홈의 로그인 메뉴·빈 상태·오류와 Floor 재료 등록·실사·취소를 복원했습니다. Floor 구매·입고는 [PR #256](https://github.com/BreakSilence-Basoon/vintad3e/pull/256)에서 검사 중이며, 재료 구성 저장은 아직 이관이 필요합니다. 다른 경로도 개별 내용과 상호작용의 원본 일치 여부는 계속 확인해야 합니다.
 
 ## 내용·동작 대조 기록
 
@@ -41,8 +41,9 @@
 | 화면 | 원본에서 확인한 구성 | 공개판 상태 |
 | --- | --- | --- |
 | Creative 홈·로그인 | 로그인 후 상단 홈·계정·로그아웃과 프로젝트 목록, 빈 상태·오류 | 합성 세션과 함께 이관; 홈 이동 결과도 검사 |
-| Floor 재고 | 재료 등록, 재료 구성, 구매·입고, 실사 입력 및 기록 취소 | 재료 등록 이관; 실사·취소는 [PR #247](https://github.com/BreakSilence-Basoon/vintad3e/pull/247) 검사 중; 재료 구성과 구매·입고 미이관 |
-| Partners 협업처 상세 | 협업 정산 계산 진입과 해당 협업처의 정산·상품 구성 | 합성 정산 계산 진입 이관; 상품 구성과 세부 정산은 추가 대조 필요 |
+| Floor 재고 | 재료 등록, 재료 구성, 구매·입고, 실사 입력 및 기록 취소 | 재료 등록·실사·취소 이관; 구매·입고 [PR #256](https://github.com/BreakSilence-Basoon/vintad3e/pull/256) 검사 중; 재료 구성 미이관 |
+| Partners 협업처 상세 | 협업 정산 계산 진입과 해당 협업처의 정산·상품 구성 | 합성 정산 계산 진입 및 상품·재고 구성 이관; 쇼룸 정산 계산기는 추가 이관 필요 |
 | Library 내부 문서 | 홈 목록에서 문서를 열고 목차·본문·문서 정보를 확인 | 합성 문서와 로그인 경로는 [PR #245](https://github.com/BreakSilence-Basoon/vintad3e/pull/245) 검사 완료 |
-| Library 로그인 상단 | 홈·검색·계정·로그아웃 및 모바일 메뉴 | 합성 검색·세션 연결은 [PR #248](https://github.com/BreakSilence-Basoon/vintad3e/pull/248) 검사 중 |
-| Library 발행 문서 | 문서 도구·문서 정보·다운로드·공유·댓글 및 권한에 따른 보관 | 다운로드와 합성 댓글 등 일부 이관; 문서 정보·공유·보관과 접근 경로는 추가 대조 필요 |
+| Library 로그인 상단 | 홈·검색·계정·로그아웃 및 모바일 메뉴 | 합성 검색·세션 연결 이관 |
+| Library 발행 문서 | 문서 도구·문서 정보·다운로드·공유·댓글 및 권한에 따른 보관 | 읽기 도구·문서 정보·다운로드와 합성 공유·댓글 이관; 합성 로그인은 [PR #258](https://github.com/BreakSilence-Basoon/vintad3e/pull/258)에서 검사 중이고 보관은 미이관 |
+| Timetable 기기 등록 | 미등록 기기의 안내, 등록된 기기의 QR 화면 이동 | 합성 기기 등록과 설정 주소 복귀 이관 |

@@ -75,12 +75,15 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     const run = async expression => { await evaluate(expression); await delay(150); };
     await send('Page.navigate',{url:origin});
+    await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
     await waitFor(async () => evaluate("document.querySelectorAll('.library-feed li').length === 5"));
     assert.equal(await evaluate("document.querySelectorAll('.library-post').length"), 5);
     assert.ok(await evaluate("Boolean(document.querySelector('.library-feed a[href=\"/objects/00000000-0000-4000-8000-000000000003\"]'))"));
     await send('Page.navigate',{url:`${origin}/?q=${encodeURIComponent('운영')}`});
     await waitFor(async () => evaluate("location.search.includes('q=') && document.querySelectorAll('.library-feed li').length === 1"));
     assert.ok(await evaluate("document.querySelector('.library-feed').textContent.includes('매장 운영 안내')"));
+    await send('Network.clearBrowserCookies');
     await evaluate("document.querySelector('.library-feed a').click()");
     await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
     await evaluate("document.querySelector('form button').click()");

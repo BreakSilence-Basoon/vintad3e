@@ -5,7 +5,14 @@ const tokenPattern = /^[A-Za-z0-9_-]{43}$/;
 const key = Symbol.for('vintad3e.supporters.fixture.sessions');
 const sessions = globalThis[key] ??= new Map();
 const ttl = 30 * 60 * 1000;
-export function fixtureNext(value) { return ['/confirmations/proposal-01', '/formula', '/formula-info', '/performance'].includes(value) ? value : '/'; }
+export function fixtureNext(value) {
+  if (['/confirmations/proposal-01', '/formula', '/formula-info', '/performance'].includes(value)) return value;
+  if (typeof value !== 'string' || !value.startsWith('/?') || value.length > 256) return '/';
+  const params = new URLSearchParams(value.slice(2));
+  const allowed = new Set(['staff', 'from', 'to']);
+  if ([...params].some(([key, item]) => !allowed.has(key) || params.getAll(key).length !== 1 || !/^[a-zA-Z0-9-]{1,40}$/.test(item))) return '/';
+  return `/?${params}`;
+}
 
 export function fixtureResumePath(value) {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(value)) return '/';

@@ -1,4 +1,7 @@
 import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+import { fixtureNext, fixtureOrigin, fixtureSession } from '../fixture-session.mjs';
 import { StaffToastViewport } from '@vintad3e/ui/toast';
 import { getCouponFixtures, selectCouponFixture } from '../coupon-fixture';
 import { CouponStaffSelector } from '../sns-fixture-selector';
@@ -11,6 +14,20 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
   const fixtures = getCouponFixtures(process.env.NODE_ENV, process.env.VINTAD3E_SUPPORTERS_FIXTURE);
   if (!fixtures.length) notFound();
   const params = await searchParams;
+  const origin = fixtureOrigin(process.env);
+  if (!origin) notFound();
+  const requestHeaders = await headers();
+  const host = requestHeaders.get('host');
+  if (host !== new URL(origin).host) notFound();
+  if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) {
+    const query = new URLSearchParams();
+    for (const key of ['staff', 'from', 'to'] as const) {
+      const value = params[key];
+      if (typeof value === 'string') query.set(key, value);
+    }
+    const next = fixtureNext(query.size ? `/?${query}` : '/');
+    redirect(`/sign-in?${new URLSearchParams({ next })}`);
+  }
   const selected = selectCouponFixture(fixtures, params.staff);
   const members = fixtures.map(item => ({ staffId: item.id, displayName: item.displayName }));
   const month = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long' }).format(new Date());

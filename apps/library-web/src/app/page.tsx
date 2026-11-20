@@ -17,5 +17,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
   const params = await searchParams;
   const query = typeof params.q === 'string' ? params.q.slice(0, 200) : '';
   const items = fixtureHome(process.env.NODE_ENV, process.env.VINTAD3E_LIBRARY_FIXTURE, query);
-  return <main className="library-home library-home--feed"><section className="library-page" aria-label="홈"><nav aria-label="자료"><Link href="/meetings">회의 기록</Link> <Link href="/objects">파일</Link></nav><FixtureHomeFeed items={items} query={query} fixture={process.env.NODE_ENV==='development'&&process.env.VINTAD3E_LIBRARY_FIXTURE==='1'} /></section></main>;
+  const fixture = process.env.NODE_ENV === 'development' && process.env.VINTAD3E_LIBRARY_FIXTURE === '1';
+  const failed = fixture && process.env.VINTAD3E_LIBRARY_FEED_STATE === 'error';
+  return <main className="library-home library-home--feed"><section className="library-page" aria-label="홈"><nav aria-label="자료"><Link href="/meetings">회의 기록</Link> <Link href="/objects">파일</Link></nav>{failed && <p className="library-inline-error" role="alert">게시물 목록을 불러오지 못했습니다.</p>}{(items.length > 0 || !failed) && <FixtureHomeFeed items={items} query={query} fixture={fixture} />}</section></main>;
 }

@@ -10,6 +10,7 @@ test('collaboration period screen requires a session and filters synthetic sales
       const path='/proj-bedroom/partner-01/settlement'; await page.goto(origin+'/proj-bedroom/partner-01');
       await page.getByRole('link',{name:'협업 정산 계산'}).click(); await page.waitForURL(url => url.pathname === '/sign-in');
       await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); await page.waitForURL(origin+path);
+      await page.getByRole('heading',{name:'협업처 01 협업 정산 계산'}).waitFor(); await page.getByText('순판매 3장 · 장당 500원').waitFor(); await page.getByText('확인 대기 0건은 예상 지급액에서 제외됩니다.',{exact:false}).waitFor();
       assert.equal(await page.locator('tbody tr').count(),2);
       await page.locator('[name=from]').fill('2026-01-03'); await page.locator('[name=to]').fill('2026-01-03'); await page.getByRole('button',{name:'조회'}).click(); await page.waitForURL(/from=2026-01-03/); assert.equal(await page.locator('tbody tr').count(),1);
       await page.goto(origin+path+'?from=2027-01-01'); await page.getByText('조회 기간에 협업 제품 판매가 없습니다.').waitFor();

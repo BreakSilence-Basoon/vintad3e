@@ -38,6 +38,8 @@ test('library keyboard actions validate inputs and recover from storage and serv
         assert.equal(await page.evaluate(async () => (await fetch('/api/search?q=매장')).status),401);
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/objects/new');
+        await page.goto(`${origin}/ir/00000000-0000-4000-8000-000000000001`);
+        await page.getByRole('link', { name: /업무 안내\.txt/ }).waitFor();
         await page.goto(`${origin}/native/00000000-0000-4000-8000-000000000001`);
         const attachment = page.getByRole('link', { name: /업무 안내\.txt/ });
         await enter(page, attachment);

@@ -1,3 +1,9 @@
 const rows = [{ date:'2026-01-02', option:'M', quantity:2, returned:0, status:'교차검증 완료', payout:1000 }, { date:'2026-01-03', option:'L', quantity:1, returned:0, status:'교차검증 완료', payout:500 }];
 function validDate(value) { if (value === undefined || value === '') return true; if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false; const date = new Date(value + 'T00:00:00Z'); return Number.isFinite(date.getTime()) && date.toISOString().slice(0,10) === value; }
 export function periodRows(from, to) { if (!validDate(from) || !validDate(to) || (from && to && from > to)) return null; return rows.filter(row => (!from || row.date >= from) && (!to || row.date <= to)); }
+export function readCollaboration(from, to, env) {
+  const selected = periodRows(from, to);
+  if (selected === null) return { kind: 'invalid' };
+  if (env.NODE_ENV === 'development' && env.VINTAD3E_PARTNERS_FIXTURE === '1' && env.VINTAD3E_PARTNERS_COLLABORATION_STATE === 'error') return { kind: 'error' };
+  return { kind: 'ready', rows: selected };
+}

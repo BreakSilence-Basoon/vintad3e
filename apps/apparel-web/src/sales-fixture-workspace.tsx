@@ -5,8 +5,10 @@ import { SalesFilterForm, type SalesFilterFormState } from './sales-filter-form'
 import { filterFixtureSales, type FixtureSale } from './sales-fixture';
 import { SalesFixtureList } from './sales-fixture-list';
 import { readFixtureSync, writeFixtureSync } from './sales-fixture-sync';
+import Link from 'next/link';
+import { salesNextHref } from './sales-pagination';
 
-export function SalesFixtureWorkspace({ sales, filters, now }: { sales: FixtureSale[]; filters: SalesFilterFormState; now: string }) {
+export function SalesFixtureWorkspace({ sales, filters, now, page }: { sales: FixtureSale[]; filters: SalesFilterFormState; now: string; page: number }) {
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
   useEffect(() => { try { setSyncedAt(readFixtureSync(sessionStorage)); } catch {} }, []);
   const sync = () => {
@@ -17,5 +19,7 @@ export function SalesFixtureWorkspace({ sales, filters, now }: { sales: FixtureS
     } catch { return false; }
   };
   const extra: FixtureSale[] = syncedAt ? [{ id: 'sale-sync-1', soldAt: syncedAt, item: '가방', quantity: 1, amount: 11111, source: 'pos', status: 'pending', number: 'POS-002' }] : [];
-  return <><SalesEmptyToolbar onFixtureSync={sync} fixtureSyncedAt={syncedAt} /><SalesFilterForm key={[filters.range, filters.from, filters.to, filters.source, filters.status, filters.keyword, filters.sortDirection].join(':')} filters={filters} /><SalesFixtureList sales={filterFixtureSales([...sales, ...extra], filters, new Date(now))} /></>;
+  const filtered = filterFixtureSales([...sales, ...extra], filters, new Date(now));
+  const visible = filtered.slice(0, page * 18);
+  return <><SalesEmptyToolbar onFixtureSync={sync} fixtureSyncedAt={syncedAt} /><SalesFilterForm key={[filters.range, filters.from, filters.to, filters.source, filters.status, filters.keyword, filters.sortDirection].join(':')} filters={filters} /><SalesFixtureList sales={visible} />{visible.length < filtered.length && <nav className="load-more-pager" aria-label="판매내역 더 불러오기"><span>{visible.length} / {filtered.length}</span><Link href={salesNextHref(page + 1, filters)} className="button button--ghost button--small" scroll={false}>더 불러오기</Link></nav>}</>;
 }

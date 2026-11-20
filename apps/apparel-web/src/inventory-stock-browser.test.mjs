@@ -100,7 +100,7 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     await run("window.confirm=()=>true;document.querySelector('.graphic-dialog__close').click()");
     await send('Page.navigate',{url:`${origin}/admin/sales`});
     await waitFor(async () => evaluate("Boolean(document.querySelector('.sales-history-page .audit-filter-bar[data-hydrated=true]'))"));
-    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card').length"), 2);
+    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card').length"), 18);
     assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card')[1].querySelector('summary strong').textContent"), '-');
     await evaluate("document.querySelector('.sales-audit-card details').open=true");
     assert.ok(await evaluate("document.querySelector('.sales-audit-card__snapshot').textContent.includes('POS-001')"));
@@ -112,9 +112,9 @@ test('fixture stock validation, save and unsaved-change confirmations in Chrome'
     assert.ok(await evaluate("document.querySelector('.sales-audit-card').textContent.includes('42,000 KRW')"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.admin-toast--success')?.textContent.includes('Toss 동기화를 시작했습니다.'))return true;[...document.querySelectorAll('button')].find(x=>x.textContent==='수동 갱신')?.click();return false;})()"));
     await send('Page.navigate',{url:`${origin}/admin/sales?range=all`});
-    await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 3 && document.querySelector('.sales-history-page')?.textContent.includes('가방')"));
+    await waitFor(async () => evaluate("document.querySelectorAll('.sales-audit-card').length === 18 && document.querySelector('.sales-history-page')?.textContent.includes('가방')"));
     await evaluate("[...document.querySelectorAll('button')].find(x=>x.textContent==='수동 갱신')?.click()");
-    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card').length"), 3);
+    assert.equal(await evaluate("document.querySelectorAll('.sales-audit-card').length"), 18);
     await waitFor(async () => evaluate("(()=>{if([...document.querySelectorAll('.admin-toast--error')].some(x=>x.textContent.includes('교차 검증 실행에 실패했습니다.')))return true;[...document.querySelectorAll('button')].find(x=>x.textContent==='교차 검증 즉시 실행')?.click();return false;})()"));
     await send('Page.navigate',{url:`${origin}/admin/support`});
     await waitFor(async () => evaluate("document.querySelectorAll('.support-results tbody tr').length > 30"));

@@ -15,6 +15,7 @@ export function getFixtureSales(env: string | undefined, enabled: string | undef
   return [
     ...(todayStart < now.getTime() ? [{ id: 'sale-1', soldAt: new Date(todayStart).toISOString(), item: '셔츠', quantity: 1, amount: 42000, source: 'pos' as const, status: 'checked' as const, number: 'POS-001' }] : []),
     { id: 'sale-2', soldAt: new Date(now.getTime() - 2 * DAY).toISOString(), item: '후드', quantity: 2, amount: 0, source: 'seongsu_ticket', status: 'pending', number: 'TICKET-001' },
+    ...Array.from({ length: 19 }, (_, index): FixtureSale => ({ id: `sale-old-${index + 1}`, soldAt: new Date(now.getTime() - (index + 31) * DAY).toISOString(), item: '모자', quantity: 1, amount: 12000, source: 'pos', status: 'checked', number: `POS-${String(index + 3).padStart(3, '0')}` })),
   ];
 }
 

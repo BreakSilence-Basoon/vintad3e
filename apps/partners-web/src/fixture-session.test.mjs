@@ -28,6 +28,7 @@ test('fixture login and logout rotate and revoke only local synthetic sessions',
 
 test('fixture login only returns to the accounts path', () => {
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/accounts').headers.get('location'), '/accounts');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/proj-bedroom/partner-01/settlement').headers.get('location'), '/proj-bedroom/partner-01/settlement');
   for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
 });
 

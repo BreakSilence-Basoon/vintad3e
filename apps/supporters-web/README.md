@@ -16,6 +16,8 @@ Instagram과 TikTok은 원본에서 관리자에게 연결된 서포터즈가 �
 
 같은 설정의 `/sign-in`에서는 로컬 합성 세션을 만들 수 있습니다. `/formula`의 합성 정산 화면은 `src/formula-fixture-settings.json`의 값과 계산식을 읽습니다. 계산식은 `amount`, `rate`, 정수와 사칙연산을 조합하는 구조이며 임의 코드는 실행하지 않습니다. 원본 회사의 정산 공식·금액·억제 규칙은 포함하지 않습니다. `VINTAD3E_SUPPORTERS_FIXTURE_SELF=1`이면 `/formula-info`의 안내 화면으로 이동합니다. 실제 로그인·정산·권한 확인에는 사용할 수 없습니다.
 
+합성 안내 화면은 원본의 언어 전환·목차·내용 복사 기능을 사용하며, 안내 문장과 번역에는 실제 정산 기준을 넣지 않았습니다.
+
 같은 설정의 홈(`/`)에서는 합성 구성원 선택과 성과·쿠폰 사이트 통계 화면을 볼 수 있습니다. 수치와 통계는 화면 확인용이며 실제 SNS, 판매 또는 정산 정보를 읽거나 계산하지 않습니다. 설정하지 않으면 홈을 표시하지 않습니다.
 
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/supporters-web dev`를 실행하고 `http://127.0.0.1:3827/coupon`을 엽니다.

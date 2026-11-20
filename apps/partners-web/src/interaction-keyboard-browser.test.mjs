@@ -70,6 +70,11 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await enter(page, ledger.getByRole('button', { name: '조회' }));
         await ledger.locator('.staff-empty').waitFor();
 
+        await page.goto(`${origin}/proj-bedroom/partner-01`);
+        await enter(page,page.getByRole('button',{name:'숨김 0'})); await page.getByText('숨긴 상품이 없습니다.').waitFor();
+        await enter(page,page.getByRole('button',{name:'진열 1'})); await enter(page,page.getByRole('button',{name:'협업 티셔츠 재고 상세 보기'}));
+        await page.getByRole('dialog').waitFor(); assert.equal(await page.getByRole('dialog').getByRole('row').count(),3);
+        await enter(page,page.getByRole('button',{name:'재고 상세 창 닫기'})); assert.equal(await page.getByRole('dialog').count(),0);
         await page.goto(`${origin}/proj-bedroom/partner-01/guest`);
         assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-01/sign-in');
         await enter(page, page.getByRole('button', { name: '게스트 계정으로 로그인하기' }));

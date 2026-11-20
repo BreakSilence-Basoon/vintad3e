@@ -6,7 +6,8 @@ const key = Symbol.for('vintad3e.supporters.fixture.sessions');
 const sessions = globalThis[key] ??= new Map();
 const ttl = 30 * 60 * 1000;
 export function fixtureNext(value) {
-  if (['/confirmations/proposal-01', '/formula', '/formula-info', '/performance'].includes(value)) return value;
+  if (['/confirmations/proposal-01', '/formula', '/formula-info', '/performance', '/coupon', '/instagram', '/tiktok', '/settlements'].includes(value)) return value;
+  if (typeof value === 'string' && /^\/settlements\?staff=[a-zA-Z0-9-]{1,40}$/.test(value)) return value;
   if (typeof value !== 'string' || !value.startsWith('/?') || value.length > 256) return '/';
   const params = new URLSearchParams(value.slice(2));
   const allowed = new Set(['staff', 'from', 'to']);

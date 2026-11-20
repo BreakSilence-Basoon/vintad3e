@@ -29,8 +29,9 @@ test('fixture login and logout rotate and revoke only local synthetic sessions',
 test('fixture login only returns to known local paths', () => {
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/confirmations/proposal-01').headers.get('location'), '/confirmations/proposal-01');
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/admin/kiosks').headers.get('location'), '/admin/kiosks');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/admin/schedule?month=2026-05').headers.get('location'), '/admin/schedule?month=2026-05');
   for (const next of ['/?view=history', '/?view=schedule']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), next);
-  for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
+  for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/', '/admin/schedule?month=2026-13', '/admin/schedule?month=2026-05&next=//example.invalid']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
 });
 
 test('fixture cannot activate in production or accept nonlocal and cross-origin requests', () => {

@@ -24,6 +24,11 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
       try {
         await page.goto(origin);
         await page.waitForURL('**/sign-in?next=%2F%3Fview%3Dhistory');
+        await page.goto(`${origin}/admin/schedule?month=2026-05`);
+        await page.waitForURL('**/sign-in?next=%2Fadmin%2Fschedule%3Fmonth%3D2026-05');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/?view=schedule&month=2026-05');
+        await context.clearCookies();
         await page.goto(`${origin}/confirmations/proposal-01`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
         await page.goto(`${origin}/auth/session-resume?next=%2Fadmin%2Fkiosks`);
@@ -33,6 +38,10 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await context.clearCookies();
         await page.goto(`${origin}/kiosk/setup`);
         await page.getByRole('link', { name: 'QR 관리로 이동' }).waitFor();
+        await page.goto(`${origin}/admin/kiosks?view=devices`);
+        await page.waitForURL('**/sign-in?next=%2Fadmin%2Fkiosks');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/admin/kiosks');
         await page.goto(`${origin}/admin/kiosks?view=devices`);
         const form = page.locator('.kiosk-registration-form');
         const input = form.locator('input[name=label]');
@@ -49,6 +58,11 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await enter(page, form.getByRole('button', { name: '등록' }));
         const device = page.locator('.kiosk-device-list li').filter({ hasText: '기기 01' });
         await device.waitFor();
+        const kioskCookies = await context.cookies();
+        const kioskCookie = kioskCookies.find(cookie => cookie.name === 'vintad3e-kiosk-device');
+        assert.ok(kioskCookie);
+        await context.clearCookies();
+        await context.addCookies([kioskCookie]);
         await page.goto(origin);
         await page.waitForURL(`${origin}/kiosk`);
         await page.goto(`${origin}/?view=schedule`);
@@ -67,10 +81,20 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await device.waitFor({ state: 'detached' });
         await context.clearCookies(); await page.goto(origin);
         await page.waitForURL('**/sign-in?next=%2F%3Fview%3Dhistory');
-        await page.addInitScript(() => { navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('denied', 'NotAllowedError'); }; });
+        await page.goto(`${origin}/admin/attendance`);
+        await page.waitForURL('**/sign-in?next=%2Fadmin%2Fattendance');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/admin/attendance');
+        await context.clearCookies();
+        await page.addInitScript(() => { window.cameraAttempts = 0; navigator.mediaDevices.getUserMedia = async () => { window.cameraAttempts++; throw new DOMException('denied', 'NotAllowedError'); }; });
         await page.goto(`${origin}/scan`);
+        await page.waitForURL('**/sign-in?next=%2Fscan');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/scan');
         await page.locator('.employee-scanner p[role=alert]').waitFor();
+        const attempts = await page.evaluate(() => window.cameraAttempts);
         await enter(page, page.getByRole('button', { name: '카메라 다시 켜기' }));
+        await page.waitForFunction(previous => window.cameraAttempts > previous, attempts);
         await page.locator('.employee-scanner p[role=alert]').waitFor();
       } finally { await context.close(); }
     }

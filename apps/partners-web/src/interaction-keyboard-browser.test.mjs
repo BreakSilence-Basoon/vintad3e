@@ -71,6 +71,14 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await ledger.locator('.staff-empty').waitFor();
 
         await page.goto(`${origin}/proj-bedroom/partner-01`);
+        const settlement=page.getByRole('region',{name:'정산',exact:true});
+        await settlement.locator('input[type=search]').fill('없는 협업처'); await settlement.getByText('브랜드를 찾을 수 없습니다.').waitFor();
+        await settlement.locator('input[type=search]').fill('협업처 01'); await settlement.getByRole('combobox',{name:'기간'}).selectOption('custom');
+        await settlement.getByLabel('시작일').fill('2026-11-19'); await settlement.getByLabel('종료일').fill('2026-11-19'); await settlement.getByRole('button',{name:'닫기'}).click();
+        await enter(page,settlement.getByRole('button',{name:'적용'})); await settlement.getByText('24,690원',{exact:true}).first().waitFor();
+        assert.ok((await settlement.innerText()).includes('1,235원'));
+        await enter(page,settlement.getByRole('button',{name:/판매액/})); await page.getByRole('dialog',{name:/판매 내역/}).waitFor();
+        await enter(page,page.getByRole('button',{name:'판매 내역 창 닫기'})); assert.equal(await page.getByRole('dialog').count(),0);
         await enter(page,page.getByRole('button',{name:'숨김 0'})); await page.getByText('숨긴 상품이 없습니다.').waitFor();
         await enter(page,page.getByRole('button',{name:'진열 1'})); await enter(page,page.getByRole('button',{name:'협업 티셔츠 재고 상세 보기'}));
         await page.getByRole('dialog').waitFor(); assert.equal(await page.getByRole('dialog').getByRole('row').count(),3);

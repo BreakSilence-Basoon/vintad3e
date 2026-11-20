@@ -20,6 +20,8 @@ git clone https://github.com/BreakSilence-Basoon/vintad3e.git && sh vintad3e/scr
 
 설치가 끝나면 [http://127.0.0.1:3825](http://127.0.0.1:3825)를 엽니다. 화면의 로그인은 가상 로그인입니다. 실행 중에는 터미널을 열어 두고, 끝낼 때 그 터미널에서 Ctrl+C를 누릅니다.
 
+무엇부터 볼지 궁금하다면 [설치 후 첫 5분](first-five-minutes.md)을 따라 해 보세요.
+
 ## 문제가 생기면
 
 - `git`, `node` 또는 `corepack`을 찾지 못하면 Git과 Node.js 24 설치를 확인한 뒤 터미널을 닫고 다시 여세요. `node --version`은 `v24.`로 시작해야 합니다.

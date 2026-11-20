@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $oldFixture = [Environment]::GetEnvironmentVariable('VINTAD3E_PORTAL_FIXTURE', 'Process')
 $oldOrigin = [Environment]::GetEnvironmentVariable('VINTAD3E_PORTAL_FIXTURE_ORIGIN', 'Process')

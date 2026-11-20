@@ -14,7 +14,7 @@
 | `/` | 동일 주소 | 일부 대조 |
 | `/permissions/apps` | 동일 주소 | 상세 미대조 |
 | `/permissions` | 동일 주소 | 상세 미대조 |
-| `/sign-in` | 동일 주소 | 상세 미대조 |
+| `/sign-in` | 동일 주소 | 일부 대조 |
 
 ## Apparel
 
@@ -40,7 +40,7 @@
 
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
-| `/confirmations/[proposalId]` | 동일 주소 | 상세 미대조 |
+| `/confirmations/[proposalId]` | 동일 주소 | 일부 대조 |
 | `/` | 동일 주소 | 일부 대조 |
 | `/sign-in` | 동일 주소 | 일부 대조 |
 
@@ -49,7 +49,7 @@
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
 | `/access-denied` | 동일 주소 | 일부 대조 |
-| `/auth/session-resume` | 동일 주소 | 상세 미대조 |
+| `/auth/session-resume` | 동일 주소 | 일부 대조 |
 | `/confirmations/[proposalId]` | 동일 주소 | 상세 미대조 |
 | `/inventory` | 동일 주소 | 일부 대조 |
 | `/` | 동일 주소 | 상세 미대조 |
@@ -62,7 +62,7 @@
 
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
-| `/auth/session-resume` | 동일 주소 | 상세 미대조 |
+| `/auth/session-resume` | 동일 주소 | 일부 대조 |
 | `/bookmarks` | 동일 주소 | 상세 미대조 |
 | `/confirmations/[proposalId]` | 동일 주소 | 상세 미대조 |
 | `/documents/[slug]` | 동일 주소 | 일부 대조 |
@@ -118,11 +118,11 @@
 
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
-| `/auth/session-resume` | 동일 주소 | 상세 미대조 |
+| `/auth/session-resume` | 동일 주소 | 일부 대조 |
 | `/confirmations/[proposalId]` | 동일 주소 | 상세 미대조 |
 | `/coupon` | 동일 주소 | 일부 대조 |
 | `/formula-info` | 동일 주소 | 일부 대조 |
-| `/formula` | 동일 주소 | 상세 미대조 |
+| `/formula` | 동일 주소 | 일부 대조 |
 | `/instagram` | 동일 주소 | 상세 미대조 |
 | `/` | 동일 주소 | 일부 대조 |
 | `/performance` | 동일 주소 | 상세 미대조 |
@@ -140,7 +140,7 @@
 | `/admin/attendance` | 동일 주소 | 상세 미대조 |
 | `/admin/kiosks` | 동일 주소 | 상세 미대조 |
 | `/admin/schedule` | 동일 주소 | 상세 미대조 |
-| `/auth/session-resume` | 동일 주소 | 상세 미대조 |
+| `/auth/session-resume` | 동일 주소 | 일부 대조 |
 | `/clock-code` | 동일 주소 | 상세 미대조 |
 | `/confirmations/[proposalId]` | 동일 주소 | 상세 미대조 |
 | `/history` | 동일 주소 | 상세 미대조 |

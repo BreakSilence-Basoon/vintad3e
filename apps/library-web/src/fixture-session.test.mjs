@@ -9,6 +9,11 @@ test('resume accepts internal paths only', () => {
 });
 function post(action, headers = {}) { return new Request(`${origin}/api/fixture/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3829', origin, ...headers } }); }
 function cookie(response) { return response.headers.get('set-cookie').split(';')[0]; }
+test('login returns only to a known synthetic publication', () => {
+  const path = '/publications/00000000-0000-4000-8000-000000000001';
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, path).headers.get('location'), path);
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '//example.invalid/').headers.get('location'), '/');
+});
 
 test('fixture login and logout rotate and revoke only local synthetic sessions', () => {
   assert.equal(fixtureOrigin(env), origin);

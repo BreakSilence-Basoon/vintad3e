@@ -1,0 +1,15 @@
+import { headers } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
+import { internalDocumentId, internalDocuments } from './internal-document-fixture';
+import { fixtureOrigin, fixtureSession } from './fixture-session.mjs';
+import { LibraryReaderTools } from './library-reader-tools';
+import { LibraryDocumentInfo } from './library-document-info';
+const id = internalDocumentId;
+export async function FixtureInternalDocument({ kind, documentId }: { kind:'ir' | 'native'; documentId:string }) {
+  const origin=fixtureOrigin(process.env); if (!origin || documentId!==id) notFound();
+  const requestHeaders=await headers(), host=requestHeaders.get('host'); if (host!==new URL(origin).host) notFound();
+  const target=`/${kind}/${id}`; if (!fixtureSession(requestHeaders.get('cookie'),host,process.env)) redirect(`/sign-in?next=${encodeURIComponent(target)}`);
+  const document=internalDocuments(process.env.NODE_ENV,process.env.VINTAD3E_LIBRARY_FIXTURE).find(item=>item.id===documentId && item.kind===kind);if(!document)notFound();
+  const date=new Date(document.createdAt), short=new Intl.DateTimeFormat('ko-KR',{dateStyle:'medium',timeZone:'Asia/Seoul'}).format(date), long=new Intl.DateTimeFormat('ko-KR',{dateStyle:'long',timeStyle:'short',timeZone:'Asia/Seoul'}).format(date);
+  return <main className="library-home"><section className="library-page library-page--reader"><header className="library-page__header"><h1>{document.title}</h1><p className="library-reader-byline"><span>{document.publisher}</span><span aria-hidden="true">·</span> <time dateTime={document.createdAt}>{short}</time></p></header><LibraryReaderTools /><article className="publication-content"><h2>업무 시작</h2><p>{document.body}</p></article>{kind==='native' && <LibraryDocumentInfo><dl><div><dt>작성 날짜</dt><dd><time dateTime={document.createdAt}>{long}</time></dd></div></dl></LibraryDocumentInfo>}</section></main>;
+}

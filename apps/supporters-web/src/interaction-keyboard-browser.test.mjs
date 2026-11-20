@@ -62,7 +62,8 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
         await from.fill('2026-11-20'); await to.fill('2026-11-01');
         await enter(page, form.getByRole('button', { name: '조회' }));
         await page.getByText('종료일은 시작일보다 빠를 수 없습니다.', { exact: false }).waitFor();
-        assert.equal(new URL(page.url()).searchParams.get('from'), null);
+        assert.equal(new URL(page.url()).searchParams.get('from'), '2026-01-01');
+        assert.equal(new URL(page.url()).searchParams.get('to'), '2026-01-03');
         await from.fill('2026-01-01'); await to.fill('2026-01-03');
         await enter(page, form.getByRole('button', { name: '조회' }));
         await page.waitForURL(url => url.searchParams.get('from') === '2026-01-01' && url.searchParams.get('to') === '2026-01-03');

@@ -22,9 +22,17 @@ test('apparel stock validation, saving and sales filters work with keyboard inpu
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       const page = await context.newPage();
       try {
+        await page.goto(`${origin}/access-denied`);
+        await page.getByText('로그인 필요', { exact: true }).waitFor();
+        await enter(page, page.getByRole('button', { name: '다른 계정으로 로그인' }));
+        await page.waitForURL('**/sign-in');
         await page.goto(`${origin}/auth/session-resume?next=%2Fadmin%2Fproducts`);
         await page.waitForURL('**/sign-in?next=%2Fadmin%2Fproducts');
         await enter(page,page.getByRole('button',{name:'회사 계정으로 로그인'}));
+        await page.waitForURL('**/admin/products');
+        await page.goto(`${origin}/access-denied`);
+        await page.getByText('viewer@example.invalid', { exact: true }).waitFor();
+        await enter(page, page.getByRole('link', { name: '홈으로 이동' }));
         await page.waitForURL('**/admin/products');
         await enter(page, page.locator('.product-card__view-button').first());
         const numbers = page.locator('.shortage-table__row').first().locator('input[type=number]');

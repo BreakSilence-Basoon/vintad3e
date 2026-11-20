@@ -69,8 +69,10 @@ function formatCount(value: number) {
 // 쇼룸 정산 계산기: 브랜드 검색 + 기간 + 비율 → 판매액과 브랜드에 넘겨줄 금액.
 export function ShowroomSettlement({
   brands,
+  simulateError = false,
 }: {
   brands: ShowroomSettlementBrand[];
+  simulateError?: boolean;
 }) {
   const brandListId = useId();
   const [brandQuery, setBrandQuery] = useState('');
@@ -140,7 +142,7 @@ export function ShowroomSettlement({
     const load = async () => {
       try {
         const params = new URLSearchParams({ brand: applied.brandCode, from, to });
-        const result = await readSettlementForClient(params, controller.signal);
+        const result = simulateError ? { kind: 'error' as const } : await readSettlementForClient(params, controller.signal);
         if (result.kind === 'aborted' || controller.signal.aborted) return;
         if (result.kind === 'ok') {
           setResult(result.value);
@@ -159,7 +161,7 @@ export function ShowroomSettlement({
     return () => {
       controller.abort();
     };
-  }, [applied]);
+  }, [applied, simulateError]);
 
   function applyConditions() {
     const selection = createSettlementSelection(brands, {

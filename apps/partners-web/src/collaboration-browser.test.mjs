@@ -20,3 +20,24 @@ test('collaboration period screen requires a session and filters synthetic sales
     } finally {await context.close();} }
   } finally { await browser?.close(); child.kill('SIGTERM'); if(child.exitCode===null) await Promise.race([once(child,'exit'),delay(5000)]); if(child.exitCode===null) child.kill('SIGKILL'); }
 });
+
+test('showroom settlement shows the original loading error on desktop and mobile', {timeout:120000}, async () => {
+  const origin=`http://127.0.0.1:${await port()}`, child=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',new URL(origin).port],{env:{...process.env,NODE_ENV:'development',VINTAD3E_PARTNERS_FIXTURE:'1',VINTAD3E_PARTNERS_FIXTURE_ORIGIN:origin,VINTAD3E_PARTNERS_SETTLEMENT_STATE:'error'},stdio:'ignore'}); let browser;
+  try {
+    let ready=false; for(let i=0;i<120;i++){if(child.exitCode!==null) throw new Error('fixture server exited');try{if((await fetch(origin+'/sign-in')).ok){ready=true;break;}}catch{}await delay(250);} assert.ok(ready);
+    browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+    for(const width of [1440,390]){const context=await browser.newContext({viewport:{width,height:844}}),page=await context.newPage();try{
+      await page.goto(origin+'/auth/session-resume?next=%2Fproj-bedroom%2Fpartner-01');
+      await page.waitForURL('**/sign-in?next=%2Fproj-bedroom%2Fpartner-01');
+      await page.getByRole('button',{name:'회사 계정으로 로그인'}).click();
+      await page.waitForURL('**/proj-bedroom/partner-01');
+      const settlement=page.getByRole('region',{name:'정산',exact:true});
+      await settlement.locator('input[type=search]').fill('브랜드 01');
+      await settlement.getByRole('combobox',{name:'기간'}).selectOption('custom');
+      await settlement.getByLabel('시작일').fill('2026-11-19'); await settlement.getByLabel('종료일').fill('2026-11-19');
+      await settlement.getByRole('button',{name:'닫기'}).click();
+      await settlement.getByRole('button',{name:'적용'}).click();
+      await settlement.getByRole('alert').getByText('정산 금액을 불러오지 못했습니다.',{exact:true}).waitFor();
+    }finally{await context.close();}}
+  }finally{await browser?.close();child.kill('SIGTERM');if(child.exitCode===null)await Promise.race([once(child,'exit'),delay(5000)]);if(child.exitCode===null)child.kill('SIGKILL');}
+});

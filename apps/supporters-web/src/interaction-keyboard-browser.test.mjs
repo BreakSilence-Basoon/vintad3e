@@ -16,6 +16,38 @@ async function enter(page, locator) {
   await locator.focus(); await page.keyboard.press('Enter');
 }
 
+test('coupon order loading failure shows the original error on desktop and mobile', { timeout: 120000 }, async () => {
+  const port = await freePort(), origin = `http://127.0.0.1:${port}`;
+  const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
+    cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_SUPPORTERS_FIXTURE: '1', VINTAD3E_SUPPORTERS_FIXTURE_ORIGIN: origin, VINTAD3E_SUPPORTERS_COUPON_STATE: 'error' }, stdio: 'ignore',
+  });
+  let browser;
+  try {
+    let ready = false;
+    for (let i = 0; i < 120; i++) {
+      if (child.exitCode !== null) throw new Error('fixture server exited');
+      try { if ((await fetch(`${origin}/sign-in`)).ok) { ready = true; break; } } catch {}
+      await delay(250);
+    }
+    assert.ok(ready);
+    browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--no-sandbox'] });
+    for (const width of [1440, 390]) {
+      const context = await browser.newContext({ viewport: { width, height: 844 } });
+      try {
+        const page = await context.newPage();
+        await page.goto(`${origin}/coupon`);
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/coupon');
+        await page.getByText('쿠폰 주문 정보를 불러오지 못했습니다.', { exact: true }).waitFor();
+      } finally { await context.close(); }
+    }
+  } finally {
+    await browser?.close(); child.kill('SIGTERM');
+    if (child.exitCode === null) await Promise.race([once(child, 'exit'), delay(5000)]);
+    if (child.exitCode === null) child.kill('SIGKILL');
+  }
+});
+
 test('supporters keyboard flows preserve validation and show clipboard failure', { timeout: 120000 }, async () => {
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {

@@ -26,6 +26,9 @@ test('floor sales search, pagination and inventory read view work with keyboard 
         await page.waitForURL('**/sign-in?next=%2F');
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL(origin + '/');
+        await page.goto(`${origin}/sign-in?mode=cover&next=%2Finventory`);
+        await enter(page, page.getByRole('link', { name: 'Floor로 돌아가기' }));
+        await page.waitForURL('**/inventory');
         await page.goto(`${origin}/sales?salesPage=wrong`);
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 18);
         await page.getByText('판매 항목 없음', { exact: true }).waitFor();

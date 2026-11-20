@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ partner: stri
     <details className="partners-settlement-terms"><summary>정산 조건 확인</summary><dl>{partner.terms.map(term => <div key={term.label}><dt>{term.label}</dt><dd>{term.value}</dd></div>)}</dl><a href={partner.source} target="_blank" rel="noreferrer">조건 근거 문서</a></details>
     {partner.id === 'partner-01' ? <div className="showroom-page">
       <nav aria-label="협업 정산"><Link href="/proj-bedroom/partner-01/settlement">{partner.name} 협업 정산 계산</Link></nav>
-      <ShowroomSettlement brands={[{code:'fixture-01',name:'브랜드 01',defaultPercent:5}]} />
+      <ShowroomSettlement brands={[{code:'fixture-01',name:'브랜드 01',defaultPercent:5}]} simulateError={process.env.NODE_ENV === 'development' && process.env.VINTAD3E_PARTNERS_FIXTURE === '1' && process.env.VINTAD3E_PARTNERS_SETTLEMENT_STATE === 'error'} />
       <section className="partners-agreement" aria-labelledby="agreement-fixture-01">
         <header className="partners-agreement__heading"><h2 id="agreement-fixture-01">브랜드 01</h2><span>쇼룸 01</span></header>
         <div className="partners-rule"><h3>정산 조건</h3><p>브랜드 지급 비율 5%</p></div>

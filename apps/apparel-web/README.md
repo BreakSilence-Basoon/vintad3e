@@ -35,3 +35,19 @@ Node 24와 Corepack을 준비해 루트에서 `corepack pnpm install --frozen-lo
 같은 설정의 `/confirmations/proposal-01`은 합성 제안의 불러오기·검토·확인 흐름을 표시합니다. 확인 결과는 화면에만 남으며 실제 상품 변경이나 승인 서버에는 연결되지 않습니다. 원본의 만료·오류 복구는 이관하지 않았습니다.
 
 `/access-denied`는 합성 viewer 계정의 접근 거부 화면만 재현합니다. 이 화면은 다른 경로의 접근을 제한하거나 실제 권한을 판정하지 않습니다. 세션이 없는 상태에서 다시 로그인하면 홈으로 이동합니다.
+
+## 별도 재고 서버 연결 검토
+
+서로 다른 브라우저 화면에서 같은 합성 재고를 읽고 CSV를 검증·미리보기·적용·되돌리는 별도 시제품입니다. 예제 서버는 이 컴퓨터에서만 접근할 수 있으며 메모리에만 기록하므로 서버를 끄면 자료가 사라집니다. 실제 외부 서버, 여러 컴퓨터, 실제 사용자 인증, 암호화, 백업, 복구는 연결하지 않았습니다. 실제 직원·고객·업무 자료는 넣지 마세요.
+
+한 터미널에서 `corepack pnpm --filter @vintad3e/apparel-web demo:inventory-server`를 실행합니다. 다른 PowerShell 터미널에서 아래 환경 설정을 한 뒤 앱을 실행합니다.
+
+```powershell
+$env:VINTAD3E_APPAREL_FIXTURE = '1'
+$env:VINTAD3E_APPAREL_FIXTURE_ORIGIN = 'http://127.0.0.1:3826'
+$env:VINTAD3E_APPAREL_SERVER_DEMO = '1'
+$env:VINTAD3E_APPAREL_SERVER_ORIGIN = 'http://127.0.0.1:3840'
+corepack pnpm --filter @vintad3e/apparel-web dev
+```
+
+브라우저에서 `/sign-in` 합성 로그인 후 `/admin/products`를 열어 재고 파일을 가져옵니다. 앱과 합성 서버는 각각 Ctrl+C로 종료합니다. 서버 자료는 기존 재고 목록과 별개입니다.

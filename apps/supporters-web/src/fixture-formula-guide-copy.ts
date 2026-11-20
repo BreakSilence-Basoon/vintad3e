@@ -1,0 +1,6 @@
+export type FormulaLanguage = 'ko' | 'ja' | 'en';
+export const fixtureGuideCopy = {
+ ko:{title:'정산 공식',contents:'목차',navigate:'본문 바로가기',language:'언어 선택',backTop:'맨 위로',minuteUnit:'분',copy:'내용 복사',copied:'복사됨',copyError:'내용을 복사하지 못했습니다.',sections:[['sns-performance','SNS 성과','게시물과 계정의 성과를 확인합니다.'],['coupon-sales','쿠폰 판매','판매와 정산에 적용할 기준을 함께 확인합니다.'],['appendix','정산 안내','정산 금액은 정해진 기준에 따라 확인합니다.']]},
+ ja:{title:'精算のしくみ',contents:'目次',navigate:'本文へ移動',language:'言語を選択',backTop:'トップへ戻る',minuteUnit:'分',copy:'内容をコピー',copied:'コピーしました',copyError:'コピーできませんでした。もう一度お試しください。',sections:[['sns-performance','SNSの成果','投稿とアカウントの成果を確認します。'],['coupon-sales','クーポン販売','販売と精算に適用する基準を確認します。'],['appendix','精算のご案内','精算金額は定められた基準に従って確認します。']]},
+ en:{title:'How settlements work',contents:'Contents',navigate:'Jump to section',language:'Choose language',backTop:'Back to top',minuteUnit:'min',copy:'Copy content',copied:'Copied',copyError:'Could not copy. Please try again.',sections:[['sns-performance','Social media performance','Review post and account performance.'],['coupon-sales','Coupon sales','Review the criteria for sales and settlements.'],['appendix','Settlement guide','Review the settlement amount using the agreed criteria.']]},
+} as const;

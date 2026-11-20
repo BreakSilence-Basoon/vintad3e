@@ -23,6 +23,10 @@ test('floor sales search, pagination and inventory read view work with keyboard 
       const page = await context.newPage();
       try {
         await page.goto(`${origin}/sales?salesPage=wrong`);
+        await page.waitForURL('**/sign-in?next=%2F');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL(origin + '/');
+        await page.goto(`${origin}/sales?salesPage=wrong`);
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 18);
         await enter(page, page.locator('[aria-label="판매내역 더 불러오기"] a'));
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 21);
@@ -49,12 +53,12 @@ test('floor sales search, pagination and inventory read view work with keyboard 
 
 test('floor administrator adds synthetic ingredients and preserves data on storage errors', { timeout: 90000 }, async () => {
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
-  const child = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV:'development', VINTAD3E_FLOOR_FIXTURE:'1', VINTAD3E_FLOOR_FIXTURE_ADMIN:'1' }, stdio:'ignore' }); let browser;
+  const child = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV:'development', VINTAD3E_FLOOR_FIXTURE:'1', VINTAD3E_FLOOR_FIXTURE_ORIGIN:origin, VINTAD3E_FLOOR_FIXTURE_ADMIN:'1' }, stdio:'ignore' }); let browser;
   try {
     let ready=false; for(let i=0;i<120;i++){try{if((await fetch(origin+'/inventory')).ok){ready=true;break;}}catch{} await delay(250);} assert.ok(ready);
     browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
     for(const width of [1440,390]) { const context=await browser.newContext({viewport:{width,height:844}}),page=await context.newPage(); try {
-      await page.goto(origin+'/inventory'); const editor=page.locator('.inventory-editor').filter({has:page.getByText('재료 등록',{exact:true})}); await enter(page,editor.locator('summary'));
+      await page.goto(origin+'/inventory'); await page.waitForURL('**/sign-in?next=%2Finventory'); await enter(page,page.getByRole('button',{name:'회사 계정으로 로그인'})); await page.waitForURL('**/inventory'); const editor=page.locator('.inventory-editor').filter({has:page.getByText('재료 등록',{exact:true})}); await enter(page,editor.locator('summary'));
       const input=editor.getByLabel('재료명'); assert.equal(await input.evaluate(el=>el.validity.valueMissing),true);
       await input.fill('재료 02'); await editor.getByLabel('관리 단위').selectOption('g'); await enter(page,editor.getByRole('button',{name:'저장'}));
       await editor.getByText('저장했습니다.').waitFor(); await page.getByRole('rowheader',{name:'재료 02'}).waitFor();

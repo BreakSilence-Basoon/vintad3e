@@ -83,8 +83,10 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     await send('Page.navigate',{url:`${origin}/?q=${encodeURIComponent('운영')}`});
     await waitFor(async () => evaluate("location.search.includes('q=') && document.querySelectorAll('.library-feed li').length === 1"));
     assert.ok(await evaluate("document.querySelector('.library-feed').textContent.includes('매장 운영 안내')"));
-    await send('Network.clearBrowserCookies');
     await evaluate("document.querySelector('.library-feed a').click()");
+    await waitFor(async () => evaluate("location.pathname === '/publications/00000000-0000-4000-8000-000000000001' && Boolean(document.querySelector('.publication-content'))"));
+    await send('Network.clearBrowserCookies');
+    await send('Page.navigate',{url:`${origin}/publications/00000000-0000-4000-8000-000000000001`});
     await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
     await evaluate("document.querySelector('form button').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('.publication-content'))"));

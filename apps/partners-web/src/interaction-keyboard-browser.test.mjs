@@ -35,6 +35,7 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await enter(page, form.getByRole('button', { name: '전달문 복사' }));
         await form.locator('input[aria-invalid="true"]').first().waitFor();
         assert.ok(await form.locator('input[aria-invalid="true"]').count() >= 3);
+        await page.waitForFunction(() => document.activeElement?.getAttribute('aria-invalid') === 'true');
         const row = form.locator('.partners-accountant__row').first();
         const name = row.getByLabel('이름', { exact: true });
         const id = row.getByLabel('주민등록번호', { exact: true });
@@ -45,6 +46,7 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
         await enter(page, form.getByRole('button', { name: '전달문 복사' }));
         assert.equal(await id.getAttribute('aria-invalid'), 'true');
         assert.equal(await amount.getAttribute('aria-invalid'), 'true');
+        await page.waitForFunction(() => document.activeElement?.getAttribute('aria-invalid') === 'true');
         await id.fill('0000000000000'); await amount.fill('10000');
         await page.locator('.partners-accountant__preview').waitFor();
         assert.ok(!(await page.locator('.partners-accountant__preview').innerText()).includes('0000000000000'));

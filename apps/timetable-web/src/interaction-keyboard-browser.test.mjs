@@ -29,6 +29,8 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/?view=schedule&month=2026-05');
         await page.getByRole('link', { name: 'QR 코드 스캔' }).waitFor();
+        const scanIcon = await page.getByRole('link', { name: 'QR 코드 스캔' }).locator('svg').boundingBox();
+        assert.ok(scanIcon && scanIcon.width <= 30 && scanIcon.height <= 30);
         await enter(page, page.getByRole('link', { name: '로그인 전 화면 보기, staff01@example.invalid' }));
         await enter(page, page.getByRole('link', { name: 'Timetable로 돌아가기' }));
         await page.waitForURL('**/?view=schedule&month=2026-05');

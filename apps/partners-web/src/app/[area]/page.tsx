@@ -4,6 +4,7 @@ import DjPage from '../../area-dj';
 import BedroomsPage from '../../area-bedrooms';
 import RentalPage from '../../area-rental';
 import { partnerAreas } from '../../partner-schedule';
+import { FixtureStaffShell } from '../../fixture-staff-shell';
 export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ area: string }> };
 export async function generateMetadata({ params }: Props) {
@@ -14,8 +15,8 @@ export default async function AreaPage({ params }: Props) {
   const { area } = await params;
   if (!['dj', 'proj-bedroom', 'rental'].includes(area)) notFound();
   await requireFixturePartnersStaff(`/${area}`);
-  if (area === 'dj') return <DjPage />;
-  if (area === 'proj-bedroom') return <BedroomsPage />;
-  if (area === 'rental') return <RentalPage />;
+  if (area === 'dj') return <FixtureStaffShell><DjPage /></FixtureStaffShell>;
+  if (area === 'proj-bedroom') return <FixtureStaffShell><BedroomsPage /></FixtureStaffShell>;
+  if (area === 'rental') return <FixtureStaffShell><RentalPage /></FixtureStaffShell>;
   notFound();
 }

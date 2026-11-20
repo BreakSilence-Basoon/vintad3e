@@ -49,7 +49,12 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
         await page.waitForURL('**/coupon?staff=supporter-2');
         assert.equal(await page.locator('.coupon-share-field').count(), 0);
 
-        await page.goto(`${origin}/?staff=supporter-1`);
+        await page.goto(`${origin}/?staff=supporter-1&from=2026-01-01&to=2026-01-03`);
+        assert.equal(new URL(page.url()).pathname, '/sign-in');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL(url => url.pathname === '/' && url.searchParams.get('staff') === 'supporter-1');
+        assert.equal(new URL(page.url()).searchParams.get('from'), '2026-01-01');
+        assert.equal(new URL(page.url()).searchParams.get('to'), '2026-01-03');
         const form = page.locator('.coupon-analytics__date-filter:visible').first();
         const from = form.locator('input[name=from]'), to = form.locator('input[name=to]');
         await from.fill('');
@@ -68,8 +73,6 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
         assert.equal(await page.locator('.coupon-analytics__date-filter:visible').first().locator('input[name=from]').inputValue(), '2026-01-01');
 
         await page.goto(`${origin}/formula`);
-        assert.equal(new URL(page.url()).pathname, '/sign-in');
-        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL(url => url.pathname === '/formula');
         const search = page.getByRole('searchbox', { name: '정산 공식 기호 검색' });
         await search.fill('찾을수없는항목');

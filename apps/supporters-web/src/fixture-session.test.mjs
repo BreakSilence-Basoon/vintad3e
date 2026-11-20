@@ -28,7 +28,9 @@ test('fixture login and logout rotate and revoke only local synthetic sessions',
 
 test('fixture login only returns to known local paths', () => {
   for (const next of ['/confirmations/proposal-01', '/formula', '/formula-info', '/performance']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), next);
-  for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
+  const home = '/?staff=supporter-1&from=2026-01-01&to=2026-01-03';
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, home).headers.get('location'), home);
+  for (const next of ['//example.invalid/', '/confirmations/other', 'https://example.invalid/', '/?next=https%3A%2F%2Fexample.invalid', '/?staff=a&staff=b', '/?staff=%2F%2Fexample.invalid']) assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, next).headers.get('location'), '/');
 });
 
 test('fixture cannot activate in production or accept nonlocal and cross-origin requests', () => {

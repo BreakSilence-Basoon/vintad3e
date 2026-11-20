@@ -50,7 +50,7 @@ git clone https://github.com/BreakSilence-Basoon/vintad3e.git && sh vintad3e/scr
 
 4. 브라우저에서 [http://127.0.0.1:3825](http://127.0.0.1:3825)를 엽니다. 터미널은 실행하는 동안 열어 두고, 종료할 때는 Ctrl+C를 누릅니다. 포트가 이미 사용 중이면 기존 프로그램을 확인하세요.
 
-Windows의 새 저장소 폴더에서 위 설치와 포털 화면 응답을 확인했습니다. 이 시험은 기존 pnpm 캐시를 사용했으며 실제 로그인이나 업무 데이터를 확인하지 않았습니다. API 기동은 [가상 자료 안내](local-api-fixture.md)를 따르세요.
+Windows와 macOS의 GitHub 호스팅 검사에서 새 복사본에 시작 스크립트를 실행하고 포털의 HTTP 응답을 확인했습니다. 이 검사는 실제 브라우저 조작, 실제 로그인이나 업무 데이터는 확인하지 않습니다. API 기동은 [가상 자료 안내](local-api-fixture.md)를 따르세요.
 
 ## 다른 앱 열기
 

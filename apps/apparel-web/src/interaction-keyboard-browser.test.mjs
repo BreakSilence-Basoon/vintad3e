@@ -32,7 +32,7 @@ test('apparel stock validation, saving and sales filters work with keyboard inpu
         await page.waitForURL('**/admin/products');
         await page.goto(`${origin}/access-denied`);
         await page.getByText('viewer@example.invalid', { exact: true }).waitFor();
-        await enter(page, page.getByRole('link', { name: '홈으로 이동' }));
+        await enter(page, page.locator('main').getByRole('link', { name: '홈으로 이동' }));
         await page.waitForURL('**/admin/products');
         await enter(page, page.locator('.product-card__view-button').first());
         const numbers = page.locator('.shortage-table__row').first().locator('input[type=number]');

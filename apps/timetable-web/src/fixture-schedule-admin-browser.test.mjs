@@ -14,7 +14,7 @@ test('synthetic schedule edits require a memo and survive reload and deletion', 
   const port = await freePort(), debugPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debugPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-schedule-admin-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env: { ...process.env, NODE_ENV:'development', VINTAD3E_TIMETABLE_FIXTURE:'1', VINTAD3E_TIMETABLE_FIXTURE_ADMIN:'1' }, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env: { ...process.env, NODE_ENV:'development', VINTAD3E_TIMETABLE_FIXTURE:'1', VINTAD3E_TIMETABLE_FIXTURE_ORIGIN:origin, VINTAD3E_TIMETABLE_FIXTURE_ADMIN:'1' }, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debugPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {
@@ -30,6 +30,9 @@ test('synthetic schedule edits require a memo and survive reload and deletion', 
     closeBrowser=()=>send('Browser.close');
     const evaluate=async expression=>{const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw new Error(result.exceptionDetails.text);return result.result.value;};
     const card="[data-schedule-date='2026-02-08'] button.schedule-calendar__shift[data-hydrated=true]";
+    await send('Page.navigate',{url:`${origin}/sign-in`});
+    await waitFor(async()=>evaluate("Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()"); await waitFor(async()=>evaluate("location.pathname === '/'"));
     await send('Page.navigate',{url:`${origin}/?view=schedule&month=2026-02`});
     await waitFor(async()=>evaluate(`Boolean(document.querySelector("${card}"))`));
     await evaluate(`document.querySelector("${card}").click()`); await waitFor(async()=>evaluate("Boolean(document.querySelector('dialog[open]'))"));

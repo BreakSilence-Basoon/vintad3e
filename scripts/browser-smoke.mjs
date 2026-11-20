@@ -37,7 +37,7 @@ try {
     try {
      const response=await page.goto(origin+path,{waitUntil:'networkidle',timeout:60000});
      if(!response || !response.ok()) throw new Error(`HTTP ${response?.status() ?? 'no response'}`);
-     if(name==='portal'){await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); await page.waitForURL(origin+'/');}
+     if(name==='portal'||(name==='timetable'&&new URL(page.url()).pathname==='/sign-in')){await page.getByRole('button',{name:'회사 계정으로 로그인'}).click(); if(name==='portal') await page.waitForURL(origin+'/'); else await page.waitForURL(url=>url.pathname!=='/sign-in');}
      await page.waitForTimeout(500);
      if (process.env.SMOKE_SCREENSHOT_PREFIX) await page.screenshot({path:`${process.env.SMOKE_SCREENSHOT_PREFIX}${name}-${width}.png`});
      const result=await page.evaluate(()=>({title:document.title, text:document.body.innerText.trim().length, viewport:innerWidth, scroll:document.documentElement.scrollWidth, clipped:[...document.querySelectorAll('h1,h2,h3,button,a')].filter(e=>{const s=getComputedStyle(e); return e.clientWidth>2 && e.scrollWidth>e.clientWidth+2 && s.overflowX==='hidden' && s.textOverflow!=='ellipsis';}).map(e=>(e.innerText||'').trim().slice(0,80)).filter(Boolean).slice(0,10)}));

@@ -1,5 +1,8 @@
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
+import { fixtureOrigin, fixtureSession } from '../fixture-session.mjs';
+import { fixtureKioskDevice } from '../fixture-kiosk.mjs';
 import { TimetableSlideSwitcher } from '../timetable-slide-switcher';
 import { timetableInitialView } from '../view';
 import { normalizeMonth } from '../date-time';
@@ -33,6 +36,17 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const initialView = timetableInitialView(view);
   const selectedMonth = normalizeMonth(typeof month === 'string' ? month : undefined);
   const fixtureEnabled = process.env.NODE_ENV === 'development' && process.env.VINTAD3E_TIMETABLE_FIXTURE === '1';
+  if (fixtureEnabled && !process.env.VINTAD3E_TIMETABLE_API_ORIGIN) {
+    const origin = fixtureOrigin(process.env);
+    if (!origin) notFound();
+    const requestHeaders = await headers();
+    const host = requestHeaders.get('host'), cookie = requestHeaders.get('cookie');
+    if (host !== new URL(origin).host) notFound();
+    if (!fixtureSession(cookie, host, process.env)) {
+      if (view === undefined && fixtureKioskDevice(cookie, host, process.env)) redirect('/kiosk');
+      redirect(`/sign-in?${new URLSearchParams({ next: `/?view=${initialView}` })}`);
+    }
+  }
   const fixtureAdmin = fixtureEnabled && process.env.VINTAD3E_TIMETABLE_FIXTURE_ADMIN === '1';
   const fixtureSelf = fixtureSelfEnabled(process.env.NODE_ENV, process.env.VINTAD3E_TIMETABLE_FIXTURE, process.env.VINTAD3E_TIMETABLE_FIXTURE_ADMIN, process.env.VINTAD3E_TIMETABLE_FIXTURE_SELF);
   const parsedFilters = parseHistoryFilters(params);

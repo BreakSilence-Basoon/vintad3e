@@ -62,6 +62,8 @@ test('fixture selection and copy use synthetic data in Chrome', { timeout: 90000
     const evaluate = async expression => { const result = await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true}); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     const selectFixtureYear = async () => waitFor(async () => evaluate("(()=>{if(document.querySelector('.settlement-history__year-value')?.textContent==='2026년')return true;const b=document.querySelector('[aria-label=\"이전 연도\"]');if(b&&!b.disabled)b.click();return false;})()"));
     await send('Page.navigate',{url:`${origin}/coupon`});
+    await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('#coupon-staff'))"));
     await waitFor(async () => evaluate("(()=>{if(document.querySelector('.coupon-types'))return true;const s=document.querySelector('#coupon-staff');if(s&&!s.disabled){s.value='supporter-1';s.dispatchEvent(new Event('change',{bubbles:true}));}return false;})()"));
     assert.equal(await evaluate("document.querySelector('.coupon-share-field strong').textContent"),'VINTAD3E');

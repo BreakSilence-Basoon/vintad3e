@@ -19,7 +19,14 @@ test('synthetic schedule edits require a memo and survive reload and deletion', 
   let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(origin)).ok); await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
-    const legacy = await fetch(`${origin}/admin/schedule?month=2026-02`, { redirect: 'manual' });
+    const signedOut = await fetch(`${origin}/admin/schedule?month=2026-02`, { redirect: 'manual' });
+    assert.equal(signedOut.status, 307);
+    assert.equal(signedOut.headers.get('location'), '/sign-in?next=%2Fadmin%2Fschedule%3Fmonth%3D2026-02');
+    const login = await fetch(`${origin}/api/fixture/login`, { method: 'POST', headers: { origin }, body: new URLSearchParams({ next: '/admin/schedule?month=2026-02' }), redirect: 'manual' });
+    assert.equal(login.status, 303);
+    const cookie = login.headers.get('set-cookie')?.split(';')[0];
+    assert.ok(cookie);
+    const legacy = await fetch(`${origin}/admin/schedule?month=2026-02`, { redirect: 'manual', headers: { cookie } });
     assert.equal(legacy.status, 307);
     assert.equal(legacy.headers.get('location'), '/?view=schedule&month=2026-02');
     const target = await (await fetch(`${debug}/json/new?about:blank`, { method:'PUT' })).json(); socket = new WebSocket(target.webSocketDebuggerUrl);

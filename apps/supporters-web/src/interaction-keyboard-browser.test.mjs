@@ -36,6 +36,16 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
       const page = await context.newPage();
       try {
         await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { if (window.failCopy) throw new Error('clipboard unavailable'); window.copiedText = text; } } }));
+        await page.goto(`${origin}/settlements?staff=supporter-1`);
+        await page.waitForURL('**/sign-in?next=%2Fsettlements%3Fstaff%3Dsupporter-1');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/settlements?staff=supporter-1');
+        await page.locator('[data-fixture-staff="supporter-1"]').waitFor();
+        await context.clearCookies();
+        await page.goto(`${origin}/coupon?staff=supporter-1`);
+        await page.waitForURL('**/sign-in?next=%2Fcoupon');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/coupon');
         await page.goto(`${origin}/coupon?staff=supporter-1`);
         const copy = page.getByRole('button', { name: '추천인 코드 복사' });
         await enter(page, copy);
@@ -49,6 +59,7 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
         await page.waitForURL('**/coupon?staff=supporter-2');
         assert.equal(await page.locator('.coupon-share-field').count(), 0);
 
+        await context.clearCookies();
         await page.goto(`${origin}/?staff=supporter-1&from=2026-01-01&to=2026-01-03`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));

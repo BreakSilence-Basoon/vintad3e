@@ -87,7 +87,7 @@ test('partner ledger and DJ form respond to keyboard input and errors', { timeou
           await page.getByRole('button', { name: '정산 내역 보기' }).click();
           await page.waitForFunction(() => document.querySelector('[aria-label="정산 내역 보기"]')?.getAttribute('aria-current') === 'true');
         } else {
-          await page.getByRole('region', { name: '정산 내역' }).waitFor();
+          await page.getByRole('region', { name: '정산 내역', exact: true }).waitFor();
         }
         await page.goto(`${origin}/proj-bedroom/partner-02/guest`);
         assert.equal(new URL(page.url()).pathname, '/proj-bedroom/partner-02/sign-in');

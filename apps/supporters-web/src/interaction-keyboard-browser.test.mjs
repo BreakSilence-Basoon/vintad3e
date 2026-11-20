@@ -36,6 +36,13 @@ test('supporters keyboard flows preserve validation and show clipboard failure',
       const page = await context.newPage();
       try {
         await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { if (window.failCopy) throw new Error('clipboard unavailable'); window.copiedText = text; } } }));
+        await page.goto(`${origin}/auth/session-resume?next=%2Fsettlements%3Fstaff%3Dsupporter-1`);
+        await page.waitForURL('**/sign-in?next=%2Fsettlements%3Fstaff%3Dsupporter-1');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/settlements?staff=supporter-1');
+        await context.clearCookies();
+        await page.goto(`${origin}/auth/session-resume?next=%2F%2Fevil.example`);
+        await page.waitForURL('**/sign-in?next=%2F');
         await page.goto(`${origin}/settlements?staff=supporter-1`);
         await page.waitForURL('**/sign-in?next=%2Fsettlements%3Fstaff%3Dsupporter-1');
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));

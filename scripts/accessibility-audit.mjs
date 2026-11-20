@@ -70,6 +70,10 @@ try {
             await Promise.all([page.waitForResponse(response => response.url().includes('/api/fixture/login') && response.request().method() === 'POST'), page.keyboard.press('Enter')]);
             if (name === 'portal' && path === '/') await page.locator('.portal-app').first().waitFor();
             else await page.waitForURL(url => !url.pathname.endsWith('/sign-in'), { timeout: 15000 });
+            if (name === 'apparel' && path.startsWith('/admin/')) {
+              const protectedPage = await page.goto(origin + path, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              if (!protectedPage?.ok() || new URL(page.url()).pathname !== path) throw new Error('admin page did not reopen after sign-in');
+            }
             await page.addStyleTag({ content: 'nextjs-portal { display: none !important; }' });
           }
           // Let route transitions settle before measuring their final contrast.

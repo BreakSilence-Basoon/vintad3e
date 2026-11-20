@@ -88,9 +88,9 @@
 
 | 공개 화면 경로 | 원본 경로 대응 | 내용·동작 확인 |
 | --- | --- | --- |
-| `/[area]/[partner]/guest` | 동적 경로 등 추가 확인 | 일부 대조 |
+| `/[area]/[partner]/guest` | 원본의 특정 협업처 화면에 대응 | 일부 대조 |
 | `/[area]/[partner]` | 동일 주소 | 일부 대조 |
-| `/[area]/[partner]/sign-in` | 동적 경로 등 추가 확인 | 일부 대조 |
+| `/[area]/[partner]/sign-in` | 원본의 특정 협업처 화면에 대응 | 일부 대조 |
 | `/[area]` | 동일 주소 | 일부 대조 |
 | `/accounts` | 동일 주소 | 일부 대조 |
 | `/auth/session-resume` | 동일 주소 | 일부 대조 |
@@ -99,8 +99,10 @@
 | `/` | 동일 주소 | 일부 대조 |
 | `/proj-bedroom/guide/[language]` | 동일 주소 | 일부 대조 |
 | `/proj-bedroom/guide` | 동일 주소 | 일부 대조 |
-| `/proj-bedroom/partner-01/settlement` | 동적 경로 등 추가 확인 | 일부 대조 |
+| `/proj-bedroom/partner-01/settlement` | 원본의 특정 협업처 화면에 대응 | 일부 대조 |
 | `/sign-in` | 동일 주소 | 일부 대조 |
+
+원본의 별도 쇼룸 협업 정산 주소는 공개판의 합성 정산 경로와 직접 대응하는지 추가 확인이 필요합니다.
 
 원본에 있는 개인정보처리방침이나 약관은 가게별로 직접 준비해야 하므로 이 목록에서 공개판 화면으로 세지 않습니다.
 

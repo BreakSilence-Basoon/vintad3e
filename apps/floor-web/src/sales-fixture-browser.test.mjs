@@ -21,7 +21,7 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-floor-browser-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_FLOOR_FIXTURE:'1'}, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_FLOOR_FIXTURE:'1',VINTAD3E_FLOOR_FIXTURE_ORIGIN:origin}, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {
@@ -62,6 +62,19 @@ test('fixture sales pagination, search and sort in Chrome', { timeout: 90000 }, 
     await waitFor(async () => evaluate("document.querySelector('main')?.textContent.includes('재료 01')"));
     assert.ok(await evaluate("document.querySelector('main').textContent.includes('음료 01')"));
     assert.equal(await evaluate("document.querySelectorAll('.inventory-editor').length"), 0);
+    await send('Page.navigate',{url: `${origin}/confirmations/proposal-01`});
+    await waitFor(async () => evaluate("location.pathname === '/sign-in'"));
+    await evaluate("document.querySelector('form button').click()");
+    await waitFor(async () => evaluate("location.pathname === '/'"));
+    await send('Page.navigate',{url: `${origin}/confirmations/proposal-01`});
+    await waitFor(async () => evaluate("[...document.querySelectorAll('button')].some(b => b.textContent === '제안 불러오기')"));
+    await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('재료 이름 변경'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '제안 불러오기')?.click();return false;})()"));
+    await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('이 내용으로 확인'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '제안 검토')?.click();return false;})()"));
+    await waitFor(async () => evaluate("(()=>{if(document.body.textContent.includes('확인되었습니다.'))return true;[...document.querySelectorAll('button')].find(b => b.textContent === '이 변경 확인')?.click();return false;})()"));
+    await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    assert.ok(await evaluate("document.documentElement.scrollWidth <= window.innerWidth"));
+    await send('Page.navigate',{url: `${origin}/confirmations/unknown`});
+    await waitFor(async () => evaluate("document.body.textContent.includes('404')"));
   } finally {
     if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
     socket?.close();

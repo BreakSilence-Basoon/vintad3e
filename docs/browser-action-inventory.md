@@ -15,3 +15,21 @@
 | Timetable | 15+ | 15 | [관리자 일정 검사](../apps/timetable-web/src/fixture-schedule-admin-browser.test.mjs), [관리자 출근부 검사](../apps/timetable-web/src/fixture-history-admin-browser.test.mjs), [본인 검사](../apps/timetable-web/src/fixture-self-browser.test.mjs), [키보드 검사](../apps/timetable-web/src/interaction-keyboard-browser.test.mjs). 일정/출근부 조회·상세·수정·저장·삭제 확인·본인 읽기 제한·기기 등록/해제·빈값/서버 오류·QR 보기·카메라 거부/재시도·로그인 필요·잘못된 저장 내용 보존을 확인합니다. |
 
 수치는 확인된 검사를 추적하기 위한 것이며, 원본의 모든 화면과 기능을 이관했다는 뜻은 아닙니다. 사용자 동작이 없는 화면에 임의 기능을 추가하거나 같은 검사를 여러 번 세어 숫자를 맞추지 않습니다.
+
+## 화면 경로 대조
+
+원본과 공개판의 앱 화면 파일을 경로 기준으로 대조한 숫자입니다. 경로가 같아도 내용과 기능이 모두 같다는 뜻은 아닙니다. 동적 경로가 여러 원본 주소를 처리하는 Partners는 단순 합계만으로 이관율을 계산하지 않습니다.
+
+| 앱 | 원본 화면 경로 | 현재 main 공개판 경로 | 확인된 차이 |
+| --- | ---: | ---: | --- |
+| Admin | 7 | 7 | 경로 일치 |
+| Apparel | 14 | 13 | 개인정보 문서는 각 가게가 준비 |
+| Creative | 3 | 3 | 경로 일치 |
+| Floor | 8 | 7 | 정책 차단 1개 제외 |
+| Library | 21 | 19 | 내부 문서 2개는 [PR #245](https://github.com/BreakSilence-Basoon/vintad3e/pull/245)에서 검사 중 |
+| Partners | 15 | 13 | 동적 협업처 경로와 합성 정산 경로로 처리하는 주소가 있어 일대일 숫자로 비교할 수 없음; 개인정보 문서는 각 가게가 준비 |
+| Portal | 5 | 5 | 경로 일치 |
+| Supporters | 13 | 11 | 개인정보 문서·약관은 각 가게가 준비 |
+| Timetable | 16 | 14 | 개인정보 문서·약관은 각 가게가 준비 |
+
+코드 기반 대조로 Creative 홈의 로그인 메뉴·빈 상태·오류를 복원했고, Floor 재고 화면은 재료 등록까지 복원했습니다. Floor의 구매·입고, 실사, 재료 구성과 그 저장 동작은 아직 대조 및 이관이 필요합니다. 다른 경로도 개별 내용과 상호작용의 원본 일치 여부는 계속 확인해야 합니다.

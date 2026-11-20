@@ -47,6 +47,8 @@ test('synthetic video frame is scanned through the browser and records attendanc
     const context = await browser.newContext({ permissions: ['camera'], viewport: { width: 390, height: 844 } });
     const kiosk = await context.newPage();
     await kiosk.goto(origin);
+    await kiosk.getByRole('button', { name: '회사 계정으로 로그인' }).click();
+    await kiosk.waitForURL('**/?view=history');
     await kiosk.evaluate(async () => {
       const response = await fetch('/api/fixture/kiosk/register', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ label: '기기 01' }) });
       if (!response.ok) throw new Error('Registration failed');

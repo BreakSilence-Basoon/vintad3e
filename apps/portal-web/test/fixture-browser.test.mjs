@@ -15,6 +15,47 @@ async function press(page, role, name) {
   await button.waitFor({ state: 'visible' }); await page.waitForFunction(el => !el.disabled, await button.elementHandle()); await button.focus(); await page.keyboard.press('Enter');
 }
 
+test('portal renders original empty and error states with synthetic data', { timeout: 120000 }, async () => {
+  for (const state of ['empty', 'error']) {
+    const port = await freePort(), origin = `http://127.0.0.1:${port}`;
+    const server = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {
+      cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_PORTAL_FIXTURE: '1', VINTAD3E_PORTAL_FIXTURE_ORIGIN: origin, VINTAD3E_PORTAL_FIXTURE_STATE: state }, stdio: 'ignore',
+    });
+    let browser;
+    try {
+      let ready = false;
+      for (let i = 0; i < 120; i++) {
+        if (server.exitCode !== null) throw new Error('fixture server exited');
+        try { if ((await fetch(`${origin}/sign-in`)).ok) { ready = true; break; } } catch {}
+        await delay(250);
+      }
+      assert.ok(ready);
+      browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--no-sandbox'] });
+      for (const width of [1440, 390]) {
+        const context = await browser.newContext({ viewport: { width, height: 844 } });
+        try {
+          const page = await context.newPage();
+          await page.goto(origin);
+          await press(page, 'button', '회사 계정으로 로그인');
+          await page.waitForURL(origin + '/');
+          if (state === 'empty') {
+            await page.getByText('열 수 있는 업무 앱이 없습니다.', { exact: true }).waitFor();
+            await press(page, 'button', 'SNS·외부 링크 보기');
+            await page.locator('button[aria-label="SNS·외부 링크 보기"][aria-current="true"]').waitFor();
+          } else {
+            await page.getByRole('alert').getByText('앱 목록을 불러오지 못했습니다.', { exact: true }).waitFor();
+            assert.equal(await page.getByRole('button', { name: '다음 페이지' }).count(), 0);
+          }
+        } finally { await context.close(); }
+      }
+    } finally {
+      await browser?.close(); server.kill('SIGTERM');
+      if (server.exitCode === null) await Promise.race([once(server, 'exit'), delay(5000)]);
+      if (server.exitCode === null) server.kill('SIGKILL');
+    }
+  }
+});
+
 test('portal login, navigation, confirmation and failures work in a browser', { timeout: 120000 }, async () => {
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   const server = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], {

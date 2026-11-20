@@ -56,12 +56,14 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
   const port = await freePort(), debuggerPort = await freePort();
   const origin = `http://127.0.0.1:${port}`, debug = `http://127.0.0.1:${debuggerPort}`;
   const profile = await mkdtemp(join(tmpdir(), 'vintad3e-library-browser-'));
-  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_LIBRARY_FIXTURE:'1'}, stdio:'ignore' });
+  const server = spawn(process.execPath, ['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)], { env:{...process.env,NODE_ENV:'development',VINTAD3E_LIBRARY_FIXTURE:'1',VINTAD3E_LIBRARY_FIXTURE_ORIGIN:origin}, stdio:'ignore' });
   const chrome = spawn('google-chrome', ['--headless=new','--no-sandbox','--disable-dev-shm-usage',`--user-data-dir=${profile}`,`--remote-debugging-port=${debuggerPort}`,'about:blank'], { stdio:'ignore' });
   let socket, closeBrowser;
   try {
     await waitFor(async () => (await fetch(origin)).ok);
-    assert.equal((await fetch(`${origin}/documents/legacy-document`)).status, 404);
+    const legacyDocument = await fetch(`${origin}/documents/legacy-document`, {redirect:'manual'});
+    assert.equal(legacyDocument.status, 307);
+    assert.equal(new URL(legacyDocument.headers.get('location'), origin).pathname, '/sign-in');
     await waitFor(async () => (await fetch(`${debug}/json/version`)).ok);
     const target = await (await fetch(`${debug}/json/new?about:blank`, {method:'PUT'})).json();
     socket = new WebSocket(target.webSocketDebuggerUrl);
@@ -80,12 +82,14 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     await waitFor(async () => evaluate("location.search.includes('q=') && document.querySelectorAll('.library-feed li').length === 1"));
     assert.ok(await evaluate("document.querySelector('.library-feed').textContent.includes('매장 운영 안내')"));
     await evaluate("document.querySelector('.library-feed a').click()");
+    await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('.publication-content'))"));
+    assert.equal(await evaluate("location.pathname"), '/publications/00000000-0000-4000-8000-000000000001');
     assert.ok(await evaluate("document.querySelector('.publication-content').textContent.includes('업무를 시작하기')"));
     await waitFor(async () => evaluate("Boolean(document.querySelector('.library-source__trigger'))"));
     assert.equal(await evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded')"), 'false');
-    await run("document.querySelector('.library-source__trigger').click()");
-    await waitFor(async () => evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded') === 'true'"));
+    await waitFor(async () => evaluate("(()=>{const button=document.querySelector('.library-source__trigger');if(button?.getAttribute('aria-expanded')==='true')return true;button?.click();return false;})()"));
     assert.ok(await evaluate("document.querySelector('.library-source__body').textContent.includes('Markdown')"));
     await run("document.querySelector('.library-source__trigger').click()");
     await waitFor(async () => evaluate("document.querySelector('.library-source__trigger').getAttribute('aria-expanded') === 'false'"));

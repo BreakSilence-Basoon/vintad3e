@@ -36,6 +36,8 @@ test('synthetic meeting stays in the tab and arbitrary file upload remains disco
     closeBrowser = () => send('Browser.close');
     const evaluate = async expression => { const result = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true }); if (result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value; };
     await send('Page.navigate', { url: origin });
+    await waitFor(async () => evaluate("location.pathname === '/sign-in' && Boolean(document.querySelector('form button'))"));
+    await evaluate("document.querySelector('form button').click()");
     await waitFor(async () => evaluate("Boolean(document.querySelector('nav[aria-label=자료] a[href=\"/meetings\"]') && document.querySelector('nav[aria-label=자료] a[href=\"/objects\"]'))"));
     await evaluate("document.querySelector('nav[aria-label=자료] a[href=\"/meetings\"]').click()");
     await waitFor(async () => evaluate("location.pathname === '/meetings' && Boolean(document.querySelector('section[data-hydrated=true] #meeting-title'))"));

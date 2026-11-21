@@ -242,3 +242,19 @@ test('Notion lifecycle proof and document state survive verified synthetic login
   for (const action of ['confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(replacement, { action, proposalId: deletion.proposalId }), env, 55008)).status, 200);
   assert.equal(readFixtureNotionImport(replacement, host, env, fixtureNotionDocument.id, 55009), null);
 });
+
+test('isolated cleanup keeps its deletion proof through synthetic login recovery', async () => {
+  const old = login(60000);
+  async function prepare(cookie, kind) { const response = await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind }), env, 60001); assert.equal(response.status, 200); return response.json(); }
+  async function apply(cookie, proposal) { for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: proposal.proposalId }), env, 60002)).status, 200); }
+  await apply(old, await prepare(old, 'single')); await apply(old, await prepare(old, 'reserve'));
+  const file = new Request(`${origin}/upload`, { method: 'POST', headers: { host, origin, cookie: old, 'content-type': 'text/plain' }, body: fixtureIrExclusive.body });
+  assert.equal((await handleFixtureIrExclusiveUpload(file, env, readFixtureIrReservation(old, host, env, '00000000-0000-4000-8000-000000000106', 60003), 60003)).status, 200);
+  await apply(old, await prepare(old, 'isolated-attach')); await apply(old, await prepare(old, 'delete'));
+  const cleanup = await prepare(old, 'cleanup');
+  const replacement = handleFixtureSession(new Request(`${origin}/login`, { method: 'POST', headers: { host, origin, cookie: old } }), 'login', env, 60004).headers.get('set-cookie').split(';')[0];
+  assert.equal((await handleFixtureIrConfirmation(post(replacement, { action: 'restore', proposalId: cleanup.proposalId, proof: cleanup.proof }), env, 60005)).status, 200);
+  assert.deepEqual(readFixtureIrIsolatedObject(replacement, host, env, 60006), fixtureIrExclusive);
+  await apply(replacement, cleanup);
+  assert.equal(readFixtureIrIsolatedObject(replacement, host, env, 60007), null);
+});

@@ -37,8 +37,8 @@ test('file list shows the original loading error on desktop and mobile', { timeo
     }
   } finally {
     await browser?.close(); child.kill('SIGTERM');
-    if (child.exitCode === null) await Promise.race([once(child, 'exit'), delay(5000)]);
-    if (child.exitCode === null) child.kill('SIGKILL');
+    if (child.exitCode === null && child.signalCode === null) await Promise.race([once(child, 'exit'), delay(5000, undefined, { ref: false })]);
+    if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
   }
 });
 async function waitFor(fn) {
@@ -76,7 +76,7 @@ test('bookmarks show the original empty state with fixtures disabled', { timeout
     }
   } finally {
     server.kill('SIGTERM');
-    if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000)]);
+    if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server,'exit'),delay(5000, undefined, { ref: false })]);
     if (server.exitCode === null && server.signalCode === null) server.kill('SIGKILL');
   }
 });
@@ -211,10 +211,10 @@ test('fixture search, document and community in Chrome', { timeout: 90000 }, asy
     await waitFor(async () => evaluate("document.querySelector('#my-comments-title')?.parentElement.textContent.includes('최근 댓글 200개를 표시합니다.')"));
     assert.equal(await evaluate("document.querySelectorAll('.library-comments li').length"),200);
   } finally {
-    if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
+    if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000, undefined, { ref: false })]);
     socket?.close();
     for (const process of [chrome,server]) process.kill('SIGTERM');
-    await Promise.all([chrome,server].map(async process => { if (process.exitCode === null && process.signalCode === null) await Promise.race([once(process,'exit'),delay(5000)]); if (process.exitCode === null && process.signalCode === null) process.kill('SIGKILL'); }));
+    await Promise.all([chrome,server].map(async process => { if (process.exitCode === null && process.signalCode === null) await Promise.race([once(process,'exit'),delay(5000, undefined, { ref: false })]); if (process.exitCode === null && process.signalCode === null) process.kill('SIGKILL'); }));
     await rm(profile,{recursive:true,force:true,maxRetries:8,retryDelay:250});
   }
 });

@@ -31,8 +31,8 @@ test('meeting list shows the original loading error on desktop and mobile', { ti
     }
   } finally {
     await browser?.close(); child.kill('SIGTERM');
-    if (child.exitCode === null) await Promise.race([once(child, 'exit'), delay(5000)]);
-    if (child.exitCode === null) child.kill('SIGKILL');
+    if (child.exitCode === null && child.signalCode === null) await Promise.race([once(child, 'exit'), delay(5000, undefined, { ref: false })]);
+    if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
   }
 });
 
@@ -280,7 +280,7 @@ test('library keyboard actions validate inputs and recover from storage and serv
     }
   } finally {
     await browser?.close(); child.kill('SIGTERM');
-    if (child.exitCode === null) await Promise.race([once(child, 'exit'), delay(5000)]);
-    if (child.exitCode === null) child.kill('SIGKILL');
+    if (child.exitCode === null && child.signalCode === null) await Promise.race([once(child, 'exit'), delay(5000, undefined, { ref: false })]);
+    if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
   }
 });

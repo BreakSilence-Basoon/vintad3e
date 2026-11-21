@@ -39,8 +39,8 @@ test('home shows the original partial loading error on desktop and mobile', { ti
     }
   } finally {
     await browser?.close(); child.kill('SIGTERM');
-    if (child.exitCode === null) await Promise.race([once(child, 'exit'), delay(5000)]);
-    if (child.exitCode === null) child.kill('SIGKILL');
+    if (child.exitCode === null && child.signalCode === null) await Promise.race([once(child, 'exit'), delay(5000, undefined, { ref: false })]);
+    if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
   }
 });
 
@@ -68,8 +68,8 @@ test('activity pages show original read errors on desktop and mobile', { timeout
     }
   } finally {
     await browser?.close(); child.kill('SIGTERM');
-    if (child.exitCode === null) await Promise.race([once(child, 'exit'), delay(5000)]);
-    if (child.exitCode === null) child.kill('SIGKILL');
+    if (child.exitCode === null && child.signalCode === null) await Promise.race([once(child, 'exit'), delay(5000, undefined, { ref: false })]);
+    if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
   }
 });
 async function waitFor(fn) {
@@ -160,10 +160,10 @@ test('synthetic meeting stays in the tab and arbitrary file upload remains disco
     }
     assert.equal((await fetch(`${origin}/api/public/objects/unknown/source`)).status, 404);
   } finally {
-    if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000)]);
+    if (closeBrowser) await Promise.race([closeBrowser().catch(() => {}), delay(3000, undefined, { ref: false })]);
     socket?.close();
     for (const process of [chrome, server]) process.kill('SIGTERM');
-    await Promise.all([chrome, server].map(async process => { if (process.exitCode === null && process.signalCode === null) await Promise.race([once(process, 'exit'), delay(5000)]); if (process.exitCode === null && process.signalCode === null) process.kill('SIGKILL'); }));
+    await Promise.all([chrome, server].map(async process => { if (process.exitCode === null && process.signalCode === null) await Promise.race([once(process, 'exit'), delay(5000, undefined, { ref: false })]); if (process.exitCode === null && process.signalCode === null) process.kill('SIGKILL'); }));
     await rm(profile, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
   }
 });

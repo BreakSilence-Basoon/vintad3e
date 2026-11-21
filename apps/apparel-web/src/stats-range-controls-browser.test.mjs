@@ -8,7 +8,7 @@ import { chromium } from 'playwright';
 
 async function freePort() { const socket = createServer(); socket.listen(0, '127.0.0.1'); await once(socket, 'listening'); const port = socket.address().port; await new Promise(resolve => socket.close(resolve)); return port; }
 
-test('sales range zoom controls reach their bounds and reset on desktop and mobile widths', { timeout: 90000 }, async () => {
+test('sales range controls zoom, reset and drag on desktop and mobile widths', { timeout: 90000 }, async () => {
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_APPAREL_FIXTURE: '1', VINTAD3E_APPAREL_FIXTURE_ORIGIN: origin }, stdio: 'ignore' });
   let browser;
@@ -32,11 +32,29 @@ test('sales range zoom controls reach their bounds and reset on desktop and mobi
           const response = page.waitForResponse(value => value.url().includes('/admin/stats/sales-overview?'));
           await button.focus();
           await page.keyboard.press('Enter');
-          assert.equal((await response).status(), 200);
+          const result = await response;
+          assert.equal(result.status(), 200);
+          return new URL(result.url());
         }
-        await changeRange(reset);
+        const fullRange = await changeRange(reset);
         assert.equal(await zoomOut.isDisabled(), true);
         assert.equal(await reset.isDisabled(), true);
+        const track = page.locator('.console-section[data-hydrated="true"] div[style*="touch-action: none"]').first();
+        await track.scrollIntoViewIfNeeded();
+        await track.locator(':scope > div').evaluate(async element => {
+          await new Promise(requestAnimationFrame);
+          await Promise.all(element.getAnimations().map(animation => animation.finished.catch(() => {})));
+        });
+        const bounds = await track.boundingBox();
+        assert.ok(bounds);
+        const changed = page.waitForResponse(value => value.url().includes('/admin/stats/sales-overview?'));
+        await page.mouse.move(bounds.x + 3, bounds.y + bounds.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(bounds.x + bounds.width * 0.35, bounds.y + bounds.height / 2, { steps: 8 });
+        await page.mouse.up();
+        const dragResponse = await changed;
+        assert.equal(dragResponse.status(), 200);
+        assert.ok(Date.parse(new URL(dragResponse.url()).searchParams.get('from')) > Date.parse(fullRange.searchParams.get('from')));
         let count = 0;
         while (!(await zoomIn.isDisabled()) && count < 16) { await changeRange(zoomIn); count++; }
         assert.ok(count > 0 && count < 16);

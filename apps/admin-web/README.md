@@ -14,6 +14,8 @@
 
 같은 설정의 홈은 합성 앱 상태와 방문 기록을 표시합니다. 서비스 상태를 확인하거나 실제 방문 이력을 조회하지 않습니다.
 
+합성 로그인과 자료를 보려면 아래 실행 전에 같은 터미널에서 설정을 켭니다. Windows PowerShell에서는 `$env:VINTAD3E_ADMIN_FIXTURE = '1'`, macOS 또는 Linux에서는 `export VINTAD3E_ADMIN_FIXTURE=1`을 입력합니다. [전체 실행 순서](../../docs/first-run.md)를 함께 볼 수 있습니다.
+
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/admin-web dev`를 실행하고 `http://127.0.0.1:3832/members`를 엽니다.
 
 같은 설정을 사용하면 `/sign-in`에서 로컬 합성 세션을 만들 수 있습니다. 세션은 개발 환경의 루프백 주소에서만 동작하며 실제 인증이나 업무 권한을 제공하지 않습니다.

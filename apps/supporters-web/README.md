@@ -20,6 +20,8 @@ Instagram과 TikTok은 원본에서 관리자에게 연결된 서포터즈가 �
 
 같은 설정의 홈(`/`)에서는 합성 구성원 선택과 성과·쿠폰 사이트 통계 화면을 볼 수 있습니다. 수치와 통계는 화면 확인용이며 실제 SNS, 판매 또는 정산 정보를 읽거나 계산하지 않습니다. 설정하지 않으면 홈을 표시하지 않습니다.
 
+합성 로그인과 자료를 보려면 아래 실행 전에 같은 터미널에서 설정을 켭니다. Windows PowerShell에서는 `$env:VINTAD3E_SUPPORTERS_FIXTURE = '1'`, macOS 또는 Linux에서는 `export VINTAD3E_SUPPORTERS_FIXTURE=1`을 입력합니다. [전체 실행 순서](../../docs/first-run.md)를 함께 볼 수 있습니다.
+
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/supporters-web dev`를 실행하고 `http://127.0.0.1:3827/coupon`을 엽니다.
 
 개발 환경에서 `VINTAD3E_SUPPORTERS_FIXTURE=1`과 `VINTAD3E_SUPPORTERS_FIXTURE_SELF=1`을 함께 설정하면 본인 화면의 합성 게시물 등록·해제와 합성 연결 상태를 조작할 수 있습니다. 수동 갱신은 해당 플랫폼의 첫 합성 게시물 조회 수에 정해진 값을 반영합니다. 상태는 현재 브라우저 탭의 세션 저장소에만 남고 실제 SNS 계정·로그인·권한·공식 API에는 연결되지 않습니다. 수동 갱신은 실제 SNS에 요청하지 않습니다.

@@ -43,44 +43,52 @@ git clone https://github.com/BreakSilence-Basoon/vintad3e.git && sh vintad3e/scr
    ```
 
    Node 버전은 `v24.`로 시작하고 pnpm은 `10.11.0`이어야 합니다. 같은 이름의 폴더가 있으면 지우지 말고 다른 빈 폴더에서 시작하세요.
-3. 아래 명령으로 필요한 패키지를 설치하고 포털을 실행합니다. 설치에는 인터넷 연결이 필요합니다.
+3. 아래 명령으로 필요한 패키지를 설치합니다. 설치에는 인터넷 연결이 필요합니다.
 
    ```sh
    corepack pnpm install --frozen-lockfile --ignore-scripts
+   ```
+
+4. 합성 로그인과 앱 링크를 켜고 포털을 실행합니다. Windows PowerShell에서는 다음 두 줄을 입력합니다.
+
+   ```powershell
+   $env:VINTAD3E_PORTAL_FIXTURE = '1'
    corepack pnpm --filter @vintad3e/portal-web dev
    ```
 
-4. 브라우저에서 [http://127.0.0.1:3825](http://127.0.0.1:3825)를 엽니다. 터미널은 실행하는 동안 열어 두고, 종료할 때는 Ctrl+C를 누릅니다. 포트가 이미 사용 중이면 기존 프로그램을 확인하세요.
+   macOS 또는 Linux 터미널에서는 다음 한 줄을 입력합니다.
+
+   ```sh
+   VINTAD3E_PORTAL_FIXTURE=1 corepack pnpm --filter @vintad3e/portal-web dev
+   ```
+
+5. 브라우저에서 [http://127.0.0.1:3825](http://127.0.0.1:3825)를 엽니다. 터미널은 실행하는 동안 열어 두고, 종료할 때는 Ctrl+C를 누릅니다. 포트가 이미 사용 중이면 기존 프로그램을 확인하세요.
 
 Windows와 macOS의 GitHub 호스팅 검사에서 새 복사본에 시작 스크립트를 실행하고 포털의 HTTP 응답을 확인했습니다. 이 검사는 실제 브라우저 조작, 실제 로그인이나 업무 데이터는 확인하지 않습니다. API 기동은 [가상 자료 안내](local-api-fixture.md)를 따르세요.
 
 ## 다른 앱 열기
 
-각 앱은 포털과 별도로 실행합니다. 저장소 폴더에서 터미널을 하나 더 열고 아래 예시의 `apparel-web`을 표의 앱 이름으로 바꿉니다. 여러 앱을 동시에 열려면 앱마다 터미널이 하나씩 필요합니다. 종료할 때는 해당 터미널에서 Ctrl+C를 누릅니다.
+각 앱은 포털과 별도로 실행합니다. 저장소 폴더에서 터미널을 하나 더 열고 아래 예시처럼 먼저 합성 자료를 켭니다. Windows PowerShell에서는 다음 두 줄을 입력합니다.
 
-```sh
+```powershell
+$env:VINTAD3E_APPAREL_FIXTURE = '1'
 corepack pnpm --filter @vintad3e/apparel-web dev
 ```
 
-| 앱 이름 | 브라우저 주소 | 앱별 안내 |
-| --- | --- | --- |
-| `timetable-web` | http://127.0.0.1:3824 | [Timetable](../apps/timetable-web/README.md) |
-| `apparel-web` | http://127.0.0.1:3826 | [Apparel](../apps/apparel-web/README.md) |
-| `supporters-web` | http://127.0.0.1:3827 | [Supporters](../apps/supporters-web/README.md) |
-| `partners-web` | http://127.0.0.1:3828 | [Partners](../apps/partners-web/README.md) |
-| `library-web` | http://127.0.0.1:3829 | [Library](../apps/library-web/README.md) |
-| `floor-web` | http://127.0.0.1:3830 | [Floor](../apps/floor-web/README.md) |
-| `creative-web` | http://127.0.0.1:3831 | [Creative](../apps/creative-web/README.md) |
-| `admin-web` | http://127.0.0.1:3832 | [Admin](../apps/admin-web/README.md) |
+macOS 또는 Linux에서는 `VINTAD3E_APPAREL_FIXTURE=1 corepack pnpm --filter @vintad3e/apparel-web dev`를 입력합니다. 다른 앱은 아래 표의 **설정 이름**과 **앱 이름**으로 두 부분을 각각 바꿉니다. 여러 앱을 동시에 열려면 앱마다 터미널이 하나씩 필요합니다. 종료할 때는 해당 터미널에서 Ctrl+C를 누릅니다.
 
-포털에 다른 앱의 링크를 표시하려면 포털 실행 전에 합성 자료 설정을 켜야 합니다. Windows PowerShell에서는 다음 두 줄을 입력합니다.
+| 앱 이름 | 설정 이름 | 브라우저 주소 | 앱별 안내 |
+| --- | --- | --- | --- |
+| `timetable-web` | `VINTAD3E_TIMETABLE_FIXTURE` | http://127.0.0.1:3824 | [Timetable](../apps/timetable-web/README.md) |
+| `apparel-web` | `VINTAD3E_APPAREL_FIXTURE` | http://127.0.0.1:3826 | [Apparel](../apps/apparel-web/README.md) |
+| `supporters-web` | `VINTAD3E_SUPPORTERS_FIXTURE` | http://127.0.0.1:3827 | [Supporters](../apps/supporters-web/README.md) |
+| `partners-web` | `VINTAD3E_PARTNERS_FIXTURE` | http://127.0.0.1:3828 | [Partners](../apps/partners-web/README.md) |
+| `library-web` | `VINTAD3E_LIBRARY_FIXTURE` | http://127.0.0.1:3829 | [Library](../apps/library-web/README.md) |
+| `floor-web` | `VINTAD3E_FLOOR_FIXTURE` | http://127.0.0.1:3830 | [Floor](../apps/floor-web/README.md) |
+| `creative-web` | `VINTAD3E_CREATIVE_FIXTURE` | http://127.0.0.1:3831 | [Creative](../apps/creative-web/README.md) |
+| `admin-web` | `VINTAD3E_ADMIN_FIXTURE` | http://127.0.0.1:3832 | [Admin](../apps/admin-web/README.md) |
 
-```powershell
-$env:VINTAD3E_PORTAL_FIXTURE = '1'
-corepack pnpm --filter @vintad3e/portal-web dev
-```
-
-macOS 또는 Linux 터미널에서는 `VINTAD3E_PORTAL_FIXTURE=1 corepack pnpm --filter @vintad3e/portal-web dev`를 사용합니다. 포털의 합성 로그인은 다른 앱의 로그인을 대신하지 않습니다. 각 앱에서 보여 주는 합성 자료와 그 설정 방법은 표의 앱별 안내를 확인하세요.
+포털의 합성 로그인은 다른 앱의 로그인을 대신하지 않습니다. 각 앱에서 보여 주는 합성 자료와 추가 설정 방법은 표의 앱별 안내를 확인하세요.
 
 ## 우리 가게 자료는 어떻게 넣나요?
 

@@ -4,6 +4,8 @@
 
 원본의 PC·모바일 상단 메뉴도 헤더에 연결했습니다. 실제 관리자 권한은 확인하지 않으며, 개발용 관리자 설정을 켰을 때만 QR 관리 메뉴가 표시됩니다.
 
+합성 로그인과 자료를 보려면 아래 실행 전에 같은 터미널에서 설정을 켭니다. Windows PowerShell에서는 `$env:VINTAD3E_TIMETABLE_FIXTURE = '1'`, macOS 또는 Linux에서는 `export VINTAD3E_TIMETABLE_FIXTURE=1`을 입력합니다. [전체 실행 순서](../../docs/first-run.md)를 함께 볼 수 있습니다.
+
 Node.js 24와 Corepack이 필요합니다. 저장소 루트에서 다음 명령을 실행합니다.
 
 ```sh

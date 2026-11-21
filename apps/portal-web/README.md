@@ -2,6 +2,8 @@
 
 원본 포털의 세 장짜리 캐러셀, 앱과 바로가기 및 하단 배치 구성을 이관합니다. 회사 원본 그림과 전용 링크는 넣지 않았습니다. 실제 인증, 권한별 앱 목록과 로그아웃 동작은 연결되지 않았습니다. 실제 업무에 사용할 수 없습니다.
 
+합성 로그인과 자료를 보려면 아래 실행 전에 같은 터미널에서 설정을 켭니다. Windows PowerShell에서는 `$env:VINTAD3E_PORTAL_FIXTURE = '1'`, macOS 또는 Linux에서는 `export VINTAD3E_PORTAL_FIXTURE=1`을 입력합니다. [전체 실행 순서](../../docs/first-run.md)를 함께 볼 수 있습니다.
+
 Node.js 24와 Corepack을 준비한 뒤 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts`와 `corepack pnpm --filter @vintad3e/portal-web dev`를 실행하고 `http://127.0.0.1:3825`를 엽니다.
 
 개발 모드에서만 `VINTAD3E_PORTAL_FIXTURE=1`을 설정하면 원본 로그인 버튼으로 가상 세션을 만들고 로컬의 Timetable·Apparel·Supporters·Partners·Library·Floor·Creative·Admin 링크를 표시합니다. 각 앱은 별도로 실행해야 하며 포털의 가상 세션이 다른 앱의 로그인이나 권한을 부여하지 않습니다. 로그아웃하면 가상 세션이 제거되고 서버를 재시작하면 모든 세션이 사라집니다. 이 기능은 실제 계정 인증이나 권한 확인이 아니며, 운영 모드에서는 설정값과 관계없이 꺼집니다. Ledger와 외부 링크는 표시만 됩니다.

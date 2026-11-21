@@ -8,6 +8,7 @@ import { fixtureUpload } from './fixture-upload-spec.mjs';
 import { getFixtureUpload, handleFixtureUpload } from './fixture-upload.mjs';
 import { fixtureIrExclusive, handleFixtureIrExclusiveUpload } from './fixture-ir-exclusive.mjs';
 import { handleFixtureMeetingConfirmation } from './fixture-meeting-confirmation.mjs';
+import { applyFixtureMeetingChange, readFixtureMeetingContent } from './fixture-meeting-content.ts';
 
 const origin = 'http://127.0.0.1:3829', host = '127.0.0.1:3829';
 const env = { NODE_ENV: 'development', VINTAD3E_LIBRARY_FIXTURE: '1' };
@@ -183,6 +184,9 @@ test('isolated cleanup requires deletion proof, rejects stale state and preserve
   assert.equal((await handleFixtureUpload(shared, env, 40003)).status, 200);
   const meeting = await (await handleFixtureMeetingConfirmation(post(cookie, { action: 'prepare', meetingId: '00000000-0000-4000-8000-000000000004', change: { kind: 'attach', objectId: fixtureUpload.id } }), env, 40003)).json();
   for (const action of ['load', 'review', 'confirm', 'execute']) assert.equal((await handleFixtureMeetingConfirmation(post(cookie, { action, proposalId: meeting.proposalId, changeDigest: meeting.changeDigest }), env, 40003)).status, 200);
+  const saved = new Map(), store = { getItem: name => saved.get(name) ?? null, setItem: (name, value) => { saved.set(name, value); } };
+  const meetingId = '00000000-0000-4000-8000-000000000004';
+  assert.equal(applyFixtureMeetingChange(store, meetingId, { kind: 'attach', objectId: fixtureUpload.id }, new Date('2026-01-02T03:00:00.000Z'))?.attached, true);
   await apply(await prepare('isolated-attach'));
   assert.deepEqual(readFixtureIrIsolatedAttachment(cookie, host, env, fixtureIrDocument.id, 40004), fixtureIrExclusive);
   assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'cleanup' }), env, 40004)).status, 409);
@@ -198,6 +202,7 @@ test('isolated cleanup requires deletion proof, rejects stale state and preserve
   await apply(cleanup);
   assert.equal(readFixtureIrIsolatedObject(cookie, host, env, 40008), null);
   assert.deepEqual(getFixtureUpload(cookie, host, env, 40008), fixtureUpload);
+  assert.equal(readFixtureMeetingContent(store, meetingId)?.attached, true);
   assert.equal((await (await handleFixtureMeetingConfirmation(post(cookie, { action: 'load', proposalId: meeting.proposalId, changeDigest: meeting.changeDigest }), env, 40008)).json()).state, 'executed');
   assert.equal(fixtureIrExclusive.body, '업무를 시작하기 전에 필요한 사항을 확인합니다.');
 });

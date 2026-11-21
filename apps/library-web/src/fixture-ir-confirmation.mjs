@@ -1,12 +1,22 @@
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { fixtureOrigin, fixtureSessionKey } from './fixture-session.mjs';
-import { fixtureIrExample } from './fixture-ir-examples.mjs';
+import { fixtureIrDocument, fixtureIrExample } from './fixture-ir-examples.mjs';
 
 const records = globalThis[Symbol.for('vintad3e.library.fixture.ir.confirmations')] ??= new Map();
+const imports = globalThis[Symbol.for('vintad3e.library.fixture.ir.imports')] ??= new Map();
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const sha = value => createHash('sha256').update(value).digest('hex');
 const failure = status => Response.json({ error: status === 401 ? 'sign-in-required' : 'unavailable' }, { status, headers: { 'cache-control': 'no-store' } });
 const view = record => Response.json({ proposalId: record.id, kind: record.kind, state: record.state, checkedAt: record.checkedAt, expiresAt: record.expiresAt, example: record.example, summary: record.summary, canonical: record.canonical, changeDigest: record.changeDigest, permissionDigest: record.permissionDigest }, { headers: { 'cache-control': 'no-store' } });
+
+export function readFixtureIrImport(cookie, host, env, documentId, now = Date.now()) {
+  const token = fixtureSessionKey(cookie, host, env, now);
+  if (!token || documentId !== fixtureIrDocument.id) return null;
+  const session = sha(token);
+  const expiresAt = imports.get(session);
+  if (typeof expiresAt !== 'number' || expiresAt <= now) { imports.delete(session); return null; }
+  return fixtureIrDocument;
+}
 
 export async function handleFixtureIrConfirmation(request, env, now = Date.now()) {
   const origin = fixtureOrigin(env), host = request.headers.get('host');
@@ -38,6 +48,8 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
     if (Object.keys(body).sort().join(',') !== 'action,proof,proposalId' || !uuid.test(body.proposalId) || typeof body.proof !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(body.proof)) return failure(400);
     const record = records.get(body.proposalId), digest = createHash('sha256').update(body.proof).digest();
     if (!record || !timingSafeEqual(record.proofHash, digest)) return failure(404);
+    const importedUntil = imports.get(record.session);
+    if (record.state === 'executed' && typeof importedUntil === 'number' && importedUntil > now) { imports.delete(record.session); imports.set(session, importedUntil); }
     record.session = session; record.checkedAt = now; record.permissionDigest = sha(`fixture-ir:${session}`); return view(record);
   }
   if (Object.keys(body).sort().join(',') !== 'action,proposalId' || !uuid.test(body.proposalId)) return failure(400);
@@ -46,5 +58,11 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
   const transitions = record.kind === 'batch' ? { apply: ['loaded', 'executed'] } : { review: ['loaded', 'reviewed'], confirm: ['reviewed', 'approved'], execute: ['approved', 'executed'] };
   const next = Object.hasOwn(transitions, body.action) ? transitions[body.action] : null;
   if (!next || record.state !== next[0]) return failure(409);
-  record.state = next[1]; return view(record);
+  if (next[1] === 'executed') {
+    for (const [key, expiresAt] of imports) if (expiresAt <= now) imports.delete(key);
+    if (!imports.has(session) && imports.size >= 128) return failure(503);
+    imports.set(session, now + 30 * 60_000);
+  }
+  record.state = next[1];
+  return view(record);
 }

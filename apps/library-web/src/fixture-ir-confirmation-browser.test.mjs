@@ -27,6 +27,8 @@ test('synthetic single and batch internal-document confirmations recover in the 
           }, kind);
         }
         const single = await prepare('single');
+        const importedPath = '/ir/00000000-0000-4000-8000-000000000101';
+        assert.equal((await page.request.get(`${origin}${importedPath}`)).status(), 404);
         await page.goto(`${origin}/confirmations/${single}`);
         await page.getByRole('button', { name: '제안 검토' }).click();
         await page.reload(); await page.getByRole('button', { name: '이 변경 확인' }).click();
@@ -37,6 +39,7 @@ test('synthetic single and batch internal-document confirmations recover in the 
         await page.getByRole('button', { name: '다시 로그인' }).click(); await page.waitForURL('**/sign-in?**');
         await page.getByRole('button', { name: '회사 계정으로 로그인' }).click(); await page.waitForURL(`**/confirmations/${single}`);
         await page.getByRole('button', { name: '변경 적용' }).click(); await page.getByRole('status').filter({ hasText: '변경 결과를 확인했습니다.' }).waitFor();
+        assert.equal((await page.request.get(`${origin}${importedPath}`)).status(), 200);
         const batch = await prepare('batch'); await page.goto(`${origin}/confirmations/${batch}`);
         await page.getByRole('region', { name: '이관 대상' }).getByText('가게 안내 기록').waitFor();
         await page.getByRole('button', { name: '이관 확인 및 적용' }).click(); await page.getByRole('status').filter({ hasText: '변경 결과를 확인했습니다.' }).waitFor();

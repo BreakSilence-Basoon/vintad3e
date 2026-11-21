@@ -12,6 +12,8 @@ const examples = Object.freeze({
   batch: Object.freeze({ operation: 'library.ir.batch-import', target: 'ir-import', change: Object.freeze({ attachmentManifestSha256: sha('[]'), entries: Object.freeze([entry]), manifestSha256: sha(JSON.stringify([entry])) }) }),
 });
 
+export const fixtureIrDocument = Object.freeze({ kind: 'ir', id: pageId, title: '가게 안내 기록', publisher: '직원', createdAt: '2025-12-30T00:00:00.000Z', body: source });
+
 export function fixtureIrExample(kind) {
   return Object.hasOwn(examples, kind) ? examples[kind] : null;
 }

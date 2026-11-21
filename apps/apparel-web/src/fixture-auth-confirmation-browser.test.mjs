@@ -118,6 +118,62 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
         await enter(page, inventoryDialog.getByRole('button', { name: '재고 수정 창 닫기' }));
         await inventoryDialog.waitFor({ state: 'detached' });
 
+        await page.goto(`${origin}/admin/inventory/shortages`);
+        await page.locator('[data-hydrated="true"] .shortage-editor').waitFor();
+        const shortageTabs = page.getByRole('tablist', { name: '부족 재고 탭' });
+        for (const [label, count] of [['부족', 1], ['부족하지 않음', 5], ['부족', 1]]) {
+          const tab = shortageTabs.getByRole('tab', { name: new RegExp(`^${label} ${count}$`) });
+          await enter(page, tab);
+          assert.equal(await tab.getAttribute('aria-selected'), 'true');
+          assert.equal(await page.locator('.shortage-table__row').count(), count);
+        }
+
+        await page.goto(`${origin}/admin/inventory/graphics/TSHIRT-001`);
+        await page.locator('.console-page[data-hydrated="true"] .shortage-editor').waitFor();
+        assert.deepEqual(await page.locator('.console-page__summary strong').allTextContents(), ['2', '1', '2']);
+        const graphicTabs = page.getByRole('tablist', { name: '부족 재고 탭' });
+        for (const [label, count] of [['부족', 1], ['부족하지 않음', 3], ['전체', 4]]) {
+          const tab = graphicTabs.getByRole('tab', { name: new RegExp(`^${label} ${count}$`) });
+          await enter(page, tab);
+          assert.equal(await tab.getAttribute('aria-selected'), 'true');
+          assert.equal(await page.locator('.shortage-table__row').count(), count);
+        }
+        const graphicTable = page.getByRole('table', { name: '옵션 품목 부족 재고' });
+        for (const name of ['형태', '색상', '사이즈']) {
+          const header = graphicTable.getByRole('button', { name, exact: true });
+          await enter(page, header);
+          assert.equal(await header.getAttribute('aria-pressed'), 'true');
+        }
+        for (const [name, index] of [['현재고', 0], ['목표재고', 1], ['부족수량', 2]]) {
+          const header = graphicTable.getByRole('button', { name, exact: true });
+          const values = () => graphicTable.locator('.shortage-table__row').evaluateAll((rows, column) => rows.map(row => Number(row.querySelectorAll('input[type=number]')[column].value)), index);
+          await enter(page, header);
+          const numbers = await values();
+          assert.deepEqual(numbers, [...numbers].sort((a, b) => a - b));
+          await enter(page, header);
+          assert.deepEqual(await values(), [...numbers].reverse());
+        }
+
+        for (const path of ['sales', 'audit']) {
+          await page.goto(`${origin}/admin/${path}`);
+          const filter = page.locator('.audit-filter-bar[data-hydrated="true"]');
+          await filter.waitFor();
+          await filter.getByLabel('기간', { exact: true }).selectOption('custom');
+          const dates = filter.getByRole('group', { name: '기간 직접 지정' });
+          await dates.getByLabel('시작일').fill('2026-01-01');
+          await dates.getByLabel('종료일').fill('2026-12-31');
+          await enter(page, dates.getByRole('button', { name: '닫기', exact: true }));
+          await enter(page, filter.getByRole('button', { name: '적용', exact: true }));
+          await page.waitForURL(url => url.pathname === `/admin/${path}` && url.searchParams.get('range') === 'custom' && url.searchParams.get('from') === '2026-01-01' && url.searchParams.get('to') === '2026-12-31');
+          await page.reload();
+          await page.locator('.audit-filter-bar[data-hydrated="true"]').waitFor();
+          assert.equal(await page.locator('.audit-filter-bar').getByLabel('시작일').inputValue(), '2026-01-01');
+          assert.equal(await page.locator('.audit-filter-bar').getByLabel('종료일').inputValue(), '2026-12-31');
+          await enter(page, page.locator('.audit-filter-bar').getByRole('button', { name: '초기화', exact: true }));
+          await page.waitForURL(url => url.pathname === `/admin/${path}` && url.search === '');
+          assert.equal(await page.locator('.audit-filter-bar').getByLabel('기간', { exact: true }).inputValue(), 'all');
+        }
+
         await page.goto(`${origin}/admin/stats`);
         await page.locator('.console-section[data-hydrated="true"]').waitFor();
         const scope = page.getByRole('tablist', { name: '의류 매출 범위' });

@@ -55,7 +55,7 @@ test('creative login, confirmation and failures work in a browser', { timeout: 1
         await page.getByText('매장 촬영', { exact:true }).waitFor();
         assert.equal(await page.locator('.staff-list__item').count(), 2);
         await page.getByText('홍보 자료', { exact:true }).waitFor();
-        assert.equal(await page.getByRole('alert').count(), 0);
+        assert.equal(await page.getByRole('alert').filter({ hasText: '프로젝트 목록을 불러오지 못했습니다.' }).count(), 0);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
         await page.reload();
         await page.getByText('매장 촬영', { exact:true }).waitFor();

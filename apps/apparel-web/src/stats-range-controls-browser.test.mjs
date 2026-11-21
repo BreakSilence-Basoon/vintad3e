@@ -55,6 +55,32 @@ test('sales range controls zoom, reset and drag on desktop and mobile widths', {
         const dragResponse = await changed;
         assert.equal(dragResponse.status(), 200);
         assert.ok(Date.parse(new URL(dragResponse.url()).searchParams.get('from')) > Date.parse(fullRange.searchParams.get('from')));
+        const start = page.getByRole('slider', { name: '시작일' });
+        const end = page.getByRole('slider', { name: '종료일' });
+        await start.focus();
+        await page.keyboard.press('Tab');
+        assert.equal(await end.evaluate(element => document.activeElement === element), true);
+        await page.keyboard.press('Shift+Tab');
+        assert.equal(await start.evaluate(element => document.activeElement === element), true);
+        assert.equal(await start.evaluate(element => getComputedStyle(element).outlineStyle), 'solid');
+        assert.ok(await start.getAttribute('aria-valuetext'));
+        async function changeHandle(slider, key) {
+          await slider.focus();
+          const before = Number(await slider.getAttribute('aria-valuenow'));
+          const response = page.waitForResponse(value => value.url().includes('/admin/stats/sales-overview?'));
+          await page.keyboard.press(key);
+          assert.equal((await response).status(), 200);
+          const after = Number(await slider.getAttribute('aria-valuenow'));
+          assert.notEqual(after, before);
+          return after;
+        }
+        await changeHandle(start, 'ArrowRight');
+        assert.equal(await changeHandle(start, 'Home'), Number(await start.getAttribute('aria-valuemin')));
+        assert.equal(await changeHandle(start, 'End'), Number(await start.getAttribute('aria-valuemax')));
+        await changeHandle(start, 'Home');
+        await changeHandle(end, 'ArrowLeft');
+        assert.equal(await changeHandle(end, 'Home'), Number(await end.getAttribute('aria-valuemin')));
+        assert.equal(await changeHandle(end, 'End'), Number(await end.getAttribute('aria-valuemax')));
         let count = 0;
         while (!(await zoomIn.isDisabled()) && count < 16) { await changeRange(zoomIn); count++; }
         assert.ok(count > 0 && count < 16);

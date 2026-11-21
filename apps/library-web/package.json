@@ -7,8 +7,8 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3829",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/library-fixture.test.ts src/fixture-object.test.ts src/fixture-bookmarks.test.ts src/fixture-comments.test.ts src/fixture-activity.test.ts src/fixture-members.test.ts src/fixture-meeting-storage.test.ts src/fixture-session.test.mjs src/fixture-upload.test.mjs src/fixture-object-confirmation.test.mjs src/fixture-ir-examples.test.mjs src/fixture-notion-example.test.mjs src/fixture-ir-confirmation.test.mjs src/fixture-corrected-renderer.test.mjs src/fixture-publication-content.test.ts src/fixture-sign-in-notice.test.mjs src/fixture-publication-store.test.mjs",
-    "test:fixture-browser": "node --test --test-concurrency=1 src/library-fixture-browser.test.mjs src/library-records-browser.test.mjs src/interaction-keyboard-browser.test.mjs src/internal-document-browser.test.mjs src/fixture-corrected-browser.test.mjs src/fixture-object-confirmation-browser.test.mjs src/fixture-ir-confirmation-browser.test.mjs"
+    "test": "node --test src/library-fixture.test.ts src/fixture-object.test.ts src/fixture-bookmarks.test.ts src/fixture-comments.test.ts src/fixture-activity.test.ts src/fixture-members.test.ts src/fixture-meeting-storage.test.ts src/fixture-session.test.mjs src/fixture-upload.test.mjs src/fixture-object-confirmation.test.mjs src/fixture-ir-examples.test.mjs src/fixture-notion-example.test.mjs src/fixture-ir-confirmation.test.mjs src/fixture-ir-exclusive.test.mjs src/fixture-corrected-renderer.test.mjs src/fixture-publication-content.test.ts src/fixture-sign-in-notice.test.mjs src/fixture-publication-store.test.mjs",
+    "test:fixture-browser": "node --test --test-concurrency=1 src/library-fixture-browser.test.mjs src/library-records-browser.test.mjs src/interaction-keyboard-browser.test.mjs src/internal-document-browser.test.mjs src/fixture-corrected-browser.test.mjs src/fixture-object-confirmation-browser.test.mjs src/fixture-ir-confirmation-browser.test.mjs src/fixture-ir-exclusive-browser.test.mjs"
   },
   "dependencies": {
     "@vintad3e/ui": "workspace:*",

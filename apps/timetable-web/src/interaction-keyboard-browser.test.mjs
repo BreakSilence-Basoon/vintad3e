@@ -9,7 +9,7 @@ import { chromium } from 'playwright';
 async function freePort() { const socket = createServer(); socket.listen(0, '127.0.0.1'); await once(socket, 'listening'); const port = socket.address().port; await new Promise(resolve => socket.close(resolve)); return port; }
 async function enter(page, locator) { await locator.waitFor({ state: 'visible' }); await page.waitForFunction(el => !el.disabled, await locator.elementHandle()); await locator.focus(); await page.keyboard.press('Enter'); }
 
-test('kiosk registration, errors and camera denial work with keyboard input', { timeout: 120000 }, async () => {
+test('kiosk registration, errors and camera denial work with keyboard input', { timeout: 180000 }, async () => {
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '1', VINTAD3E_TIMETABLE_FIXTURE_ADMIN: '1', VINTAD3E_TIMETABLE_FIXTURE_ORIGIN: origin }, stdio: 'ignore' });
   let browser;
@@ -53,6 +53,54 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await page.goto(`${origin}/sign-in?mode=cover&mode=other&next=%2F%3Fview%3Dschedule%26month%3D2026-05`);
         await enter(page, page.getByRole('link', { name: 'Timetable로 돌아가기' }));
         await page.waitForURL('**/?view=schedule&month=2026-05');
+        await page.goto(`${origin}/?view=schedule&view=history&month=2024-02&month=2024-03`);
+        await page.locator('[data-calendar-month="2024-02"]').waitFor();
+        assert.match(await page.title(), /근무시간표/);
+        await page.goto(`${origin}/confirmations/proposal-01`);
+        let failure = 'denied';
+        await page.route('**/api/fixture/confirmation', route => route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ error: failure }) }));
+        for (const [code, message, needsLogin] of [
+          ['denied', '이 제안을 열거나 확인할 권한이 없습니다.', false],
+          ['changed', '제안, 권한 또는 확인 세션이 변경되었거나 만료되었습니다.', true],
+          ['sign-in-required', '로그인이 만료되었거나 새 인증이 필요합니다.', true],
+          ['session-revoked', '로그아웃으로 회수된 회사 확인 세션입니다.', false],
+          ['invalid-request', '확인 요청을 처리하지 못했습니다.', false],
+          ['unavailable', '변경 확인 서비스에 연결할 수 없습니다.', false],
+          ['__proto__', '변경 확인 서비스에 연결할 수 없습니다.', false],
+        ]) {
+          failure = code;
+          await enter(page, page.getByRole('button', { name: /제안 불러오기|최신 상태 다시 불러오기/ }));
+          await page.getByRole('alert').filter({ hasText: message }).waitFor();
+          assert.equal(await page.getByRole('button', { name: '다시 로그인' }).count(), needsLogin ? 1 : 0);
+        }
+        await page.unroute('**/api/fixture/confirmation');
+        await enter(page, page.getByRole('button', { name: '최신 상태 다시 불러오기' }));
+        await enter(page, page.getByRole('button', { name: '제안 검토' }));
+        await enter(page, page.getByRole('button', { name: '이 변경 확인' }));
+        await page.getByRole('status').filter({ hasText: '확인 기록이 저장되었습니다.' }).waitFor();
+        await page.route('**/api/fixture/confirmation', route => route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ error: 'changed' }) }));
+        await enter(page, page.getByRole('button', { name: '최신 상태 다시 불러오기' }));
+        await page.getByRole('alert').filter({ hasText: '제안, 권한 또는 확인 세션이 변경되었거나 만료되었습니다.' }).waitFor();
+        await page.unroute('**/api/fixture/confirmation');
+        await enter(page, page.getByRole('button', { name: '다시 로그인' }));
+        await page.waitForURL('**/sign-in?next=%2Fconfirmations%2Fproposal-01');
+        await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
+        await page.waitForURL('**/confirmations/proposal-01');
+        await enter(page, page.getByRole('button', { name: '제안 불러오기' }));
+        await page.getByRole('status').filter({ hasText: '확인 대기' }).waitFor();
+        await page.goto(`${origin}/?view=history&range=all`);
+        const historyFilter = page.locator('.attendance-history-filter');
+        await historyFilter.locator('select[name=range]').selectOption('custom');
+        const historyDates = page.getByRole('group', { name: '기간 직접 지정' });
+        await historyDates.getByLabel('시작일').fill('2024-01-01');
+        await historyDates.getByLabel('종료일').fill('2024-01-31');
+        await enter(page, historyDates.getByRole('button', { name: '닫기' }));
+        await historyFilter.locator('select[name=sort]').selectOption('asc');
+        const staff = historyFilter.locator('select[name=employee]');
+        await staff.selectOption({ label: '직원' });
+        const selectedStaff = await staff.inputValue();
+        await enter(page, historyFilter.getByRole('button', { name: '적용' }));
+        await page.waitForFunction(expected => { const params = new URL(location.href).searchParams; return params.get('view') === 'history' && params.get('range') === 'custom' && params.get('from') === '2024-01-01' && params.get('to') === '2024-01-31' && params.get('sort') === 'asc' && params.get('employee') === expected; }, selectedStaff);
         await context.clearCookies();
         await page.goto(`${origin}/confirmations/proposal-01`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');

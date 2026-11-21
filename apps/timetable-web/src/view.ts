@@ -1,3 +1,3 @@
 export function timetableInitialView(view: string | string[] | undefined): 'history' | 'schedule' {
-  return view === 'schedule' ? 'schedule' : 'history';
+  return (Array.isArray(view) ? view[0] : view) === 'schedule' ? 'schedule' : 'history';
 }

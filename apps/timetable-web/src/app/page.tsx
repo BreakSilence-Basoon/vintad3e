@@ -45,7 +45,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   const { view, month } = params;
   const requestedView = Array.isArray(view) ? view[0] : view;
   const initialView = timetableInitialView(requestedView);
-  const selectedMonth = normalizeMonth(typeof month === 'string' ? month : undefined);
+  const selectedMonth = normalizeMonth(Array.isArray(month) ? month[0] : month);
   const fixtureEnabled = process.env.NODE_ENV === 'development' && process.env.VINTAD3E_TIMETABLE_FIXTURE === '1';
   if (fixtureEnabled && !process.env.VINTAD3E_TIMETABLE_API_ORIGIN) {
     const origin = fixtureOrigin(process.env);

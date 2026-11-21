@@ -117,6 +117,25 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
         }
         await enter(page, inventoryDialog.getByRole('button', { name: '재고 수정 창 닫기' }));
         await inventoryDialog.waitFor({ state: 'detached' });
+        const collections = page.getByRole('tablist', { name: '인벤토리 분류' });
+        const optionSelects = page.locator('.inventory-filter-form select');
+        const optionValues = ['반팔', '블랙', 'M', 'UNISEX'];
+        const optionParams = ['type', 'color', 'size', 'target'];
+        for (const [collection, product] of [['자체', '반팔 티셔츠'], ['협업', '협업 티셔츠']]) {
+          await enter(page, collections.getByRole('tab', { name: collection, exact: true }));
+          for (let mask = 0; mask < 16; mask++) {
+            for (let i = 0; i < optionValues.length; i++) await optionSelects.nth(i).selectOption(mask & (1 << i) ? optionValues[i] : '');
+            const query = new URL(page.url()).searchParams;
+            for (let i = 0; i < optionParams.length; i++) assert.equal(query.get(optionParams[i]), mask & (1 << i) ? optionValues[i] : null);
+            assert.equal(query.get('collection'), collection === '협업' ? 'collab' : null);
+            await page.getByRole('heading', { name: product, exact: true }).waitFor();
+          }
+          for (let i = 0; i < optionValues.length; i++) await optionSelects.nth(i).selectOption('');
+        }
+        await enter(page, collections.getByRole('tab', { name: '자체', exact: true }));
+        await optionSelects.nth(1).selectOption('화이트');
+        await optionSelects.nth(2).selectOption('M');
+        await page.getByText('표시할 옵션 품목이 없습니다.', { exact: true }).waitFor();
 
         await page.goto(`${origin}/admin/inventory/shortages`);
         await page.locator('[data-hydrated="true"] .shortage-editor').waitFor();

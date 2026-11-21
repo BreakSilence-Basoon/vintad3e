@@ -79,6 +79,45 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
         assert.equal(await trackingSearch.inputValue(), '');
         assert.equal(await trackingSearch.isDisabled(), true);
 
+        await page.goto(`${origin}/admin/products`);
+        const editStock = page.getByRole('button', { name: '반팔 티셔츠 재고 수정 창 열기' });
+        const inventoryDialog = page.getByRole('dialog', { name: '반팔 티셔츠' });
+        for (let attempt = 0; attempt < 5 && await inventoryDialog.count() === 0; attempt++) {
+          await enter(page, editStock);
+          try { await inventoryDialog.waitFor({ state: 'visible', timeout: 1000 }); } catch {}
+        }
+        await inventoryDialog.waitFor({ state: 'visible' });
+        const locations = inventoryDialog.getByRole('tablist', { name: '재고 위치 탭' });
+        for (const [name, count] of [['성수', 2], ['하남', 2], ['전체', 4]]) {
+          const tab = locations.getByRole('tab', { name: new RegExp(`^${name} ${count}$`) });
+          await enter(page, tab);
+          assert.equal(await tab.getAttribute('aria-selected'), 'true');
+          assert.equal(await inventoryDialog.locator('.shortage-table__row').count(), count);
+        }
+        const colours = () => inventoryDialog.locator('.shortage-table__row .shortage-table__option-cell:nth-child(2)').allTextContents();
+        const colourSort = inventoryDialog.getByRole('button', { name: '색상', exact: true });
+        await enter(page, colourSort);
+        const ascending = await colours();
+        assert.deepEqual(ascending, [...ascending].sort((a, b) => a.localeCompare(b, 'ko-KR', { numeric: true })));
+        await enter(page, colourSort);
+        assert.deepEqual(await colours(), [...ascending].reverse());
+        for (const name of ['형태', '사이즈', '재고 위치']) {
+          const header = inventoryDialog.getByRole('button', { name, exact: true });
+          await enter(page, header);
+          assert.equal(await header.getAttribute('aria-pressed'), 'true');
+        }
+        for (const [name, index] of [['현재고', 0], ['목표재고', 1], ['부족수량', 2]]) {
+          const header = inventoryDialog.getByRole('button', { name, exact: true });
+          const values = () => inventoryDialog.locator('.shortage-table__row').evaluateAll((rows, column) => rows.map(row => Number(row.querySelectorAll('input[type=number]')[column].value)), index);
+          await enter(page, header);
+          const numbers = await values();
+          assert.deepEqual(numbers, [...numbers].sort((a, b) => a - b));
+          await enter(page, header);
+          assert.deepEqual(await values(), [...numbers].reverse());
+        }
+        await enter(page, inventoryDialog.getByRole('button', { name: '재고 수정 창 닫기' }));
+        await inventoryDialog.waitFor({ state: 'detached' });
+
         await page.goto(`${origin}/admin/stats`);
         await page.locator('.console-section[data-hydrated="true"]').waitFor();
         const scope = page.getByRole('tablist', { name: '의류 매출 범위' });

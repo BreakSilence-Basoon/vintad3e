@@ -17,5 +17,7 @@ test('range handles follow keyboard increments and cannot cross their minimum ga
   assert.ok(Math.abs(move('end', 'PageDown')!.e - 0.73) < 1e-10);
   assert.deepEqual(nextRangeForKey({ s: 0, e: 1 }, 0.1, 0.01, 'start', 'ArrowLeft'), { s: 0, e: 1 });
   assert.deepEqual(nextRangeForKey({ s: 0, e: 1 }, 0.1, 0.01, 'end', 'ArrowRight'), { s: 0, e: 1 });
+  assert.deepEqual(nextRangeForKey({ s: 0, e: 1 }, 1, 1, 'start', 'End'), { s: 0, e: 1 });
+  assert.deepEqual(nextRangeForKey({ s: 0, e: 1 }, 1, 1, 'end', 'Home'), { s: 0, e: 1 });
   assert.equal(move('start', 'Escape'), null);
 });

@@ -216,7 +216,7 @@ export function StatsRangeBar({
           <span className="stats-range-handle" style={{ ...handle, left: -7 }} role="slider" tabIndex={0} aria-label="시작일" aria-valuemin={trackStart} aria-valuemax={Math.round(trackStart + Math.max(0, sel.e - minSel) * span)} aria-valuenow={Math.round(selFrom)} aria-valuetext={fmt(selFrom)} onKeyDown={moveHandle('start')} onPointerDown={beginDrag('start')}>
             <span style={grip} aria-hidden="true" />
           </span>
-          <span className="stats-range-handle" style={{ ...handle, right: -7 }} role="slider" tabIndex={0} aria-label="종료일" aria-valuemin={Math.round(trackStart + Math.min(1, sel.s + minSel) * span)} aria-valuemax={trackEnd} aria-valuenow={Math.round(selTo)} aria-valuetext={fmt(selTo)} onKeyDown={moveHandle('end')} onPointerDown={beginDrag('end')}>
+          <span className="stats-range-handle" style={{ ...handle, right: -7 }} role="slider" tabIndex={0} aria-label="종료일" aria-valuemin={Math.round(trackStart + Math.min(1, sel.s + minSel) * span)} aria-valuemax={Math.round(trackStart + span)} aria-valuenow={Math.round(selTo)} aria-valuetext={fmt(selTo)} onKeyDown={moveHandle('end')} onPointerDown={beginDrag('end')}>
             <span style={grip} aria-hidden="true" />
           </span>
         </div>

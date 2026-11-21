@@ -38,6 +38,13 @@ test('synthetic upload confirmation is recovered only in the originating session
         await recovery.goto(`${origin}/confirmations/${proposal.proposalId}`);
         await recovery.getByRole('region', { name: '업로드 내용 확인' }).locator('pre').first().waitFor();
         assert.match(await recovery.locator('pre').first().textContent(), /가게 안내\.txt/);
+        assert.ok(await recovery.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        await recovery.route('**/api/fixture/object-confirmation*', route => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
+        await recovery.getByRole('button', { name: '최신 상태 다시 불러오기' }).click();
+        await recovery.getByRole('alert').filter({ hasText: '내용을 확인하지 못했습니다.' }).waitFor();
+        assert.equal(await recovery.getByRole('button', { name: '제안 검토' }).count(), 0);
+        await recovery.unroute('**/api/fixture/object-confirmation*');
+        await recovery.getByRole('button', { name: '최신 상태 다시 불러오기' }).click();
         await recovery.getByRole('button', { name: '제안 검토' }).click();
         await recovery.reload();
         await recovery.getByRole('button', { name: '이 변경 확인' }).click();

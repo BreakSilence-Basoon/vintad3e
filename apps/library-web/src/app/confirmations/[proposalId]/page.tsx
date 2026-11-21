@@ -2,7 +2,7 @@ import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { fixtureOrigin, fixtureSession } from '../../../fixture-session.mjs';
 import { FixturePublicationConfirmation } from '../../../fixture-publication-confirmation';
-import { FixtureObjectConfirmation } from '../../../fixture-object-confirmation-view';
+import { FixtureConfirmationRecovery } from '../../../fixture-confirmation-recovery';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: '빈타제 > Library > 변경 확인', robots: { index: false, follow: false } };
@@ -16,5 +16,5 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ p
   const host = requestHeaders.get('host');
   if (host !== new URL(origin).host) notFound();
   if (!fixtureSession(requestHeaders.get('cookie'), host, process.env)) redirect(`/sign-in?next=${encodeURIComponent(`/confirmations/${proposalId}`)}`);
-  return <main className="library-home"><section className="library-page"><h1>발행 내용 확인</h1>{objectProposal ? <FixtureObjectConfirmation proposalId={proposalId} /> : <FixturePublicationConfirmation />}</section></main>;
+  return <main className="library-home"><section className="library-page"><h1>발행 내용 확인</h1>{objectProposal ? <FixtureConfirmationRecovery proposalId={proposalId} /> : <FixturePublicationConfirmation />}</section></main>;
 }

@@ -34,6 +34,8 @@ test('fixture login and logout rotate and revoke only local synthetic sessions',
 
 test('fixture login only returns to known fixture paths', () => {
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/confirmations/proposal-01').headers.get('location'), '/confirmations/proposal-01');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/confirmations/00000000-0000-4000-8000-000000000004').headers.get('location'), '/confirmations/00000000-0000-4000-8000-000000000004');
+  assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/confirmations/00000000-0000-4000-8000-000000000004?next=//example.invalid').headers.get('location'), '/');
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/objects/new').headers.get('location'), '/objects/new');
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/objects/00000000-0000-4000-8000-000000000003').headers.get('location'), '/objects/00000000-0000-4000-8000-000000000003');
   assert.equal(handleFixtureSession(post('login'), 'login', env, 1000, '/objects/00000000-0000-4000-8000-000000000009').headers.get('location'), '/objects/00000000-0000-4000-8000-000000000009');

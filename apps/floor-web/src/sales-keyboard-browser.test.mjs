@@ -120,11 +120,25 @@ test('floor sales search, pagination and inventory read view work with keyboard 
         await page.waitForFunction(() => document.querySelector('main')?.textContent.includes('재료 01'));
         assert.equal(await page.locator('.inventory-editor').count(), 0);
         await page.goto(`${origin}/confirmations/proposal-01`);
-        await enter(page, page.getByRole('button', { name: '제안 불러오기' }));
+        let failure = 'denied';
+        await page.route('**/api/fixture/confirmation', route => route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ error: failure }) }));
+        for (const [code, message, needsLogin] of [
+          ['denied', '이 제안을 열거나 확인할 권한이 없습니다.', false],
+          ['changed', '제안, 권한 또는 확인 세션이 변경되었거나 만료되었습니다.', true],
+          ['sign-in-required', '로그인이 만료되었거나 새 인증이 필요합니다.', true],
+          ['unavailable', '변경 확인 서비스에 연결할 수 없습니다.', false],
+        ]) {
+          failure = code;
+          await enter(page, page.getByRole('button', { name: /제안 불러오기|최신 상태 다시 불러오기/ }));
+          await page.getByRole('alert').filter({ hasText: message }).waitFor();
+          assert.equal(await page.getByRole('button', { name: '다시 로그인' }).count(), needsLogin ? 1 : 0);
+        }
+        await page.unroute('**/api/fixture/confirmation');
+        await enter(page, page.getByRole('button', { name: '최신 상태 다시 불러오기' }));
         await page.getByRole('heading', { name: '제안 내용' }).waitFor();
         await enter(page, page.getByRole('button', { name: '제안 검토' }));
         await enter(page, page.getByRole('button', { name: '이 변경 확인' }));
-        await page.getByRole('status').filter({ hasText: '확인되었습니다.' }).waitFor();
+        await page.getByRole('status').filter({ hasText: '확인 기록이 저장되었습니다.' }).waitFor();
         const unknown = await page.goto(`${origin}/confirmations/not-found`);
         assert.equal(unknown.status(), 404);
         await page.goto(`${origin}/access-denied`);

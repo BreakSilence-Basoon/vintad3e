@@ -75,7 +75,7 @@ test('synthetic upload confirmation is recovered only in the originating session
     }
   } finally {
     await browser?.close(); server.kill('SIGTERM');
-    if (server.exitCode === null) await Promise.race([once(server, 'exit'), delay(5000)]);
-    if (server.exitCode === null) server.kill('SIGKILL');
+    if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server, 'exit'), delay(5000, undefined, { ref: false })]);
+    if (server.exitCode === null && server.signalCode === null) server.kill('SIGKILL');
   }
 });

@@ -57,5 +57,5 @@ test('isolated synthetic cleanup preserves file bytes and leaves other files ava
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
       } finally { await context.close(); }
     }
-  } finally { await browser?.close(); server.kill('SIGTERM'); if (server.exitCode === null) await Promise.race([once(server, 'exit'), delay(5000)]); if (server.exitCode === null) server.kill('SIGKILL'); }
+  } finally { await browser?.close(); server.kill('SIGTERM'); if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server, 'exit'), delay(5000, undefined, { ref: false })]); if (server.exitCode === null && server.signalCode === null) server.kill('SIGKILL'); }
 });

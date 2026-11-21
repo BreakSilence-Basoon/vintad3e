@@ -18,11 +18,13 @@ test('exclusive synthetic file requires reservation, exact bytes and its own ses
   assert.equal((await handleFixtureIrExclusiveUpload(upload(cookie, fixtureIrExclusive.body), env, true, 1001)).status, 200);
   assert.deepEqual(readFixtureIrExclusive(cookie, host, env, 1002), fixtureIrExclusive);
   assert.equal(readFixtureIrExclusive(other, host, env, 1002), null);
+  assert.equal((await handleFixtureIrExclusiveUpload(upload(other, fixtureIrExclusive.body), env, true, 1002)).status, 200);
   const meeting = new Request(`${origin}/meeting`, { method: 'POST', headers: { host, origin, cookie, 'content-type': 'application/json' }, body: JSON.stringify({ action: 'prepare', meetingId: '00000000-0000-4000-8000-000000000004', change: { kind: 'attach', objectId: fixtureIrExclusive.id } }) });
   assert.equal((await handleFixtureMeetingConfirmation(meeting, env, 1002)).status, 400);
   assert.equal(softDeleteFixtureIrExclusive(cookie, host, env, 2, 1003), false);
   assert.equal(softDeleteFixtureIrExclusive(cookie, host, env, 1, 1003), true);
   assert.equal(readFixtureIrExclusive(cookie, host, env, 1004), null);
+  assert.deepEqual(readFixtureIrExclusive(other, host, env, 1004), fixtureIrExclusive);
   assert.equal(fixtureIrExclusive.body, '업무를 시작하기 전에 필요한 사항을 확인합니다.');
   assert.equal((await handleFixtureIrExclusiveUpload(upload(cookie, fixtureIrExclusive.body), env, true, 1004)).status, 409);
 });

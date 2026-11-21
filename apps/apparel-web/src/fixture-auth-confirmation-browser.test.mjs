@@ -52,6 +52,23 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
         await store.check(); assert.equal(await warehouse.isChecked(), false);
         await store.uncheck(); assert.equal(await warehouse.isChecked(), false);
 
+        const designTabs = page.getByRole('tablist', { name: '디자인 표시 탭' });
+        for (const name of ['아티스트', '오리지널', '작가', '숨김']) {
+          const tab = designTabs.getByRole('tab', { name: new RegExp(`^${name} `) });
+          await enter(page, tab);
+          assert.equal(await tab.getAttribute('aria-selected'), 'true');
+        }
+        await enter(page, designTabs.getByRole('tab', { name: /^오리지널 / }));
+        await enter(page, page.getByRole('button', { name: '숨김으로 이동', exact: true }));
+        await enter(page, designTabs.getByRole('tab', { name: /^숨김 1$/ }));
+        await enter(page, page.getByRole('button', { name: '다시 표시', exact: true }));
+        await page.getByRole('tab', { name: /^숨김 0$/ }).waitFor();
+        await enter(page, page.getByRole('button', { name: '목표재고 추적표 보기' }).first());
+        const tracking = page.getByRole('article').filter({ has: page.getByRole('heading', { name: '목표재고 추적표', exact: true }) });
+        const trackingSearch = tracking.getByRole('searchbox', { name: '목표재고 추적표 키워드' });
+        assert.equal(await trackingSearch.isDisabled(), true);
+        assert.equal(await tracking.getByRole('combobox', { name: '디자인 필터' }).inputValue(), '');
+
         await page.goto(`${origin}/admin/stats`);
         await page.locator('.console-section[data-hydrated="true"]').waitFor();
         const scope = page.getByRole('tablist', { name: '의류 매출 범위' });

@@ -133,11 +133,14 @@ test('synthetic attachment requires the reserved matching upload and current doc
   assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'attach' }), env, 30006)).status, 409);
   const upload = new Request(`${origin}/upload`, { method: 'POST', headers: { host, origin, cookie, 'content-type': 'application/octet-stream', 'x-vintad3e-content-type': 'text/plain' }, body: fixtureUpload.body });
   assert.equal((await handleFixtureUpload(upload, env, 30007)).status, 200);
+  const stale = await (await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'delete' }), env, 30007)).json();
   const attached = await (await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'attach' }), env, 30008)).json();
   for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: attached.proposalId }), env, 30009)).status, 200);
   assert.deepEqual(readFixtureIrAttachment(cookie, host, env, fixtureIrDocument.id, 30010), fixtureUpload);
   assert.equal(readFixtureIrAttachment(other, host, env, fixtureIrDocument.id, 30010), null);
   assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'attach' }), env, 30010)).status, 409);
+  for (const action of ['review', 'confirm']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: stale.proposalId }), env, 30010)).status, 200);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: stale.proposalId }), env, 30010)).status, 409);
 });
 
 test('attachment recovery requires a fresh synthetic upload after login rotation', async () => {

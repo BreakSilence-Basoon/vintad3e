@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { handleFixtureSession } from './fixture-session.mjs';
-import { handleFixtureIrConfirmation, readFixtureIrImport, readFixtureNotionImport } from './fixture-ir-confirmation.mjs';
+import { handleFixtureIrConfirmation, readFixtureIrImport, readFixtureNotionImport, readFixtureIrReservation } from './fixture-ir-confirmation.mjs';
 import { fixtureIrDocument } from './fixture-ir-examples.mjs';
 import { fixtureNotionDocument } from './fixture-notion-example.mjs';
 
@@ -95,4 +95,19 @@ test('synthetic lifecycle delete and restore preserve session isolation and reje
   assert.deepEqual(readFixtureIrImport(cookie, host, env, fixtureIrDocument.id, 20009), fixtureIrDocument);
   for (const action of ['review', 'confirm']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: stale.proposalId }), env, 20010)).status, 200);
   assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: stale.proposalId }), env, 20010)).status, 409);
+});
+
+test('synthetic single and batch attachment reservations require confirmation and stay session scoped', async () => {
+  const cookie = login(25000), other = login(25000), uploadId = '00000000-0000-4000-8000-000000000106';
+  const proposal = await (await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'reserve' }), env, 25001)).json();
+  assert.equal(readFixtureIrReservation(cookie, host, env, uploadId, 25002), false);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: proposal.proposalId }), env, 25002)).status, 409);
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: proposal.proposalId }), env, 25003)).status, 200);
+  assert.equal(readFixtureIrReservation(cookie, host, env, uploadId, 25004), true);
+  assert.equal(readFixtureIrReservation(other, host, env, uploadId, 25004), false);
+  const batch = await (await handleFixtureIrConfirmation(post(other, { action: 'prepare', kind: 'batch-reserve' }), env, 25005)).json();
+  const view = await (await handleFixtureIrConfirmation(read(other, batch.proposalId), env, 25006)).json();
+  assert.equal(view.summary.attachments[0].name, '가게 안내.txt');
+  assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'apply', proposalId: batch.proposalId }), env, 25007)).status, 200);
+  assert.equal(readFixtureIrReservation(other, host, env, uploadId, 25008), true);
 });

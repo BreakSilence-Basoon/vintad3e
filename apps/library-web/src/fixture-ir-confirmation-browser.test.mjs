@@ -6,7 +6,7 @@ import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright';
 
-test('synthetic internal-document confirmations recover in the same tab', { timeout: 240000 }, async () => {
+test('synthetic internal-document confirmations recover in the same tab', { timeout: 300000 }, async () => {
   const listener = createServer(); listener.listen(0, '127.0.0.1'); await once(listener, 'listening');
   const port = listener.address().port; await new Promise(resolve => listener.close(resolve));
   const origin = `http://127.0.0.1:${port}`;
@@ -43,6 +43,16 @@ test('synthetic internal-document confirmations recover in the same tab', { time
         const batch = await prepare('batch'); await page.goto(`${origin}/confirmations/${batch}`);
         await page.getByRole('region', { name: '이관 대상' }).getByText('가게 안내 기록').waitFor();
         await page.getByRole('button', { name: '이관 확인 및 적용' }).click(); await page.getByRole('status').filter({ hasText: '변경 결과를 확인했습니다.' }).waitFor();
+        for (const kind of ['reserve', 'batch-reserve']) {
+          const reservation = await prepare(kind); await page.goto(`${origin}/confirmations/${reservation}`);
+          if (kind === 'batch-reserve') {
+            await page.getByRole('region', { name: '이관 대상' }).getByText('가게 안내.txt').waitFor();
+            await page.getByRole('button', { name: '이관 확인 및 적용' }).click();
+          } else {
+            for (const label of ['제안 검토', '이 변경 확인', '변경 적용']) await page.getByRole('button', { name: label, exact: true }).click();
+          }
+          await page.getByRole('status').filter({ hasText: '변경 결과를 확인했습니다.' }).waitFor();
+        }
         for (const [kind, expected] of [['delete', 404], ['restore', 200]]) {
           const lifecycle = await prepare(kind); await page.goto(`${origin}/confirmations/${lifecycle}`);
           for (const label of ['제안 검토', '이 변경 확인', '변경 적용']) await page.getByRole('button', { name: label, exact: true }).click();

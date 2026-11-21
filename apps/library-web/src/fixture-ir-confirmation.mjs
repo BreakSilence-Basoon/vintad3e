@@ -1,12 +1,13 @@
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { fixtureOrigin, fixtureSessionKey } from './fixture-session.mjs';
-import { fixtureIrDocument, fixtureIrExample } from './fixture-ir-examples.mjs';
+import { fixtureIrDocument, fixtureIrExample, fixtureIrManifests } from './fixture-ir-examples.mjs';
 import { fixtureNotionDocument, fixtureNotionExample } from './fixture-notion-example.mjs';
 
 const records = globalThis[Symbol.for('vintad3e.library.fixture.ir.confirmations')] ??= new Map();
 const imports = globalThis[Symbol.for('vintad3e.library.fixture.ir.imports')] ??= new Map();
 const deletedImports = globalThis[Symbol.for('vintad3e.library.fixture.ir.deleted')] ??= new Map();
 const generations = globalThis[Symbol.for('vintad3e.library.fixture.ir.generations')] ??= new Map();
+const reservations = globalThis[Symbol.for('vintad3e.library.fixture.ir.reservations')] ??= new Map();
 const notionImports = globalThis[Symbol.for('vintad3e.library.fixture.notion.imports')] ??= new Map();
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const sha = value => createHash('sha256').update(value).digest('hex');
@@ -28,6 +29,13 @@ export function readFixtureNotionImport(cookie, host, env, documentId, now = Dat
   if (typeof expiresAt !== 'number' || expiresAt <= now) { notionImports.delete(session); return null; }
   return fixtureNotionDocument;
 }
+export function readFixtureIrReservation(cookie, host, env, uploadId, now = Date.now()) {
+  const token = fixtureSessionKey(cookie, host, env, now);
+  if (!token || uploadId !== fixtureIrExample('reserve').change.uploadId) return false;
+  const session = sha(token), expiresAt = reservations.get(session);
+  if (typeof expiresAt !== 'number' || expiresAt <= now) { reservations.delete(session); return false; }
+  return true;
+}
 
 export async function handleFixtureIrConfirmation(request, env, now = Date.now()) {
   const origin = fixtureOrigin(env), host = request.headers.get('host');
@@ -48,12 +56,13 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
   catch { return failure(400); } finally { reader.releaseLock(); }
   if (!body || typeof body !== 'object' || Array.isArray(body)) return failure(400);
   if (body.action === 'prepare') {
-    if (Object.keys(body).sort().join(',') !== 'action,kind' || !['single', 'batch', 'notion', 'delete', 'restore'].includes(body.kind)) return failure(400);
+    if (Object.keys(body).sort().join(',') !== 'action,kind' || !['single', 'batch', 'notion', 'delete', 'restore', 'reserve', 'batch-reserve'].includes(body.kind)) return failure(400);
     if (body.kind === 'delete' && !(imports.get(session) > now)) return failure(409);
     if (body.kind === 'restore' && !(deletedImports.get(session) > now)) return failure(409);
     if (records.size >= 128) return failure(503);
     const proof = randomBytes(32).toString('base64url'), example = body.kind === 'notion' ? fixtureNotionExample : fixtureIrExample(body.kind), canonical = JSON.stringify(example.change);
-    const summary = body.kind === 'batch' ? { title: '가게 안내 기록', createdAt: '2025-12-30T00:00:00.000Z', sourceSha256: example.change.entries[0].sourceSha256 } : null;
+    const file = fixtureIrManifests.attachments.entries[0];
+    const summary = body.kind === 'batch' || body.kind === 'batch-reserve' ? { title: '가게 안내 기록', createdAt: '2025-12-30T00:00:00.000Z', sourceSha256: file.pageSha256, ...(body.kind === 'batch-reserve' ? { attachments: [{ attachmentId: file.attachmentId, name: file.filename, size: file.size, sha256: file.sha256 }] } : {}) } : null;
     const record = { id: randomUUID(), session, kind: body.kind, generation: ['delete', 'restore'].includes(body.kind) ? generations.get(session) : null, proofHash: createHash('sha256').update(proof).digest(), state: 'loaded', checkedAt: now, expiresAt: now + 15 * 60_000, example, summary, canonical, changeDigest: sha(canonical), permissionDigest: sha(`fixture-ir:${session}`) };
     records.set(record.id, record);
     return Response.json({ proposalId: record.id, kind: record.kind, proof }, { headers: { 'cache-control': 'no-store' } });
@@ -62,7 +71,7 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
     if (Object.keys(body).sort().join(',') !== 'action,proof,proposalId' || !uuid.test(body.proposalId) || typeof body.proof !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(body.proof)) return failure(400);
     const record = records.get(body.proposalId), digest = createHash('sha256').update(body.proof).digest();
     if (!record || !timingSafeEqual(record.proofHash, digest)) return failure(404);
-    const maps = record.kind === 'notion' ? [notionImports] : [imports, deletedImports];
+    const maps = record.kind === 'notion' ? [notionImports] : [imports, deletedImports, reservations];
     for (const applied of maps) { const importedUntil = applied.get(record.session); if (typeof importedUntil === 'number' && importedUntil > now) { applied.delete(record.session); applied.set(session, importedUntil); } }
     if (record.kind !== 'notion' && generations.has(record.session)) { const generation = generations.get(record.session); generations.delete(record.session); generations.set(session, generation); }
     record.session = session; record.checkedAt = now; record.permissionDigest = sha(`fixture-ir:${session}`); return view(record);
@@ -70,11 +79,11 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
   if (Object.keys(body).sort().join(',') !== 'action,proposalId' || !uuid.test(body.proposalId)) return failure(400);
   const record = records.get(body.proposalId);
   if (!record || record.session !== session) return failure(404);
-  const transitions = record.kind === 'batch' ? { apply: ['loaded', 'executed'] } : { review: ['loaded', 'reviewed'], confirm: ['reviewed', 'approved'], execute: ['approved', 'executed'] };
+  const transitions = ['batch', 'batch-reserve'].includes(record.kind) ? { apply: ['loaded', 'executed'] } : { review: ['loaded', 'reviewed'], confirm: ['reviewed', 'approved'], execute: ['approved', 'executed'] };
   const next = Object.hasOwn(transitions, body.action) ? transitions[body.action] : null;
   if (!next || record.state !== next[0]) return failure(409);
   if (next[1] === 'executed') {
-    const applied = record.kind === 'notion' ? notionImports : imports;
+    const applied = record.kind === 'notion' ? notionImports : ['reserve', 'batch-reserve'].includes(record.kind) ? reservations : imports;
     for (const store of [applied, deletedImports]) for (const [key, expiresAt] of store) if (expiresAt <= now) store.delete(key);
     if (record.kind === 'delete' || record.kind === 'restore') {
       const from = record.kind === 'delete' ? imports : deletedImports, to = record.kind === 'delete' ? deletedImports : imports, expiresAt = from.get(session);
@@ -85,7 +94,7 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
       if (!applied.has(session) && applied.size >= 128) return failure(503);
       applied.set(session, now + 30 * 60_000);
     }
-    if (record.kind !== 'notion') generations.set(session, randomUUID());
+    if (!['notion', 'reserve', 'batch-reserve'].includes(record.kind)) generations.set(session, randomUUID());
   }
   record.state = next[1];
   return view(record);

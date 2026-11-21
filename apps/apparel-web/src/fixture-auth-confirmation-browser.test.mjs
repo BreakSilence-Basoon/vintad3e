@@ -79,6 +79,48 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
         assert.equal(await trackingSearch.inputValue(), '');
         assert.equal(await trackingSearch.isDisabled(), true);
 
+        await page.evaluate(() => {
+          const storageName = 'vintad3e-apparel-fixture-stock';
+          const rows = JSON.parse(sessionStorage.getItem(storageName));
+          rows['basic:hanam:TSHIRT-001-WH-L'] = { onHand: 2, target: 5, shortage: 3, tracking: true };
+          sessionStorage.setItem(storageName, JSON.stringify(rows));
+        });
+        await page.reload();
+        await page.locator('.dashboard-monitor[data-hydrated="true"]').waitFor();
+        await enter(page, page.getByRole('button', { name: '목표재고 추적표 보기' }).first());
+        const trackingPanel = page.getByRole('article').filter({ has: page.getByRole('heading', { name: '목표재고 추적표', exact: true }) });
+        await trackingPanel.getByRole('combobox', { name: '디자인 필터' }).selectOption({ label: '반팔 티셔츠' });
+        const trackingRows = trackingPanel.locator('.inventory-tracking-table__row');
+        await page.waitForFunction(() => document.querySelectorAll('.inventory-tracking-table__row').length === 2);
+        const searchTracking = trackingPanel.getByRole('searchbox', { name: '목표재고 추적표 키워드' });
+        for (const keyword of ['화이트', '하남']) {
+          await searchTracking.fill(keyword);
+          await page.waitForFunction(() => document.querySelectorAll('.inventory-tracking-table__row').length === 1);
+          assert.match(await trackingRows.first().innerText(), new RegExp(keyword));
+        }
+        await searchTracking.fill('');
+        await page.waitForFunction(() => document.querySelectorAll('.inventory-tracking-table__row').length === 2);
+        for (const [label, column] of [['현재고', 0], ['목표재고', 1], ['부족수량', 2]]) {
+          const header = trackingPanel.getByRole('button', { name: label, exact: true });
+          const values = () => trackingRows.evaluateAll((rows, index) => rows.map(row => Number(row.querySelectorAll('input[type=number]')[index].value)), column);
+          await enter(page, header);
+          const descending = await values();
+          assert.deepEqual(descending, [...descending].sort((a, b) => b - a));
+          await enter(page, header);
+          assert.deepEqual(await values(), [...descending].reverse());
+        }
+        for (const label of ['옵션명', '재고 위치']) {
+          const header = trackingPanel.getByRole('button', { name: label, exact: true });
+          await enter(page, header);
+          assert.equal(await header.getAttribute('aria-pressed'), 'true');
+        }
+        await page.evaluate(() => {
+          const storageName = 'vintad3e-apparel-fixture-stock';
+          const rows = JSON.parse(sessionStorage.getItem(storageName));
+          delete rows['basic:hanam:TSHIRT-001-WH-L'];
+          sessionStorage.setItem(storageName, JSON.stringify(rows));
+        });
+
         await page.goto(`${origin}/admin/products`);
         const editStock = page.getByRole('button', { name: '반팔 티셔츠 재고 수정 창 열기' });
         const inventoryDialog = page.getByRole('dialog', { name: '반팔 티셔츠' });

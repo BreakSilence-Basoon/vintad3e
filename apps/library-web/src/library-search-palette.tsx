@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { publishedDocument, publishedSnapshot } from './fixture-published-state';
+import { isSearchResultHref } from './search-result-href';
 
 type SearchItem = { title: string; href: string; author?: string; date?: string };
 
@@ -34,7 +35,7 @@ export function LibrarySearchPalette() {
         const value: unknown = await response.json();
         if (!value || typeof value !== "object" || !("results" in value) || !Array.isArray(value.results) || !("authors" in value) || !Array.isArray(value.authors) || !("partial" in value) || typeof value.partial !== "boolean") throw new Error("invalid search response");
         const items = value.results;
-        if (items.some((item: unknown) => !item || typeof item !== "object" || !("title" in item) || typeof item.title !== "string" || !("href" in item) || typeof item.href !== "string" || !/^\/(?:objects|publications)\/[a-zA-Z0-9%_-]+$/.test(item.href))) throw new Error("invalid search response");
+        if (items.some((item: unknown) => !item || typeof item !== "object" || !("title" in item) || typeof item.title !== "string" || !("href" in item) || typeof item.href !== "string" || !isSearchResultHref(item.href))) throw new Error("invalid search response");
         const days:Record<string,number>={week:7,month:30,year:365};
         const includePublished=publishedSnapshot()&&publishedDocument.title.toLocaleLowerCase('ko').includes(query.trim().toLocaleLowerCase('ko'))&&(!author||author===publishedDocument.publisher)&&(period==='all'||Date.parse(publishedDocument.createdAt)>=Date.now()-days[period]*86400000);
         const combined:SearchItem[]=includePublished?[{title:publishedDocument.title,href:`/publications/${publishedDocument.id}`,author:publishedDocument.publisher,date:publishedDocument.createdAt},...(items as SearchItem[])]:items as SearchItem[];

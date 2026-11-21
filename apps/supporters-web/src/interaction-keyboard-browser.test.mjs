@@ -35,9 +35,19 @@ for (const [state, message] of [['error', '쿠폰 주문 정보를 불러오지 
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       try {
         const page = await context.newPage();
-        await page.goto(`${origin}/coupon`);
+        if (state === 'error') {
+          await page.goto(`${origin}/sign-in?error=AccessDenied&next=%2Fcoupon`);
+          await page.getByText('회사 계정 정보를 확인하지 못했습니다. 다시 로그인해주세요.', { exact: true }).waitFor();
+          await page.waitForFunction(() => !new URL(location.href).searchParams.has('error'));
+          assert.equal(new URL(page.url()).searchParams.get('next'), '/coupon');
+        } else await page.goto(`${origin}/coupon`);
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/coupon');
+        if (state === 'error') {
+          await page.goto(`${origin}/sign-in?mode=cover&mode=other&next=%2Fcoupon`);
+          await enter(page, page.getByRole('link', { name: '콘솔로 돌아가기' }));
+          await page.waitForURL('**/coupon');
+        }
         await page.getByText(message, { exact: true }).waitFor();
       } finally { await context.close(); }
     }

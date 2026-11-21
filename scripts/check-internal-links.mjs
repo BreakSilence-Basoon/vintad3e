@@ -86,8 +86,14 @@ export function checkInternalLinks(files, documents) {
   return { checked, errors };
 }
 
+export function withoutDeletedFiles(files, deleted) {
+  const missing = new Set(deleted);
+  return files.filter(name => !missing.has(name));
+}
+
 export function checkRepository(root) {
-  const files = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean);
+  const list = args => execFileSync('git', ['ls-files', '-z', ...args], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean);
+  const files = withoutDeletedFiles(list(['--cached', '--others', '--exclude-standard']), list(['--deleted']));
   const documents = new Map(files.filter(isMarkdown).map(name => [name, readFileSync(path.join(root, name), 'utf8')]));
   return { documents: documents.size, ...checkInternalLinks(files, documents) };
 }

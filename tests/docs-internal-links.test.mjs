@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checkInternalLinks } from '../scripts/check-internal-links.mjs';
+import { checkInternalLinks, withoutDeletedFiles } from '../scripts/check-internal-links.mjs';
 
 const documents = new Map([
   ['README.md', '# 첫 화면\n\n[안내](docs/guide.md#hello-world-1)\n'],
@@ -50,6 +50,13 @@ test('resolves parent paths and Korean heading anchors from a nested document', 
   const result = checkInternalLinks(files, new Map([['README.md', '# 첫 화면'], ['docs/guide.md', nested]]));
   assert.deepEqual(result.errors, []);
   assert.equal(result.checked, 2);
+});
+
+test('a tracked file deleted in the working tree cannot satisfy a link', () => {
+  const existing = withoutDeletedFiles(files, ['src/example.ts']);
+  const result = checkInternalLinks(existing, new Map([['README.md', '[파일](src/example.ts)']]));
+  assert.equal(result.errors.length, 1);
+  assert.equal(result.errors[0].reason, '파일 또는 폴더가 없음');
 });
 
 test('does not treat examples, comments or external links as internal links', () => {

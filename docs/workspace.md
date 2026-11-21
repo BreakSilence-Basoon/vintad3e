@@ -10,6 +10,8 @@
 
 Node.js 24와 Corepack으로 pnpm 10.11.0을 사용합니다. `corepack pnpm test`는 가상 패키지의 선택 실행과 오프라인 설치를 확인하고, Timetable과 Ledger의 실험 API를 각각 별도 작업 공간에 선택 설치해 가상 자료로 로컬 검사를 실행합니다. 이 시험에는 임시 로컬 서버를 열고 닫는 항목이 포함됩니다. 이미 채워진 패키지 저장소를 이용한 시험이며, 새 사용자의 인터넷 설치나 실제 로그인·운영 보안을 검증하는 것은 아닙니다. 서버를 열지 않는 포털 검사와 빌드는 [처음 실행 안내](first-run.md#서버를-실행하지-않고-설치-확인하기)를 참고하세요.
 
+문서의 저장소 내부 링크와 제목 앵커도 `corepack pnpm test`에서 검사합니다. 이것만 확인하려면 `node scripts/check-internal-links.mjs`를 실행하세요. 외부 웹 주소는 확인하지 않습니다.
+
 ## README 편집
 
 README의 ‘만든 사람의 말’은 개발자가 확정한 원문입니다. AI 에이전트는 이 부분을 수정·요약·번역·이동하지 않습니다. README의 다른 부분은 자유롭게 고칠 수 있습니다. `corepack pnpm test` 또는 `node scripts/check-founder-note.mjs`로 확정본을 검사합니다.

@@ -6,7 +6,7 @@ const records = globalThis[Symbol.for('vintad3e.library.fixture.ir.confirmations
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const sha = value => createHash('sha256').update(value).digest('hex');
 const failure = status => Response.json({ error: status === 401 ? 'sign-in-required' : 'unavailable' }, { status, headers: { 'cache-control': 'no-store' } });
-const view = record => Response.json({ proposalId: record.id, kind: record.kind, state: record.state, checkedAt: record.checkedAt, expiresAt: record.expiresAt, example: record.example, canonical: record.canonical, changeDigest: record.changeDigest, permissionDigest: record.permissionDigest }, { headers: { 'cache-control': 'no-store' } });
+const view = record => Response.json({ proposalId: record.id, kind: record.kind, state: record.state, checkedAt: record.checkedAt, expiresAt: record.expiresAt, example: record.example, summary: record.summary, canonical: record.canonical, changeDigest: record.changeDigest, permissionDigest: record.permissionDigest }, { headers: { 'cache-control': 'no-store' } });
 
 export async function handleFixtureIrConfirmation(request, env, now = Date.now()) {
   const origin = fixtureOrigin(env), host = request.headers.get('host');
@@ -29,7 +29,8 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
     if (Object.keys(body).sort().join(',') !== 'action,kind' || !['single', 'batch'].includes(body.kind)) return failure(400);
     if (records.size >= 128) return failure(503);
     const proof = randomBytes(32).toString('base64url'), example = fixtureIrExample(body.kind), canonical = JSON.stringify(example.change);
-    const record = { id: randomUUID(), session, kind: body.kind, proofHash: createHash('sha256').update(proof).digest(), state: 'loaded', checkedAt: now, expiresAt: now + 15 * 60_000, example, canonical, changeDigest: sha(canonical), permissionDigest: sha(`fixture-ir:${session}`) };
+    const summary = body.kind === 'batch' ? { title: '가게 안내 기록', createdAt: '2025-12-30T00:00:00.000Z', sourceSha256: example.change.entries[0].sourceSha256 } : null;
+    const record = { id: randomUUID(), session, kind: body.kind, proofHash: createHash('sha256').update(proof).digest(), state: 'loaded', checkedAt: now, expiresAt: now + 15 * 60_000, example, summary, canonical, changeDigest: sha(canonical), permissionDigest: sha(`fixture-ir:${session}`) };
     records.set(record.id, record);
     return Response.json({ proposalId: record.id, kind: record.kind, proof }, { headers: { 'cache-control': 'no-store' } });
   }

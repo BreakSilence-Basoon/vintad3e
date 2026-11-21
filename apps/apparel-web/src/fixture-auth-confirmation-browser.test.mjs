@@ -133,6 +133,15 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
           for (let i = 0; i < optionValues.length; i++) await optionSelects.nth(i).selectOption('');
         }
         await enter(page, collections.getByRole('tab', { name: '자체', exact: true }));
+        const inventorySearch = page.locator('.inventory-filter-form input[name="search"]');
+        for (const keyword of ['반팔', 'TSHIRT-001']) {
+          await inventorySearch.fill(keyword);
+          await page.getByRole('heading', { name: '반팔 티셔츠', exact: true }).waitFor();
+          assert.equal(new URL(page.url()).searchParams.get('search'), keyword);
+        }
+        await inventorySearch.fill('찾을수없는상품');
+        await page.getByText('표시할 옵션 품목이 없습니다.', { exact: true }).waitFor();
+        await inventorySearch.fill('');
         await optionSelects.nth(1).selectOption('화이트');
         await optionSelects.nth(2).selectOption('M');
         await page.getByText('표시할 옵션 품목이 없습니다.', { exact: true }).waitFor();

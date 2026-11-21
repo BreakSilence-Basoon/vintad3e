@@ -263,6 +263,7 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await page.goto(origin); await publicationLink.waitFor();
         await enter(page,page.getByRole('button',{name:'게시물 검색'})); const publishedSearch=page.getByRole('dialog',{name:'게시물 검색'}); await publishedSearch.getByRole('combobox',{name:'게시물 제목 검색'}).fill('업무 안내'); await publishedSearch.locator('a[href="/publications/00000000-0000-4000-8000-000000000004"]').waitFor(); await page.keyboard.press('Escape');
         await publishedSearch.waitFor({state:'hidden'});
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         await page.waitForFunction(() => document.activeElement?.getAttribute('aria-label') === '게시물 검색');
         await enter(page,publicationLink);
         await page.waitForURL('**/publications/00000000-0000-4000-8000-000000000004');

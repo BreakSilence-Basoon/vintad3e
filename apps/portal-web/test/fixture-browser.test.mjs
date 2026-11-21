@@ -35,10 +35,19 @@ test('portal renders original empty and error states with synthetic data', { tim
         const context = await browser.newContext({ viewport: { width, height: 844 } });
         try {
           const page = await context.newPage();
+          if (state === 'empty') {
+            await page.goto(`${origin}/sign-in?error=AccessDenied&next=%2Fabout`);
+            await page.getByText('회사 계정 정보를 확인하지 못했습니다. 다시 로그인해주세요.', { exact: true }).waitFor();
+            await page.waitForFunction(() => !new URL(location.href).searchParams.has('error'));
+            assert.equal(new URL(page.url()).searchParams.get('next'), '/about');
+          }
           await page.goto(origin);
           await press(page, 'button', '회사 계정으로 로그인');
           await page.waitForURL(origin + '/');
           if (state === 'empty') {
+            await page.goto(`${origin}/sign-in?mode=cover&mode=other&next=%2F`);
+            await page.getByRole('link', { name: '빈타제로 돌아가기' }).waitFor();
+            await page.goto(origin);
             await page.getByText('열 수 있는 업무 앱이 없습니다.', { exact: true }).waitFor();
             await press(page, 'button', 'SNS·외부 링크 보기');
             await page.locator('button[aria-label="SNS·외부 링크 보기"][aria-current="true"]').waitFor();

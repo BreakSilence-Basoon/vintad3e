@@ -67,3 +67,14 @@ test('Notion confirmation resumes after synthetic login rotation only with its r
   assert.equal((await response.json()).state, 'reviewed');
   assert.equal((await handleFixtureIrConfirmation(post(replacement, { action: 'confirm', proposalId: proposal.proposalId }), env, 12006)).status, 200);
 });
+
+test('an applied synthetic document follows a verified login recovery', async () => {
+  const old = login(16000);
+  const proposal = await (await handleFixtureIrConfirmation(post(old, { action: 'prepare', kind: 'single' }), env, 16001)).json();
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(old, { action, proposalId: proposal.proposalId }), env, 16002)).status, 200);
+  const replacement = handleFixtureSession(new Request(`${origin}/login`, { method: 'POST', headers: { host, origin, cookie: old } }), 'login', env, 16003).headers.get('set-cookie').split(';')[0];
+  assert.equal(readFixtureIrImport(replacement, host, env, fixtureIrDocument.id, 16004), null);
+  assert.equal((await handleFixtureIrConfirmation(post(replacement, { action: 'restore', proposalId: proposal.proposalId, proof: proposal.proof }), env, 16005)).status, 200);
+  assert.deepEqual(readFixtureIrImport(replacement, host, env, fixtureIrDocument.id, 16006), fixtureIrDocument);
+  assert.equal(readFixtureIrImport(old, host, env, fixtureIrDocument.id, 16006), null);
+});

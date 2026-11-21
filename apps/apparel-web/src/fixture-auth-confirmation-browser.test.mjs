@@ -158,7 +158,7 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
           await page.goto(`${origin}/admin/${path}`);
           const filter = page.locator('.audit-filter-bar[data-hydrated="true"]');
           await filter.waitFor();
-          await filter.getByLabel('기간', { exact: true }).selectOption('custom');
+          await filter.locator('select[name="range"]').selectOption('custom');
           const dates = filter.getByRole('group', { name: '기간 직접 지정' });
           await dates.getByLabel('시작일').fill('2026-01-01');
           await dates.getByLabel('종료일').fill('2026-12-31');
@@ -171,7 +171,8 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
           assert.equal(await page.locator('.audit-filter-bar').getByLabel('종료일').inputValue(), '2026-12-31');
           await enter(page, page.locator('.audit-filter-bar').getByRole('button', { name: '초기화', exact: true }));
           await page.waitForURL(url => url.pathname === `/admin/${path}` && url.search === '');
-          assert.equal(await page.locator('.audit-filter-bar').getByLabel('기간', { exact: true }).inputValue(), 'all');
+          await page.waitForFunction(() => document.querySelector('.audit-filter-bar select[name="range"]')?.value === 'all');
+          assert.equal(await page.locator('.audit-filter-bar select[name="range"]').inputValue(), 'all');
         }
 
         await page.goto(`${origin}/admin/stats`);

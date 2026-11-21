@@ -247,7 +247,16 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copiedText=text;}}}));
         await enter(page,page.getByRole('button',{name:'내용 복사'})); await page.waitForFunction(()=>window.copiedText==='업무를 시작하기 전에 필요한 사항을 확인합니다.');
         await enter(page,page.getByRole('button',{name:'보관함 저장'})); await page.getByRole('button',{name:'저장 해제'}).waitFor();
-        await page.getByRole('textbox',{name:'댓글'}).fill('좋은 안내입니다.'); await enter(page,page.getByRole('button',{name:'댓글 작성'})); await page.getByText('좋은 안내입니다.').waitFor();
+        const comment = page.getByRole('textbox',{name:'댓글'});
+        assert.equal(await comment.getAttribute('aria-describedby'), 'publication-comment-count');
+        assert.equal(await page.locator('#publication-comment-count').innerText(), '0 / 2,000');
+        await comment.fill('가'.repeat(2001));
+        assert.equal((await comment.inputValue()).length, 2000);
+        assert.equal(await page.locator('#publication-comment-count').innerText(), '2,000 / 2,000');
+        await comment.fill('좋은 안내입니다.');
+        assert.equal(await page.locator('#publication-comment-count').innerText(), `${'좋은 안내입니다.'.length} / 2,000`);
+        await enter(page,page.getByRole('button',{name:'댓글 작성'})); await page.getByText('좋은 안내입니다.').waitFor();
+        assert.equal(await page.locator('#publication-comment-count').innerText(), '0 / 2,000');
         const publicationLink = page.locator('a[href="/publications/00000000-0000-4000-8000-000000000004"]');
         await page.goto(`${origin}/bookmarks`); await publicationLink.waitFor();
         await page.goto(`${origin}/mypage`); await publicationLink.waitFor();

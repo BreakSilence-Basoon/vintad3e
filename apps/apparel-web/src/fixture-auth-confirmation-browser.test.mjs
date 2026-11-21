@@ -109,10 +109,15 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
           await enter(page, header);
           assert.deepEqual(await values(), [...descending].reverse());
         }
-        for (const label of ['옵션명', '재고 위치']) {
+        for (const [label, selector] of [['옵션명', '.inventory-tracking-table__option'], ['재고 위치', '.inventory-tracking-table__location']]) {
           const header = trackingPanel.getByRole('button', { name: label, exact: true });
+          const values = () => trackingRows.locator(selector).allTextContents();
           await enter(page, header);
           assert.equal(await header.getAttribute('aria-pressed'), 'true');
+          const ascending = await values();
+          assert.deepEqual(ascending, [...ascending].sort((a, b) => a.localeCompare(b, 'ko-KR', { numeric: true, sensitivity: 'base' })));
+          await enter(page, header);
+          assert.deepEqual(await values(), [...ascending].reverse());
         }
         await page.evaluate(() => {
           const storageName = 'vintad3e-apparel-fixture-stock';

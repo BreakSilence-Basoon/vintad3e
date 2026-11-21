@@ -51,6 +51,14 @@ test('library keyboard actions validate inputs and recover from storage and serv
       try {
         await page.goto(`${origin}/members`);
         await page.waitForURL('**/sign-in?next=%2Fmembers');
+        for (const [error, title] of [['AccessDenied', '로그인을 완료하지 못했습니다.'], ['SessionExpired', '다시 로그인이 필요합니다.'], ['__proto__', '로그인을 완료하지 못했습니다.']]) {
+          await page.goto(`${origin}/sign-in?next=%2Fmembers&error=${error}`);
+          await page.getByRole('alert').locator('strong').filter({ hasText: title }).waitFor();
+          await page.waitForFunction(() => !new URL(location.href).searchParams.has('error'));
+          assert.equal(new URL(page.url()).searchParams.get('next'), '/members');
+        }
+        await page.reload();
+        assert.equal(await page.locator('.staff-sign-in-toast').count(), 0);
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/members');
         await page.getByLabel('이름 검색').waitFor();
@@ -83,6 +91,7 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await page.goto(`${origin}/objects/new`);
         assert.equal(await page.evaluate(async () => (await fetch('/api/search?q=one&q=two')).status),400);
         await enter(page, page.getByRole('link', {name:'로그인 전 화면 보기'}));
+        await page.goto(`${origin}/sign-in?mode=cover&mode=other&next=%2Fobjects%2Fnew`);
         await page.getByRole('link', {name:'Library로 돌아가기'}).click(); await page.waitForURL('**/objects/new');
         await enter(page, page.getByRole('button', {name:'게시물 검색'}));
         const dialog=page.getByRole('dialog',{name:'게시물 검색'}), search=dialog.getByRole('combobox',{name:'게시물 제목 검색'});

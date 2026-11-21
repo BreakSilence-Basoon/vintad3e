@@ -66,6 +66,19 @@ git clone https://github.com/BreakSilence-Basoon/vintad3e.git && sh vintad3e/scr
 
 Windows와 macOS의 GitHub 호스팅 검사에서 새 복사본에 시작 스크립트를 실행하고 포털의 HTTP 응답을 확인했습니다. 이 검사는 실제 브라우저 조작, 실제 로그인이나 업무 데이터는 확인하지 않습니다. API 기동은 [가상 자료 안내](local-api-fixture.md)를 따르세요.
 
+## 서버를 실행하지 않고 설치 확인하기
+
+패키지를 설치한 뒤 저장소 폴더에서 아래 명령을 한 줄씩 실행하면 포털 단위 검사와 빌드를 확인할 수 있습니다. 이 명령만으로는 브라우저에 화면이 열리지 않습니다.
+
+```sh
+corepack pnpm --filter @vintad3e/portal-web test
+corepack pnpm --filter @vintad3e/portal-web build
+```
+
+두 명령이 성공하면 포털 코드를 검사하고 빌드한 것입니다. 실제 로그인이나 가게 자료가 동작하는지 확인한 것은 아닙니다. 화면을 열려면 위의 포털 실행 순서를 따르세요. 빌드 뒤 `apps/portal-web/next-env.d.ts`가 자동으로 바뀌어 Git 변경 목록에 나타날 수 있습니다. 직접 수정한 내용이 있는지 확인한 뒤 처리하세요.
+
+저장소 전체의 `corepack pnpm test`에는 시험용 로컬 서버를 잠시 여는 항목이 포함됩니다. 서버를 열 수 없는 환경에서는 위 포털 단위 검사와 빌드만 실행하세요.
+
 ## 다른 앱 열기
 
 각 앱은 포털과 별도로 실행합니다. 저장소 폴더에서 터미널을 하나 더 열고 아래 예시처럼 먼저 합성 자료를 켭니다. Windows PowerShell에서는 다음 두 줄을 입력합니다.

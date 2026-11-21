@@ -37,6 +37,8 @@ export function ObjectUploadForm({ fixture = false, inputId = 'library-object-fi
       const response = await fetch('/api/fixture/object-confirmation', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'prepare', objectId: selected.id }) });
       const result = response.ok ? await response.json() : null;
       if (!result || result.objectId !== selected.id || result.state !== 'loaded' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(result.proposalId)) throw new Error('invalid');
+      if (typeof result.proof !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(result.proof)) throw new Error('invalid');
+      sessionStorage.setItem(`vintad3e-library-object-recovery:${result.proposalId}`, result.proof);
       setProposalId(result.proposalId); setStage('proposal');
     } catch { setError(true); } finally { setBusy(false); }
   }

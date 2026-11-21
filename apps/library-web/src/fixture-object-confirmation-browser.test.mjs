@@ -25,6 +25,11 @@ test('synthetic upload confirmation is recovered only in the originating session
         await page.getByRole('button', { name: '회사 계정으로 로그인' }).click();
         await page.waitForURL('**/objects/new');
         await page.locator('#library-object-file').setInputFiles({ name: '가게 안내.txt', mimeType: 'text/plain', buffer: Buffer.from('업무를 시작하기 전에 필요한 사항을 확인합니다.') });
+        await page.evaluate(() => { window.originalObjectSetItem = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new Error('unavailable'); }; });
+        await page.getByRole('button', { name: '업로드 내용 확인' }).click();
+        await page.getByRole('alert').filter({ hasText: '처리하지 못했습니다.' }).waitFor();
+        assert.equal(await page.getByRole('button', { name: '제안 불러오기' }).count(), 0);
+        await page.evaluate(() => { Storage.prototype.setItem = window.originalObjectSetItem; });
         const responsePromise = page.waitForResponse(response => response.url().endsWith('/api/fixture/object-confirmation') && response.request().method() === 'POST');
         await page.getByRole('button', { name: '업로드 내용 확인' }).click();
         const proposal = await (await responsePromise).json();
@@ -47,6 +52,16 @@ test('synthetic upload confirmation is recovered only in the originating session
           await otherPage.getByRole('alert').filter({ hasText: '내용을 확인하지 못했습니다.' }).waitFor();
           assert.equal(await otherPage.getByRole('button', { name: '제안 검토' }).count(), 0);
         } finally { await other.close(); }
+        await page.goto(`${origin}/confirmations/${proposal.proposalId}`);
+        await page.getByRole('button', { name: '최신 상태 다시 불러오기' }).waitFor();
+        await page.evaluate(() => fetch('/api/fixture/logout', { method: 'POST', redirect: 'manual' }));
+        await page.getByRole('button', { name: '최신 상태 다시 불러오기' }).click();
+        await page.getByRole('button', { name: '다시 로그인' }).click();
+        await page.waitForURL('**/sign-in?**');
+        await page.getByRole('button', { name: '회사 계정으로 로그인' }).click();
+        await page.waitForURL(`**/confirmations/${proposal.proposalId}`);
+        await page.getByText('가게 안내.txt').waitFor();
+        assert.equal(await page.getByRole('button', { name: '제안 검토' }).count(), 0);
       } finally { await context.close(); }
     }
   } finally {

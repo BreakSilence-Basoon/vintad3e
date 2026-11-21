@@ -16,6 +16,7 @@ test('synthetic upload proposals recover only in their own session and require o
   assert.equal(created.status, 200);
   const proposal = await created.json(), id = proposal.proposalId;
   assert.equal((await handleFixtureObjectConfirmation(read(other, id), env, 1002)).status, 404);
+  assert.equal((await handleFixtureObjectConfirmation(post(other, { action: 'restore', proposalId: id, proof: 'A'.repeat(43) }), env, 1002)).status, 404);
   assert.equal((await handleFixtureObjectConfirmation(post(cookie, { action: 'confirm', proposalId: id }), env, 1002)).status, 409);
   assert.equal((await (await handleFixtureObjectConfirmation(read(cookie, id), env, 1002)).json()).state, 'loaded');
   for (const [action, state] of [['load', 'loaded'], ['review', 'reviewed'], ['confirm', 'confirmed']]) {
@@ -24,7 +25,10 @@ test('synthetic upload proposals recover only in their own session and require o
   }
   assert.equal((await (await handleFixtureObjectConfirmation(read(cookie, id), env, 1004)).json()).state, 'confirmed');
   assert.equal((await (await handleFixtureObjectConfirmation(post(cookie, { action: 'load', proposalId: id }), env, 1004)).json()).state, 'confirmed');
-  assert.equal((await handleFixtureObjectConfirmation(read(cookie, id), env, 1001 + 15 * 60_000)).status, 404);
+  assert.equal((await (await handleFixtureObjectConfirmation(post(other, { action: 'restore', proposalId: id, proof: proposal.proof }), env, 1005)).json()).state, 'confirmed');
+  assert.equal((await handleFixtureObjectConfirmation(read(cookie, id), env, 1006)).status, 404);
+  assert.equal((await (await handleFixtureObjectConfirmation(read(other, id), env, 1006)).json()).state, 'confirmed');
+  assert.equal((await handleFixtureObjectConfirmation(read(other, id), env, 1001 + 15 * 60_000)).status, 404);
 });
 
 test('synthetic upload proposals reject wrong origin, unknown data and production', async () => {

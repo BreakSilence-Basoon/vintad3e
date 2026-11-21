@@ -1,10 +1,10 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { fixtureOrigin, fixtureSessionKey } from './fixture-session.mjs';
 import { fixtureUploads } from './fixture-upload-spec.mjs';
 
 const records = globalThis[Symbol.for('vintad3e.library.fixture.object.confirmations')] ??= new Map();
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-const fail = status => Response.json({ error: 'unavailable' }, { status, headers: { 'cache-control': 'no-store' } });
+const fail = status => Response.json({ error: status === 401 ? 'sign-in-required' : 'unavailable' }, { status, headers: { 'cache-control': 'no-store' } });
 const view = record => Response.json({ proposalId: record.id, objectId: record.objectId, state: record.state, expiresAt: record.expiresAt }, { headers: { 'cache-control': 'no-store' } });
 
 export async function handleFixtureObjectConfirmation(request, env, now = Date.now()) {
@@ -30,8 +30,16 @@ export async function handleFixtureObjectConfirmation(request, env, now = Date.n
   if (body.action === 'prepare') {
     if (Object.keys(body).sort().join(',') !== 'action,objectId' || !fixtureUploads.some(item => item.id === body.objectId)) return fail(400);
     if (records.size >= 128) return fail(503);
-    const record = { id: randomUUID(), session, objectId: body.objectId, state: 'loaded', expiresAt: now + 15 * 60_000 };
-    records.set(record.id, record); return view(record);
+    const proof = randomBytes(32).toString('base64url');
+    const record = { id: randomUUID(), session, proofHash: createHash('sha256').update(proof).digest(), objectId: body.objectId, state: 'loaded', expiresAt: now + 15 * 60_000 };
+    records.set(record.id, record);
+    return Response.json({ proposalId: record.id, objectId: record.objectId, state: record.state, expiresAt: record.expiresAt, proof }, { headers: { 'cache-control': 'no-store' } });
+  }
+  if (body.action === 'restore') {
+    if (Object.keys(body).sort().join(',') !== 'action,proof,proposalId' || !uuid.test(body.proposalId) || typeof body.proof !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(body.proof)) return fail(400);
+    const record = records.get(body.proposalId), digest = createHash('sha256').update(body.proof).digest();
+    if (!record || !timingSafeEqual(record.proofHash, digest)) return fail(404);
+    record.session = session; return view(record);
   }
   if (Object.keys(body).sort().join(',') !== 'action,proposalId' || !uuid.test(body.proposalId)) return fail(400);
   const record = records.get(body.proposalId);

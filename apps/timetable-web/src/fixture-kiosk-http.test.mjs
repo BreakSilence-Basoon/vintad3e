@@ -39,7 +39,7 @@ test('local kiosk issues a one-use QR challenge and records its synthetic event'
   }
 });
 
-test('synthetic video frame is scanned through the browser and records attendance', { timeout: 90000 }, async () => {
+test('synthetic video frames record arrival and departure at desktop and mobile widths', { timeout: 120000 }, async () => {
   const listener = createServer(); listener.listen(0, '127.0.0.1'); await once(listener, 'listening');
   const port = listener.address().port; await new Promise(resolve => listener.close(resolve));
   const origin = `http://127.0.0.1:${port}`;
@@ -51,7 +51,9 @@ test('synthetic video frame is scanned through the browser and records attendanc
     assert.equal(ready, true);
     const executablePath = process.platform === 'win32' ? 'C:/Program Files/Google/Chrome/Application/chrome.exe' : process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : '/usr/bin/google-chrome';
     browser = await chromium.launch({ headless: true, executablePath, args: ['--no-sandbox'] });
-    const context = await browser.newContext({ permissions: ['camera'], viewport: { width: 390, height: 844 } });
+    for (const [index, width] of [1440, 390].entries()) {
+    const context = await browser.newContext({ permissions: ['camera'], viewport: { width, height: 844 } });
+    try {
     const kiosk = await context.newPage();
     await kiosk.goto(origin);
     await kiosk.getByRole('button', { name: '회사 계정으로 로그인' }).click();
@@ -76,11 +78,13 @@ test('synthetic video frame is scanned through the browser and records attendanc
       };
     }, svg);
     await scanner.goto(`${origin}/scan`);
-    try { await scanner.getByText('출근 완료', { exact: true }).waitFor({ timeout: 15000 }); }
+    try { await scanner.getByText(index === 0 ? '출근 완료' : '퇴근 완료', { exact: true }).waitFor({ timeout: 15000 }); }
     catch { throw new Error(`Scanner did not finish: ${await scanner.locator('.employee-scanner__status').innerText()}`); }
     const result = await (await fetch(`${origin}/api/fixture/kiosk/events`)).json();
-    assert.equal(result.events.length, 1); assert.equal(result.events[0].eventType, 'CHECK_IN');
-    await context.close();
+    assert.equal(result.events.length, index + 1); assert.equal(result.events[0].eventType, index === 0 ? 'CHECK_IN' : 'CHECK_OUT');
+    assert.ok(await scanner.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    } finally { await context.close(); }
+    }
   } finally {
     if (browser) await browser.close();
     server.kill('SIGTERM');

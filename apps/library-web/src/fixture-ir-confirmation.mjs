@@ -72,12 +72,13 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
   if (!token) return failure(401);
   if (request.method === 'POST' && request.headers.get('origin') !== origin) return failure(403);
   const session = sha(token);
-  for (const [id, record] of records) if (record.expiresAt <= now) records.delete(id);
+  // Retain expired Notion proposals briefly only for same-session reissue validation.
+  for (const [id, record] of records) if (record.expiresAt <= now && (!['notion', 'notion-delete', 'notion-restore'].includes(record.kind) || record.expiresAt + 15 * 60_000 <= now)) records.delete(id);
   for (const [key] of generations) if (!(imports.get(key) > now) && !(deletedImports.get(key) > now)) { generations.delete(key); revisions.delete(key); attachments.delete(key); isolatedAttachments.delete(key); audits.delete(key); }
   for (const [key] of notionAudits) if (!(notionImports.get(key) > now) && !(notionDeleted.get(key) > now)) notionAudits.delete(key);
   if (request.method === 'GET') {
     const id = new URL(request.url).searchParams.get('proposalId'), record = id && uuid.test(id) && records.get(id);
-    return record && record.session === session ? view(record) : failure(404);
+    return record && record.session === session && record.expiresAt > now ? view(record) : failure(404);
   }
   if (request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json' || !request.body || Number(request.headers.get('content-length') ?? 0) > 512) return failure(400);
   const reader = request.body.getReader(), chunks = []; let size = 0, body;
@@ -110,10 +111,30 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
     records.set(record.id, record);
     return Response.json({ proposalId: record.id, kind: record.kind, proof }, { headers: { 'cache-control': 'no-store' } });
   }
+  if (body.action === 'reissue') {
+    if (Object.keys(body).sort().join(',') !== 'action,proof,proposalId' || !uuid.test(body.proposalId) || typeof body.proof !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(body.proof)) return failure(400);
+    const record = records.get(body.proposalId), digest = createHash('sha256').update(body.proof).digest();
+    if (!record || record.session !== session || !timingSafeEqual(record.proofHash, digest)) return failure(404);
+    if (!['notion', 'notion-delete', 'notion-restore'].includes(record.kind) || record.expiresAt > now || record.state === 'executed' || record.reissued || record.reissuing) return failure(409);
+    const audit = notionAudits.get(session);
+    if (record.kind === 'notion') {
+      if (notionImports.get(session) > now || notionDeleted.get(session) > now || record.canonical !== JSON.stringify(fixtureNotionExample.change)) return failure(409);
+    } else {
+      const current = record.kind === 'notion-delete' ? notionImports : notionDeleted;
+      const proof = record.example.change.notionProof;
+      if (!(current.get(session) > now) || !audit || record.generation !== audit.generation || record.example.change.revision !== audit.revision || proof.batchId !== fixtureNotionExample.change.batchId || proof.sourceId !== '00000000-0000-4000-8000-000000000110' || proof.sourceSha256 !== fixtureNotionExample.change.sourceSha256 || proof.importProposalId !== audit.importProposalId || (record.kind === 'notion-restore' && (proof.deletionProposalId !== audit.deletionProposalId || proof.aclRevisionAfter !== audit.revision))) return failure(409);
+    }
+    record.reissuing = true;
+    try {
+      const response = await handleFixtureIrConfirmation(new Request(request.url, { method: 'POST', headers: request.headers, body: JSON.stringify({ action: 'prepare', kind: record.kind }) }), env, now);
+      if (response.ok) record.reissued = true;
+      return response;
+    } finally { record.reissuing = false; }
+  }
   if (body.action === 'restore') {
     if (Object.keys(body).sort().join(',') !== 'action,proof,proposalId' || !uuid.test(body.proposalId) || typeof body.proof !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(body.proof)) return failure(400);
     const record = records.get(body.proposalId), digest = createHash('sha256').update(body.proof).digest();
-    if (!record || !timingSafeEqual(record.proofHash, digest)) return failure(404);
+    if (!record || record.expiresAt <= now || !timingSafeEqual(record.proofHash, digest)) return failure(404);
     const isNotion = ['notion', 'notion-delete', 'notion-restore'].includes(record.kind);
     const maps = isNotion ? [notionImports, notionDeleted] : [imports, deletedImports, reservations, attachments, isolatedAttachments];
     for (const applied of maps) { const importedUntil = applied.get(record.session); if (typeof importedUntil === 'number' && importedUntil > now) { applied.delete(record.session); applied.set(session, importedUntil); } }
@@ -125,7 +146,7 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
   }
   if (Object.keys(body).sort().join(',') !== 'action,proposalId' || !uuid.test(body.proposalId)) return failure(400);
   const record = records.get(body.proposalId);
-  if (!record || record.session !== session) return failure(404);
+  if (!record || record.expiresAt <= now || record.session !== session) return failure(404);
   const transitions = ['batch', 'batch-reserve'].includes(record.kind) ? { apply: ['loaded', 'executed'] } : { review: ['loaded', 'reviewed'], confirm: ['reviewed', 'approved'], execute: ['approved', 'executed'] };
   const next = Object.hasOwn(transitions, body.action) ? transitions[body.action] : null;
   if (!next || record.state !== next[0]) return failure(409);

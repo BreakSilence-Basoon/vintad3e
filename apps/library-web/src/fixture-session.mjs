@@ -57,3 +57,8 @@ export function handleFixtureSession(request, action, env, now = Date.now(), nex
   }
   return new Response(null, { status: 303, headers: { location: action === 'login' ? fixtureNext(next) : '/sign-in', 'set-cookie': cookie, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
 }
+export function handleFixturePublicationReauth(request, env, now = Date.now()) {
+  const response = handleFixtureSession(request, 'logout', env, now);
+  if (response.status === 303) response.headers.set('location', '/sign-in?next=%2Fconfirmations%2Fproposal-01');
+  return response;
+}

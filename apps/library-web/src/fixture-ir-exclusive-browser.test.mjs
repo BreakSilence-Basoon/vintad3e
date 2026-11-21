@@ -18,7 +18,12 @@ test('isolated synthetic cleanup preserves file bytes and leaves other files ava
     for (const width of [1440, 390]) {
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       try {
-        const page = await context.newPage(); await page.goto(`${origin}/sign-in`); await page.getByRole('button', { name: '회사 계정으로 로그인' }).click(); await page.waitForURL(`${origin}/`);
+        const page = await context.newPage();
+        await page.goto(`${origin}/objects/00000000-0000-4000-8000-000000000108`);
+        await page.getByRole('button', { name: '회사 계정으로 로그인' }).click();
+        await page.waitForURL(`${origin}/objects/00000000-0000-4000-8000-000000000108`);
+        assert.equal((await page.request.get(`${origin}/objects/00000000-0000-4000-8000-000000000108`)).status(), 404);
+        await page.goto(`${origin}/`);
         async function prepare(kind) {
           return page.evaluate(async value => {
             const response = await fetch('/api/fixture/ir-confirmation', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'prepare', kind: value }) });

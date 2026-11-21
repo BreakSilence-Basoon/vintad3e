@@ -56,7 +56,7 @@ export function ObjectUploadForm({ fixture = false, inputId = 'library-object-fi
     if (!file || !selected || busy) return;
     setBusy(true); setError(false);
     try {
-      const response = await fetch('/api/fixture/upload', { method: 'POST', headers: { 'content-type': 'application/octet-stream' }, body: file });
+      const response = await fetch('/api/fixture/upload', { method: 'POST', headers: { 'content-type': 'application/octet-stream', 'x-vintad3e-content-type': file.type || 'application/octet-stream' }, body: file });
       const result = response.ok ? await response.json() : null;
       if (result?.id !== selected.id) throw new Error('unavailable');
       setStage('uploaded');

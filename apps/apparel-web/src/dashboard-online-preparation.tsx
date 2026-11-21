@@ -2,10 +2,10 @@
 
 import { showAdminToast } from './admin-toast';
 import { readOnlineChecklist, saveOnlineChecklist } from './dashboard-online-storage';
+import { compareOrders, getItemLines, getNextSortState, type OnlinePreparationSortState } from './dashboard-online-sort';
 import { useEffect, useMemo, useState } from 'react';
 import {
   SortToggleButton,
-  type SortDirection,
 } from './sort-toggle-button';
 
 export type OnlinePreparationCard = {
@@ -38,11 +38,6 @@ type OnlinePreparationSortKey =
   | 'items'
   | 'order';
 
-type OnlinePreparationSortState = {
-  key: OnlinePreparationSortKey;
-  direction: SortDirection;
-};
-
 type OnlinePreparationCountSummary = {
   orderCount: number;
   quantityTotal: number;
@@ -74,12 +69,6 @@ function formatOrderDateTime(value: string) {
     .replace('오후', 'PM');
 }
 
-function getItemLines(order: OnlinePreparationCard) {
-  return order.itemLines && order.itemLines.length > 0
-    ? order.itemLines
-    : [{ name: order.itemSummary, quantity: null }];
-}
-
 function getChecklistDrafts(orders: OnlinePreparationCard[]) {
   return Object.fromEntries(
     orders.map((order) => [order.id, { ...order.checklist }]),
@@ -107,59 +96,6 @@ function summarizeOrderCounts(
       0,
     ),
   };
-}
-
-function getNextSortState(
-  current: OnlinePreparationSortState,
-  key: OnlinePreparationSortKey,
-): OnlinePreparationSortState {
-  if (current.key !== key) {
-    return {
-      key,
-      direction: key === 'order' ? 'desc' : 'asc',
-    };
-  }
-
-  return {
-    key,
-    direction: current.direction === 'asc' ? 'desc' : 'asc',
-  };
-}
-
-function compareText(left: string, right: string) {
-  return left.localeCompare(right, 'ko-KR', {
-    numeric: true,
-    sensitivity: 'base',
-  });
-}
-
-function compareOrders(
-  left: OnlinePreparationCard,
-  right: OnlinePreparationCard,
-  sortState: OnlinePreparationSortState,
-) {
-  const direction = sortState.direction === 'asc' ? 1 : -1;
-  let result = 0;
-
-  switch (sortState.key) {
-    case 'items':
-      result = compareText(
-        getItemLines(left).map((item) => item.name).join(' '),
-        getItemLines(right).map((item) => item.name).join(' '),
-      );
-      break;
-    case 'order':
-      result =
-        new Date(left.soldAt).getTime() - new Date(right.soldAt).getTime();
-      break;
-  }
-
-  if (result === 0) {
-    result =
-      new Date(left.soldAt).getTime() - new Date(right.soldAt).getTime();
-  }
-
-  return result * direction;
 }
 
 function SaveIcon() {

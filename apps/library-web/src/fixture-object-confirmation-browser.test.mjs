@@ -36,7 +36,8 @@ test('synthetic upload confirmation is recovered only in the originating session
         assert.match(proposal.proposalId, /^[0-9a-f-]{36}$/);
         const recovery = await context.newPage();
         await recovery.goto(`${origin}/confirmations/${proposal.proposalId}`);
-        await recovery.getByRole('region', { name: '업로드 내용 확인' }).getByText('가게 안내.txt').waitFor();
+        await recovery.getByRole('region', { name: '업로드 내용 확인' }).locator('pre').first().waitFor();
+        assert.match(await recovery.locator('pre').first().textContent(), /가게 안내\.txt/);
         await recovery.getByRole('button', { name: '제안 검토' }).click();
         await recovery.reload();
         await recovery.getByRole('button', { name: '이 변경 확인' }).click();
@@ -60,7 +61,8 @@ test('synthetic upload confirmation is recovered only in the originating session
         await page.waitForURL('**/sign-in?**');
         await page.getByRole('button', { name: '회사 계정으로 로그인' }).click();
         await page.waitForURL(`**/confirmations/${proposal.proposalId}`);
-        await page.getByText('가게 안내.txt').waitFor();
+        await page.locator('pre').first().waitFor();
+        assert.match(await page.locator('pre').first().textContent(), /가게 안내\.txt/);
         assert.equal(await page.getByRole('button', { name: '제안 검토' }).count(), 0);
       } finally { await context.close(); }
     }

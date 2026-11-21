@@ -5,7 +5,7 @@ import { fixtureUploads } from './fixture-upload-spec.mjs';
 const records = globalThis[Symbol.for('vintad3e.library.fixture.object.confirmations')] ??= new Map();
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const fail = status => Response.json({ error: status === 401 ? 'sign-in-required' : 'unavailable' }, { status, headers: { 'cache-control': 'no-store' } });
-const view = record => Response.json({ proposalId: record.id, objectId: record.objectId, state: record.state, expiresAt: record.expiresAt }, { headers: { 'cache-control': 'no-store' } });
+const view = record => Response.json({ proposalId: record.id, objectId: record.objectId, state: record.state, expiresAt: record.expiresAt, checkedAt: record.checkedAt, change: record.change, canonical: record.canonical, changeDigest: record.changeDigest, permissionDigest: record.permissionDigest }, { headers: { 'cache-control': 'no-store' } });
 
 export async function handleFixtureObjectConfirmation(request, env, now = Date.now()) {
   const origin = fixtureOrigin(env), host = request.headers.get('host');
@@ -31,7 +31,10 @@ export async function handleFixtureObjectConfirmation(request, env, now = Date.n
     if (Object.keys(body).sort().join(',') !== 'action,objectId' || !fixtureUploads.some(item => item.id === body.objectId)) return fail(400);
     if (records.size >= 128) return fail(503);
     const proof = randomBytes(32).toString('base64url');
-    const record = { id: randomUUID(), session, proofHash: createHash('sha256').update(proof).digest(), objectId: body.objectId, state: 'loaded', expiresAt: now + 15 * 60_000 };
+    const file = fixtureUploads.find(item => item.id === body.objectId);
+    const change = { uploadId: file.id, size: Buffer.byteLength(file.body), filename: file.filename, contentType: file.filename.endsWith('.html') ? 'text/html' : 'text/plain', audience: 'ADMIN' };
+    const canonical = JSON.stringify(change);
+    const record = { id: randomUUID(), session, proofHash: createHash('sha256').update(proof).digest(), objectId: body.objectId, state: 'loaded', checkedAt: now, expiresAt: now + 15 * 60_000, change, canonical, changeDigest: createHash('sha256').update(canonical).digest('hex'), permissionDigest: createHash('sha256').update(`fixture-object:${session}`).digest('hex') };
     records.set(record.id, record);
     return Response.json({ proposalId: record.id, objectId: record.objectId, state: record.state, expiresAt: record.expiresAt, proof }, { headers: { 'cache-control': 'no-store' } });
   }
@@ -39,7 +42,7 @@ export async function handleFixtureObjectConfirmation(request, env, now = Date.n
     if (Object.keys(body).sort().join(',') !== 'action,proof,proposalId' || !uuid.test(body.proposalId) || typeof body.proof !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(body.proof)) return fail(400);
     const record = records.get(body.proposalId), digest = createHash('sha256').update(body.proof).digest();
     if (!record || !timingSafeEqual(record.proofHash, digest)) return fail(404);
-    record.session = session; return view(record);
+    record.session = session; record.checkedAt = now; record.permissionDigest = createHash('sha256').update(`fixture-object:${session}`).digest('hex'); return view(record);
   }
   if (Object.keys(body).sort().join(',') !== 'action,proposalId' || !uuid.test(body.proposalId)) return fail(400);
   const record = records.get(body.proposalId);

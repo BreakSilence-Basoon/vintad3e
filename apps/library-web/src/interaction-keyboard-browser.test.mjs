@@ -178,6 +178,19 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await stage.getByLabel('출처').fill('회의 내용');
         for (const label of ['회의 문서 확인', '제안 불러오기', '제안 검토', '이 변경 확인', '등록']) await enter(page, stage.getByRole('button', { name: label, exact: true }));
         await page.getByRole('heading', { name: '보정본 · 1' }).waitFor();
+        await stage.getByLabel('단계').selectOption('SUMMARY');
+        assert.equal(await stage.getByLabel('근거 문서').getByRole('option', { name: '보정본 · 1' }).count(), 1);
+        assert.equal(await stage.getByRole('button', { name: '회의 문서 확인', exact: true }).isDisabled(), true);
+        await stage.getByLabel('근거 문서').selectOption('1');
+        for (const sourceKind of ['IMPORTED', 'HUMAN', 'AI']) {
+          await stage.getByLabel('작성 방식').selectOption(sourceKind);
+          assert.equal(await stage.getByLabel('작성 방식').inputValue(), sourceKind);
+        }
+        await uploadFixture(stage, '#meeting-stage-file');
+        await stage.getByLabel('제목').fill('요약 기록');
+        await stage.getByLabel('출처').fill('회의 내용');
+        for (const label of ['회의 문서 확인', '제안 불러오기', '제안 검토', '이 변경 확인', '등록']) await enter(page, stage.getByRole('button', { name: label, exact: true }));
+        await page.getByRole('heading', { name: '요약 · 1' }).waitFor();
         await enter(page, page.getByRole('link', { name: '보정본 열기', exact: true }));
         await page.waitForURL('**/objects/00000000-0000-4000-8000-000000000009?documentId=00000000-0000-4000-8000-000000000010&view=corrected');
         await enter(page, page.getByRole('button', { name: '파일 열기', exact: true }));

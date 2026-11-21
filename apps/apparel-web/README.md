@@ -35,3 +35,9 @@ Node 24와 Corepack을 준비해 루트에서 `corepack pnpm install --frozen-lo
 같은 설정의 `/confirmations/proposal-01`은 합성 제안의 불러오기·검토·확인 흐름을 표시합니다. 확인 결과는 화면에만 남으며 실제 상품 변경이나 승인 서버에는 연결되지 않습니다. 원본의 만료·오류 복구는 이관하지 않았습니다.
 
 `/access-denied`는 합성 viewer 계정의 접근 거부 화면만 재현합니다. 이 화면은 다른 경로의 접근을 제한하거나 실제 권한을 판정하지 않습니다. 세션이 없는 상태에서 다시 로그인하면 홈으로 이동합니다.
+
+## 로컬 재고 DB 검토
+
+재고 화면의 CSV 가져오기와 SQLite 저장을 비교하기 위한 별도 시제품입니다. 개발 환경에서 `VINTAD3E_APPAREL_FIXTURE=1`, `VINTAD3E_APPAREL_LOCAL_DB=1`, `VINTAD3E_APPAREL_FIXTURE_ORIGIN=http://127.0.0.1:3826`을 설정한 뒤 앱을 실행하고 `/sign-in`에서 합성 로그인 후 `/admin/products`를 엽니다. CSV 양식은 재고 화면에서 내려받을 수 있습니다.
+
+가져오기 전 확인하고 적용하면 `apps/apparel-web/.data/apparel-local-inventory.sqlite`에 보관되며 이전 가져오기를 한 번 되돌릴 수 있습니다. 기존 합성 재고 목록과는 별개입니다. 파일은 암호화되지 않고 합성 로그인은 실제 사용자 확인이 아닙니다. 백업·복구와 여러 직원의 권한은 구현하지 않았으므로 실제 직원·고객 정보나 실제 업무 자료를 넣지 마세요. 폴더와 백업의 접근 권한은 별도 설계가 필요합니다.

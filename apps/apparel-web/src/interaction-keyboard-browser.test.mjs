@@ -85,6 +85,16 @@ test('apparel stock validation, saving and sales filters work with keyboard inpu
         await enter(page, page.locator('.graphic-dialog__close'));
         await page.locator('.graphic-dialog').waitFor({ state: 'detached' });
 
+        await page.goto(`${origin}/admin/inventory/graphics/TSHIRT-001`);
+        await page.locator('.console-page[data-hydrated="true"]').waitFor();
+        await enter(page, page.getByRole('link', { name: '부족 상세', exact: true }));
+        await page.waitForURL('**/admin/inventory/shortages');
+        await page.goto(`${origin}/admin/inventory/graphics/TSHIRT-001`);
+        await page.locator('.console-page[data-hydrated="true"]').waitFor();
+        await enter(page, page.getByRole('link', { name: '운영 홈', exact: true }));
+        await page.waitForURL(origin + '/');
+        assert.equal((await page.goto(`${origin}/admin/inventory/graphics/unknown`)).status(), 404);
+
         await page.goto(`${origin}/admin/sales?range=all`);
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 18);
         await enter(page, page.getByRole('navigation', { name: '판매내역 더 불러오기' }).getByRole('link', { name: '더 불러오기' }));

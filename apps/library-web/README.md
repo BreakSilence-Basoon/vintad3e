@@ -16,6 +16,8 @@
 
 회의 상세는 개발 환경에서 명시적으로 켠 합성 회의 한 건을 목록에서 선택해 확인할 수 있습니다. 녹화·녹음과 회의 문서의 실제 업로드 및 등록은 연결하지 않았습니다.
 
+합성 로그인과 자료를 보려면 아래 실행 전에 같은 터미널에서 설정을 켭니다. Windows PowerShell에서는 `$env:VINTAD3E_LIBRARY_FIXTURE = '1'`, macOS 또는 Linux에서는 `export VINTAD3E_LIBRARY_FIXTURE=1`을 입력합니다. [전체 실행 순서](../../docs/first-run.md)를 함께 볼 수 있습니다.
+
 Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/library-web dev`를 실행하고 `http://127.0.0.1:3829`를 엽니다.
 
 원본의 회의 기록·파일 목록과 파일 올리기 진입 화면을 표시합니다. 개발 환경에서 합성 자료를 켜면 회의 제목을 만들어 같은 브라우저 탭에서 목록과 상세로 다시 열 수 있고, 파일 목록에서 합성 파일 상세로 이동합니다. 회의 제목은 탭의 세션 저장소에만 남으므로 실제 정보를 입력하지 마세요. 실제 회의 저장과 파일 업로드는 연결되지 않았습니다.

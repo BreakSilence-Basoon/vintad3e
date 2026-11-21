@@ -20,6 +20,8 @@
 
 통계의 합성 매장 의류 판매 한 건은 판매내역과 같은 값과 한국 시간 날짜를 사용합니다. 통계에는 판매내역 샘플에 없는 과거·온라인 합성 값도 포함됩니다.
 
+합성 로그인과 자료를 보려면 아래 실행 전에 같은 터미널에서 설정을 켭니다. Windows PowerShell에서는 `$env:VINTAD3E_APPAREL_FIXTURE = '1'`, macOS 또는 Linux에서는 `export VINTAD3E_APPAREL_FIXTURE=1`을 입력합니다. [전체 실행 순서](../../docs/first-run.md)를 함께 볼 수 있습니다.
+
 Node 24와 Corepack을 준비해 루트에서 `corepack pnpm install --frozen-lockfile --ignore-scripts` 후 `corepack pnpm --filter @vintad3e/apparel-web dev`를 실행하고 `http://127.0.0.1:3826`을 엽니다.
 
 `/admin/audit`는 원본의 빈 변경 이력과 필터를 표시하며 실행자 이름은 합성 명칭을 사용합니다. 실제 감사 기록과 로그인·권한은 연결하지 않았습니다.

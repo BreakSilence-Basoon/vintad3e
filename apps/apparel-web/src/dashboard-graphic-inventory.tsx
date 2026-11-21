@@ -462,7 +462,7 @@ export function GraphicInventoryHome({
     event: KeyboardEvent,
     productId: string,
   ) {
-    if (event.key !== 'Enter' && event.key !== ' ') {
+    if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) {
       return;
     }
 

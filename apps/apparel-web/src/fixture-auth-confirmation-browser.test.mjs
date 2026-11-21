@@ -43,6 +43,7 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
         await page.goto(`${origin}/sign-in?mode=cover&mode=other&next=%2Fadmin%2Fproducts`);
         await page.getByRole('link', { name: '어드민 콘솔로 돌아가기' }).waitFor();
 
+        await page.evaluate(() => sessionStorage.setItem('vintad3e-apparel-fixture-stock', JSON.stringify({ 'basic:seongsu:TSHIRT-001-BK-M': { onHand: 1, target: 3, shortage: 2, tracking: true } })));
         await page.goto(origin);
         await page.locator('.dashboard-monitor[data-hydrated="true"]').waitFor();
         const online = page.locator('.dashboard-panel--online-prep');
@@ -60,6 +61,7 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
         }
         await enter(page, designTabs.getByRole('tab', { name: /^오리지널 / }));
         await enter(page, page.getByRole('button', { name: '숨김으로 이동', exact: true }));
+        assert.equal(await page.locator('.graphic-dialog').count(), 0);
         await enter(page, designTabs.getByRole('tab', { name: /^숨김 1$/ }));
         await enter(page, page.getByRole('button', { name: '다시 표시', exact: true }));
         await page.getByRole('tab', { name: /^숨김 0$/ }).waitFor();
@@ -67,7 +69,15 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
         const tracking = page.getByRole('article').filter({ has: page.getByRole('heading', { name: '목표재고 추적표', exact: true }) });
         const trackingSearch = tracking.getByRole('searchbox', { name: '목표재고 추적표 키워드' });
         assert.equal(await trackingSearch.isDisabled(), true);
-        assert.equal(await tracking.getByRole('combobox', { name: '디자인 필터' }).inputValue(), '');
+        const productFilter = tracking.getByRole('combobox', { name: '디자인 필터' });
+        assert.equal(await productFilter.inputValue(), '');
+        await productFilter.selectOption({ label: '반팔 티셔츠' });
+        assert.equal(await trackingSearch.isEnabled(), true);
+        await trackingSearch.fill('찾을수없는옵션');
+        await tracking.getByText('목표재고가 1 이상인 옵션 품목 중 검색 조건에 맞는 것이 없습니다', { exact: false }).waitFor();
+        await productFilter.selectOption('');
+        assert.equal(await trackingSearch.inputValue(), '');
+        assert.equal(await trackingSearch.isDisabled(), true);
 
         await page.goto(`${origin}/admin/stats`);
         await page.locator('.console-section[data-hydrated="true"]').waitFor();

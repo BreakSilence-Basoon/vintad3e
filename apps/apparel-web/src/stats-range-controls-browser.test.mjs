@@ -39,9 +39,12 @@ test('sales range controls zoom, reset and drag on desktop and mobile widths', {
         const fullRange = await changeRange(reset);
         assert.equal(await zoomOut.isDisabled(), true);
         assert.equal(await reset.isDisabled(), true);
-        const track = page.locator('.console-section[data-hydrated="true"] div[style*="touch-action: none"]').first();
+        const start = page.getByRole('slider', { name: '시작일' });
+        const end = page.getByRole('slider', { name: '종료일' });
+        const pill = start.locator('..');
+        const track = pill.locator('..');
         await track.scrollIntoViewIfNeeded();
-        await track.locator(':scope > div').evaluate(async element => {
+        await pill.evaluate(async element => {
           await new Promise(requestAnimationFrame);
           await Promise.all(element.getAnimations().map(animation => animation.finished.catch(() => {})));
         });
@@ -55,8 +58,6 @@ test('sales range controls zoom, reset and drag on desktop and mobile widths', {
         const dragResponse = await changed;
         assert.equal(dragResponse.status(), 200);
         assert.ok(Date.parse(new URL(dragResponse.url()).searchParams.get('from')) > Date.parse(fullRange.searchParams.get('from')));
-        const start = page.getByRole('slider', { name: '시작일' });
-        const end = page.getByRole('slider', { name: '종료일' });
         await start.focus();
         await page.keyboard.press('Tab');
         assert.equal(await end.evaluate(element => document.activeElement === element), true);

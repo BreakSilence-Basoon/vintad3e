@@ -223,3 +223,17 @@ test('Notion lifecycle uses synthetic import and deletion proofs and rejects sta
   for (const action of ['review', 'confirm']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: stale.proposalId }), env, 50008)).status, 200);
   assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: stale.proposalId }), env, 50008)).status, 409);
 });
+
+test('Notion lifecycle proof and document state survive verified synthetic login recovery', async () => {
+  const old = login(55000);
+  const imported = await (await handleFixtureIrConfirmation(post(old, { action: 'prepare', kind: 'notion' }), env, 55001)).json();
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(old, { action, proposalId: imported.proposalId }), env, 55002)).status, 200);
+  const deletion = await (await handleFixtureIrConfirmation(post(old, { action: 'prepare', kind: 'notion-delete' }), env, 55003)).json();
+  assert.equal((await handleFixtureIrConfirmation(post(old, { action: 'review', proposalId: deletion.proposalId }), env, 55004)).status, 200);
+  const replacement = handleFixtureSession(new Request(`${origin}/login`, { method: 'POST', headers: { host, origin, cookie: old } }), 'login', env, 55005).headers.get('set-cookie').split(';')[0];
+  assert.equal(readFixtureNotionImport(replacement, host, env, fixtureNotionDocument.id, 55006), null);
+  assert.equal((await handleFixtureIrConfirmation(post(replacement, { action: 'restore', proposalId: deletion.proposalId, proof: deletion.proof }), env, 55006)).status, 200);
+  assert.deepEqual(readFixtureNotionImport(replacement, host, env, fixtureNotionDocument.id, 55007), fixtureNotionDocument);
+  for (const action of ['confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(replacement, { action, proposalId: deletion.proposalId }), env, 55008)).status, 200);
+  assert.equal(readFixtureNotionImport(replacement, host, env, fixtureNotionDocument.id, 55009), null);
+});

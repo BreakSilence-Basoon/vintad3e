@@ -59,6 +59,21 @@ test('synthetic internal-document confirmations recover in the same tab', { time
           await page.getByRole('status').filter({ hasText: '변경 결과를 확인했습니다.' }).waitFor();
           assert.equal((await page.request.get(`${origin}${importedPath}`)).status(), expected);
         }
+        const renewed = await prepare('single'); await page.goto(`${origin}/confirmations/${renewed}`);
+        for (const label of ['제안 검토', '이 변경 확인', '변경 적용']) await page.getByRole('button', { name: label, exact: true }).click();
+        await page.getByRole('status').filter({ hasText: '변경 결과를 확인했습니다.' }).waitFor();
+        await page.goto(`${origin}/objects/new`);
+        await page.locator('#library-object-file').setInputFiles({ name: '가게 안내.txt', mimeType: 'text/plain', buffer: Buffer.from('업무를 시작하기 전에 필요한 사항을 확인합니다.') });
+        for (const label of ['업로드 내용 확인', '제안 불러오기', '제안 검토', '이 변경 확인', '업로드 승인', '파일 올리기']) await page.getByRole('button', { name: label, exact: true }).click();
+        await page.getByText('파일을 올렸습니다.', { exact: true }).waitFor();
+        const attachment = await prepare('attach'); await page.goto(`${origin}/confirmations/${attachment}`);
+        for (const label of ['제안 검토', '이 변경 확인', '변경 적용']) await page.getByRole('button', { name: label, exact: true }).click();
+        await page.getByRole('status').filter({ hasText: '변경 결과를 확인했습니다.' }).waitFor();
+        await page.goto(`${origin}${importedPath}`);
+        const card = page.locator('.library-attachment-card'); await card.waitFor();
+        assert.match(await card.innerText(), /가게 안내\.txt/);
+        await card.click(); await page.getByRole('button', { name: '파일 열기', exact: true }).click();
+        assert.equal(await page.locator('pre.publication-content').textContent(), '업무를 시작하기 전에 필요한 사항을 확인합니다.');
         const notion = await prepare('notion'), notionPath = '/native/00000000-0000-4000-8000-000000000104';
         assert.equal((await page.request.get(`${origin}${notionPath}`)).status(), 404);
         await page.goto(`${origin}/confirmations/${notion}`);

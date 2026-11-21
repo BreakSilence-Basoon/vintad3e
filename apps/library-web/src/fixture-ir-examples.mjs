@@ -16,6 +16,7 @@ const examples = Object.freeze({
   batch: Object.freeze({ operation: 'library.ir.batch-import', target: 'ir-import', change: Object.freeze({ attachmentManifestSha256: sha('[]'), entries: Object.freeze([entry]), manifestSha256: sha(JSON.stringify([entry])) }) }),
   reserve: Object.freeze({ operation: 'library.ir.reserve', target: 'ir-uploads', change: Object.freeze({ attachmentId, pageId, uploadId }) }),
   'batch-reserve': Object.freeze({ operation: 'library.ir.batch-reserve', target: 'ir-uploads', change: Object.freeze({ attachmentManifestSha256: sha(JSON.stringify(attachmentManifest)), entries: Object.freeze([Object.freeze({ attachmentId, expectedRevision: 1, pageId, uploadId })]), pageManifestSha256: sha(JSON.stringify(pageManifest)) }) }),
+  attach: Object.freeze({ operation: 'library.ir.attach', target: 'ir-attachments', change: Object.freeze({ attachmentId, expectedRevision: 1, objectId: '00000000-0000-4000-8000-000000000009', pageId }) }),
   delete: Object.freeze({ operation: 'library.content.lifecycle', target: 'content-lifecycle', change: Object.freeze({ action: 'delete', id: pageId, kind: 'document', revision: 1 }) }),
   restore: Object.freeze({ operation: 'library.content.lifecycle', target: 'content-lifecycle', change: Object.freeze({ action: 'restore', id: pageId, kind: 'document', revision: 2 }) }),
 });

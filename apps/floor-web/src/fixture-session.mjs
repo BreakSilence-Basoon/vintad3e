@@ -39,6 +39,9 @@ export function fixtureSession(cookie, host, env, now = Date.now()) {
   const token = readToken(cookie); prune(now);
   return token !== null && sessions.has(token);
 }
+export function fixtureSessionKey(cookie, host, env, now = Date.now()) {
+  return fixtureSession(cookie, host, env, now) ? readToken(cookie) : null;
+}
 export function handleFixtureSession(request, action, env, now = Date.now(), next = '/') {
   const origin = fixtureOrigin(env);
   if (!origin || request.method !== 'POST' || !['login', 'logout'].includes(action)) return new Response(null, { status: 404, headers: { 'cache-control': 'no-store' } });
@@ -55,4 +58,9 @@ export function handleFixtureSession(request, action, env, now = Date.now(), nex
     cookie = `${cookieName}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${ttl / 1000}`;
   }
   return new Response(null, { status: 303, headers: { location: action === 'login' ? fixtureNext(next) : '/sign-in', 'set-cookie': cookie, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
+}
+export function handleFixtureConfirmationReauth(request, env, now = Date.now()) {
+  const response = handleFixtureSession(request, 'logout', env, now);
+  if (response.status === 303) response.headers.set('location', '/sign-in?next=%2Fconfirmations%2Fproposal-01');
+  return response;
 }

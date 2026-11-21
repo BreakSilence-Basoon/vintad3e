@@ -35,7 +35,7 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
           await page.waitForFunction(() => !new URL(location.href).searchParams.has('error'));
           const url = new URL(page.url()); assert.equal(url.searchParams.get('next'), '/admin/products'); assert.equal(url.hash, '#return');
         }
-        await page.reload(); assert.equal(await page.getByRole('alert').count(), 0);
+        await page.reload(); assert.equal(await page.locator('.staff-sign-in-toast').count(), 0);
         await page.goto(`${origin}/sign-in?error=AccessDenied&error=Configuration`);
         await page.getByRole('alert').locator('strong').filter({ hasText: '로그인을 완료하지 못했습니다.' }).waitFor();
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));

@@ -142,6 +142,18 @@ test('sign-in notices and confirmation recovery follow the source on desktop and
         await inventorySearch.fill('찾을수없는상품');
         await page.getByText('표시할 옵션 품목이 없습니다.', { exact: true }).waitFor();
         await inventorySearch.fill('');
+        const productCard = page.locator('details.product-card').filter({ has: page.getByRole('heading', { name: '반팔 티셔츠', exact: true }) });
+        await enter(page, productCard.locator('summary'));
+        const productTable = productCard.locator('table');
+        for (const [label, column] of [['재고관리코드', 0], ['옵션명', 1], ['형태', 2], ['색상', 3], ['사이즈', 4], ['대상', 5], ['단위', 6]]) {
+          const header = productTable.getByRole('button', { name: label, exact: true });
+          const values = () => productTable.locator('tbody tr').evaluateAll((rows, index) => rows.map(row => row.cells[index].textContent), column);
+          await enter(page, header);
+          const ascending = await values();
+          assert.deepEqual(ascending, [...ascending].sort((a, b) => a.localeCompare(b, 'ko-KR', { numeric: true })));
+          await enter(page, header);
+          assert.deepEqual(await values(), [...ascending].reverse());
+        }
         await optionSelects.nth(1).selectOption('화이트');
         await optionSelects.nth(2).selectOption('M');
         await page.getByText('표시할 옵션 품목이 없습니다.', { exact: true }).waitFor();

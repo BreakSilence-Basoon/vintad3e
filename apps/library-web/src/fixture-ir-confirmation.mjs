@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypt
 import { fixtureOrigin, fixtureSessionKey } from './fixture-session.mjs';
 import { fixtureIrDocument, fixtureIrExample, fixtureIrManifests } from './fixture-ir-examples.mjs';
 import { fixtureNotionDocument, fixtureNotionExample } from './fixture-notion-example.mjs';
-import { getFixtureUpload } from './fixture-upload.mjs';
+import { getFixtureUpload, getFixtureUploadContentType } from './fixture-upload.mjs';
 
 const records = globalThis[Symbol.for('vintad3e.library.fixture.ir.confirmations')] ??= new Map();
 const imports = globalThis[Symbol.for('vintad3e.library.fixture.ir.imports')] ??= new Map();
@@ -45,7 +45,7 @@ export function readFixtureIrAttachment(cookie, host, env, documentId, now = Dat
   const session = sha(token), objectId = fixtureIrExample('attach').change.objectId;
   if (!(imports.get(session) > now) || !(attachments.get(session) > now)) return null;
   const object = getFixtureUpload(cookie, host, env, now, objectId);
-  return object && object.filename === file.filename && Buffer.byteLength(object.body) === file.size && sha(object.body) === file.sha256 ? object : null;
+  return object && object.filename === file.filename && Buffer.byteLength(object.body) === file.size && sha(object.body) === file.sha256 && getFixtureUploadContentType(cookie, host, env, now, objectId) === file.contentType ? object : null;
 }
 
 export async function handleFixtureIrConfirmation(request, env, now = Date.now()) {
@@ -71,7 +71,7 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
     if (body.kind === 'delete' && (!(imports.get(session) > now) || !Number.isSafeInteger(revisions.get(session)))) return failure(409);
     if (body.kind === 'restore' && (!(deletedImports.get(session) > now) || !Number.isSafeInteger(revisions.get(session)))) return failure(409);
     if (body.kind === 'batch-reserve' && (!(imports.get(session) > now) || !Number.isSafeInteger(revisions.get(session)))) return failure(409);
-    if (body.kind === 'attach' && (!(imports.get(session) > now) || !Number.isSafeInteger(revisions.get(session)) || !(reservations.get(session) > now) || attachments.get(session) > now || !getFixtureUpload(request.headers.get('cookie'), host, env, now, fixtureIrExample('attach').change.objectId))) return failure(409);
+    if (body.kind === 'attach' && (!(imports.get(session) > now) || !Number.isSafeInteger(revisions.get(session)) || !(reservations.get(session) > now) || attachments.get(session) > now || !getFixtureUpload(request.headers.get('cookie'), host, env, now, fixtureIrExample('attach').change.objectId) || getFixtureUploadContentType(request.headers.get('cookie'), host, env, now, fixtureIrExample('attach').change.objectId) !== fixtureIrManifests.attachments.entries[0].contentType)) return failure(409);
     if (['delete', 'restore', 'attach', 'batch-reserve'].includes(body.kind) && (revisions.get(session) < 1 || revisions.get(session) > (body.kind === 'batch-reserve' ? 2147483146 : 2147483646))) return failure(409);
     if (records.size >= 128) return failure(503);
     const proof = randomBytes(32).toString('base64url'), template = body.kind === 'notion' ? fixtureNotionExample : fixtureIrExample(body.kind);
@@ -106,7 +106,7 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
     let bumpGeneration = false;
     if (record.kind === 'attach') {
       const file = fixtureIrManifests.attachments.entries[0], object = getFixtureUpload(request.headers.get('cookie'), host, env, now, record.example.change.objectId);
-      if (!(imports.get(session) > now) || revisions.get(session) !== record.example.change.expectedRevision || !(reservations.get(session) > now) || attachments.get(session) > now || record.generation !== generations.get(session) || !object || object.filename !== file.filename || Buffer.byteLength(object.body) !== file.size || sha(object.body) !== file.sha256) return failure(409);
+      if (!(imports.get(session) > now) || revisions.get(session) !== record.example.change.expectedRevision || !(reservations.get(session) > now) || attachments.get(session) > now || record.generation !== generations.get(session) || !object || object.filename !== file.filename || Buffer.byteLength(object.body) !== file.size || sha(object.body) !== file.sha256 || getFixtureUploadContentType(request.headers.get('cookie'), host, env, now, record.example.change.objectId) !== file.contentType) return failure(409);
       if (!attachments.has(session) && attachments.size >= 128) return failure(503);
       attachments.set(session, imports.get(session)); revisions.set(session, record.example.change.expectedRevision + 1); bumpGeneration = true;
     } else if (record.kind === 'delete' || record.kind === 'restore') {

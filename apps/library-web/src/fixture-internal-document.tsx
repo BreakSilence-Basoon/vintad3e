@@ -7,12 +7,12 @@ import { LibraryDocumentInfo } from './library-document-info';
 import { LibraryAttachmentCard } from './library-attachment-card';
 import { getFixtureObject } from './fixture-object';
 import { OBJECT_ID } from './fixture-object';
-import { readFixtureIrImport } from './fixture-ir-confirmation.mjs';
+import { readFixtureIrImport, readFixtureNotionImport } from './fixture-ir-confirmation.mjs';
 export async function FixtureInternalDocument({ kind, documentId }: { kind:'ir' | 'native'; documentId:string }) {
   const origin=fixtureOrigin(process.env); if (!origin) notFound();
   const requestHeaders=await headers(), host=requestHeaders.get('host'); if (host!==new URL(origin).host) notFound();
   const target=`/${kind}/${documentId}`; if (!fixtureSession(requestHeaders.get('cookie'),host,process.env)) redirect(`/sign-in?next=${encodeURIComponent(target)}`);
-  const document=internalDocuments(process.env.NODE_ENV,process.env.VINTAD3E_LIBRARY_FIXTURE).find(item=>item.id===documentId && item.kind===kind) ?? (kind === 'ir' ? readFixtureIrImport(requestHeaders.get('cookie'), host, process.env, documentId) : null);if(!document)notFound();
+  const document=internalDocuments(process.env.NODE_ENV,process.env.VINTAD3E_LIBRARY_FIXTURE).find(item=>item.id===documentId && item.kind===kind) ?? (kind === 'ir' ? readFixtureIrImport(requestHeaders.get('cookie'), host, process.env, documentId) : readFixtureNotionImport(requestHeaders.get('cookie'), host, process.env, documentId));if(!document)notFound();
   const date=new Date(document.createdAt), short=new Intl.DateTimeFormat('ko-KR',{dateStyle:'medium',timeZone:'Asia/Seoul'}).format(date), long=new Intl.DateTimeFormat('ko-KR',{dateStyle:'long',timeStyle:'short',timeZone:'Asia/Seoul'}).format(date);
   const attachment = getFixtureObject(process.env.NODE_ENV, process.env.VINTAD3E_LIBRARY_FIXTURE, OBJECT_ID);
   const card = attachment && document.id === internalDocumentId && <LibraryAttachmentCard href={`/objects/${attachment.id}?documentId=${document.id}`} name={attachment.filename} size={new TextEncoder().encode(attachment.body).length} />;

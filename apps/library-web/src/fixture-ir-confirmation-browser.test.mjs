@@ -43,6 +43,12 @@ test('synthetic single and batch internal-document confirmations recover in the 
         const batch = await prepare('batch'); await page.goto(`${origin}/confirmations/${batch}`);
         await page.getByRole('region', { name: '이관 대상' }).getByText('가게 안내 기록').waitFor();
         await page.getByRole('button', { name: '이관 확인 및 적용' }).click(); await page.getByRole('status').filter({ hasText: '변경 결과를 확인했습니다.' }).waitFor();
+        const notion = await prepare('notion'), notionPath = '/native/00000000-0000-4000-8000-000000000104';
+        assert.equal((await page.request.get(`${origin}${notionPath}`)).status(), 404);
+        await page.goto(`${origin}/confirmations/${notion}`);
+        for (const label of ['제안 검토', '이 변경 확인', '문서 발행']) await page.getByRole('button', { name: label, exact: true }).click();
+        await page.getByRole('status').filter({ hasText: '문서 발행 결과를 확인했습니다.' }).waitFor();
+        assert.equal((await page.request.get(`${origin}${notionPath}`)).status(), 200);
       } finally { await context.close(); }
     }
   } finally {

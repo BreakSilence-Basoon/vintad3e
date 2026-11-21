@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { handleFixtureSession } from './fixture-session.mjs';
-import { handleFixtureIrConfirmation, readFixtureIrImport } from './fixture-ir-confirmation.mjs';
+import { handleFixtureIrConfirmation, readFixtureIrImport, readFixtureNotionImport } from './fixture-ir-confirmation.mjs';
 import { fixtureIrDocument } from './fixture-ir-examples.mjs';
+import { fixtureNotionDocument } from './fixture-notion-example.mjs';
 
 const origin = 'http://127.0.0.1:3829', host = '127.0.0.1:3829';
 const env = { NODE_ENV: 'development', VINTAD3E_LIBRARY_FIXTURE: '1' };
@@ -42,4 +43,15 @@ test('batch example is isolated and can be applied only through its own syntheti
   assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'apply', proposalId: proposal.proposalId }), env, 5005)).status, 409);
   assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'prepare', kind: 'batch' }, { origin: 'http://example.invalid' }), env, 5005)).status, 403);
   assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'prepare', kind: 'batch' }), { ...env, NODE_ENV: 'production' }, 5005)).status, 404);
+});
+
+test('Notion example publishes only its own synthetic document after explicit confirmation', async () => {
+  const cookie = login(8000), other = login(8000);
+  const proposal = await (await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'notion' }), env, 8001)).json();
+  assert.equal(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, 8002), null);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: proposal.proposalId }), env, 8002)).status, 409);
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: proposal.proposalId }), env, 8003)).status, 200);
+  assert.deepEqual(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, 8004), fixtureNotionDocument);
+  assert.equal(readFixtureNotionImport(other, host, env, fixtureNotionDocument.id, 8004), null);
+  assert.equal(readFixtureIrImport(cookie, host, env, fixtureIrDocument.id, 8004), null);
 });

@@ -36,4 +36,4 @@ Node 24와 Corepack을 준비해 저장소 루트에서 `corepack pnpm install -
 
 개발용 합성 로그인 후 내부 문서 읽기 경로 두 곳에서 합성 문서와 목차를 볼 수 있습니다. 실제 외부 문서나 직원 자료는 연결하지 않습니다.
 
-[합성 이관 확인 안내](../../docs/library-synthetic-confirmations.md)에서 정해진 단건·묶음 예시를 확인할 수 있습니다.
+[합성 이관 확인 안내](../../docs/library-synthetic-confirmations.md)에서 정해진 단건·묶음·Notion 예시를 확인할 수 있습니다.

@@ -5,8 +5,10 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
+import { nextRangeForKey } from './stats-range-keyboard';
 
 
 type Props = {
@@ -136,6 +138,16 @@ export function StatsRangeBar({
     commit(0, 1);
   };
 
+  const moveHandle = (which: 'start' | 'end') => (event: ReactKeyboardEvent<HTMLSpanElement>) => {
+    const selection = nextRangeForKey(sel, minSel, DAY / span, which, event.key);
+    if (!selection) return;
+    event.preventDefault();
+    if (selection.s === sel.s && selection.e === sel.e) return;
+    setAnimate(false);
+    setSel(selection);
+    commit(selection.s, selection.e);
+  };
+
   const selFrom = trackStart + sel.s * span;
   const selTo = trackStart + sel.e * span;
   const left = clamp01(sel.s) * 100;
@@ -201,11 +213,11 @@ export function StatsRangeBar({
           }}
           onPointerDown={beginDrag('selBody')}
         >
-          <span style={{ ...handle, left: -7 }} onPointerDown={beginDrag('start')}>
-            <span style={grip} />
+          <span className="stats-range-handle" style={{ ...handle, left: -7 }} role="slider" tabIndex={0} aria-label="시작일" aria-valuemin={trackStart} aria-valuemax={Math.round(trackStart + Math.max(0, sel.e - minSel) * span)} aria-valuenow={Math.round(selFrom)} aria-valuetext={fmt(selFrom)} onKeyDown={moveHandle('start')} onPointerDown={beginDrag('start')}>
+            <span style={grip} aria-hidden="true" />
           </span>
-          <span style={{ ...handle, right: -7 }} onPointerDown={beginDrag('end')}>
-            <span style={grip} />
+          <span className="stats-range-handle" style={{ ...handle, right: -7 }} role="slider" tabIndex={0} aria-label="종료일" aria-valuemin={Math.round(trackStart + Math.min(1, sel.s + minSel) * span)} aria-valuemax={Math.round(trackStart + span)} aria-valuenow={Math.round(selTo)} aria-valuetext={fmt(selTo)} onKeyDown={moveHandle('end')} onPointerDown={beginDrag('end')}>
+            <span style={grip} aria-hidden="true" />
           </span>
         </div>
       </div>

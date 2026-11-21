@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import './stats-range-keyboard.test.ts';
 import { getSalesOverviewFixture } from './sales-overview-fixture.ts';
 import { getFixtureSales } from './sales-fixture.ts';
 

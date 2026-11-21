@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { handleFixtureSession } from './fixture-session.mjs';
-import { handleFixtureIrConfirmation, readFixtureIrImport } from './fixture-ir-confirmation.mjs';
+import { handleFixtureIrConfirmation, readFixtureIrImport, readFixtureNotionImport } from './fixture-ir-confirmation.mjs';
 import { fixtureIrDocument } from './fixture-ir-examples.mjs';
+import { fixtureNotionDocument } from './fixture-notion-example.mjs';
 
 const origin = 'http://127.0.0.1:3829', host = '127.0.0.1:3829';
 const env = { NODE_ENV: 'development', VINTAD3E_LIBRARY_FIXTURE: '1' };
@@ -42,4 +43,38 @@ test('batch example is isolated and can be applied only through its own syntheti
   assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'apply', proposalId: proposal.proposalId }), env, 5005)).status, 409);
   assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'prepare', kind: 'batch' }, { origin: 'http://example.invalid' }), env, 5005)).status, 403);
   assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'prepare', kind: 'batch' }), { ...env, NODE_ENV: 'production' }, 5005)).status, 404);
+});
+
+test('Notion example publishes only its own synthetic document after explicit confirmation', async () => {
+  const cookie = login(8000), other = login(8000);
+  const proposal = await (await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'notion' }), env, 8001)).json();
+  assert.equal(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, 8002), null);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: proposal.proposalId }), env, 8002)).status, 409);
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: proposal.proposalId }), env, 8003)).status, 200);
+  assert.deepEqual(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, 8004), fixtureNotionDocument);
+  assert.equal(readFixtureNotionImport(other, host, env, fixtureNotionDocument.id, 8004), null);
+  assert.equal(readFixtureIrImport(cookie, host, env, fixtureIrDocument.id, 8004), null);
+});
+
+test('Notion confirmation resumes after synthetic login rotation only with its recovery proof', async () => {
+  const old = login(12000);
+  const proposal = await (await handleFixtureIrConfirmation(post(old, { action: 'prepare', kind: 'notion' }), env, 12001)).json();
+  assert.equal((await handleFixtureIrConfirmation(post(old, { action: 'review', proposalId: proposal.proposalId }), env, 12002)).status, 200);
+  const replacement = handleFixtureSession(new Request(`${origin}/login`, { method: 'POST', headers: { host, origin, cookie: old } }), 'login', env, 12003).headers.get('set-cookie').split(';')[0];
+  assert.equal((await handleFixtureIrConfirmation(read(old, proposal.proposalId), env, 12004)).status, 401);
+  assert.equal((await handleFixtureIrConfirmation(read(replacement, proposal.proposalId), env, 12004)).status, 404);
+  const response = await handleFixtureIrConfirmation(post(replacement, { action: 'restore', proposalId: proposal.proposalId, proof: proposal.proof }), env, 12005);
+  assert.equal((await response.json()).state, 'reviewed');
+  assert.equal((await handleFixtureIrConfirmation(post(replacement, { action: 'confirm', proposalId: proposal.proposalId }), env, 12006)).status, 200);
+});
+
+test('an applied synthetic document follows a verified login recovery', async () => {
+  const old = login(16000);
+  const proposal = await (await handleFixtureIrConfirmation(post(old, { action: 'prepare', kind: 'single' }), env, 16001)).json();
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(old, { action, proposalId: proposal.proposalId }), env, 16002)).status, 200);
+  const replacement = handleFixtureSession(new Request(`${origin}/login`, { method: 'POST', headers: { host, origin, cookie: old } }), 'login', env, 16003).headers.get('set-cookie').split(';')[0];
+  assert.equal(readFixtureIrImport(replacement, host, env, fixtureIrDocument.id, 16004), null);
+  assert.equal((await handleFixtureIrConfirmation(post(replacement, { action: 'restore', proposalId: proposal.proposalId, proof: proposal.proof }), env, 16005)).status, 200);
+  assert.deepEqual(readFixtureIrImport(replacement, host, env, fixtureIrDocument.id, 16006), fixtureIrDocument);
+  assert.equal(readFixtureIrImport(old, host, env, fixtureIrDocument.id, 16006), null);
 });

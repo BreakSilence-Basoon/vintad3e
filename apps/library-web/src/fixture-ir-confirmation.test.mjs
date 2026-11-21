@@ -201,3 +201,24 @@ test('isolated cleanup requires deletion proof, rejects stale state and preserve
   assert.equal((await (await handleFixtureMeetingConfirmation(post(cookie, { action: 'load', proposalId: meeting.proposalId, changeDigest: meeting.changeDigest }), env, 40008)).json()).state, 'executed');
   assert.equal(fixtureIrExclusive.body, '업무를 시작하기 전에 필요한 사항을 확인합니다.');
 });
+
+test('Notion lifecycle uses synthetic import and deletion proofs and rejects stale changes', async () => {
+  const cookie = login(50000), other = login(50000);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'notion-delete' }), env, 50001)).status, 409);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'notion-restore' }), env, 50001)).status, 409);
+  async function prepare(kind) { const response = await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind }), env, 50002); assert.equal(response.status, 200); return response.json(); }
+  async function apply(proposal) { for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: proposal.proposalId }), env, 50003)).status, 200); }
+  const imported = await prepare('notion'); await apply(imported);
+  const deleted = await prepare('notion-delete'), stale = await prepare('notion-delete');
+  const deleteView = await (await handleFixtureIrConfirmation(read(cookie, deleted.proposalId), env, 50004)).json();
+  assert.equal(deleteView.example.change.notionProof.importProposalId, imported.proposalId);
+  await apply(deleted); assert.equal(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, 50005), null);
+  assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'prepare', kind: 'notion-restore' }), env, 50005)).status, 409);
+  const restored = await prepare('notion-restore');
+  const restoreView = await (await handleFixtureIrConfirmation(read(cookie, restored.proposalId), env, 50006)).json();
+  assert.equal(restoreView.example.change.notionProof.deletionProposalId, deleted.proposalId);
+  assert.equal(restoreView.example.change.notionProof.aclRevisionAfter, 2);
+  await apply(restored); assert.deepEqual(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, 50007), fixtureNotionDocument);
+  for (const action of ['review', 'confirm']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: stale.proposalId }), env, 50008)).status, 200);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: stale.proposalId }), env, 50008)).status, 409);
+});

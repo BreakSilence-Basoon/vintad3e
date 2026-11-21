@@ -22,9 +22,16 @@ test('member list displays the original loading error on desktop and mobile', { 
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       try {
         const page = await context.newPage();
+        await page.goto(`${origin}/sign-in?error=AccessDenied&next=%2Fmembers`);
+        await page.getByText('회사 계정 정보를 확인하지 못했습니다. 다시 로그인해주세요.', { exact: true }).waitFor();
+        await page.waitForFunction(() => !new URL(location.href).searchParams.has('error'));
+        assert.equal(new URL(page.url()).searchParams.get('next'), '/members');
         await page.goto(`${origin}/members`);
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/members');
+        await page.goto(`${origin}/sign-in?mode=cover&mode=other&next=%2Fmembers`);
+        await page.getByRole('link', { name: 'Admin로 돌아가기' }).waitFor();
+        await page.goto(`${origin}/members`);
         await page.getByRole('alert').getByText('구성원 목록을 불러오지 못했습니다.', { exact: true }).waitFor();
         assert.equal(await page.locator('.staff-table').count(), 0);
       } finally { await context.close(); }

@@ -5,16 +5,19 @@ import { fixtureOrigin, fixtureSession } from '../../../fixture-session.mjs';
 import { FixtureObjectViewer } from '../../../fixture-object-viewer';
 import { headers } from 'next/headers';
 import { getFixtureUpload } from '../../../fixture-upload.mjs';
-import { fixtureUploads } from '../../../fixture-upload-spec.mjs';
+import { fixtureUpload, fixtureUploads } from '../../../fixture-upload-spec.mjs';
 import { fixtureMeetingDocumentId } from '../../../fixture-meeting-document';
 import { readFixtureIrAttachment } from '../../../fixture-ir-confirmation.mjs';
+import { fixtureIrDocument } from '../../../fixture-ir-examples.mjs';
 
 export const dynamic = 'force-dynamic';
 export default async function ObjectPage({ params, searchParams }: { params: Promise<{ objectId: string }>; searchParams: Promise<{ documentId?: string; view?: string }> }) {
   const { objectId } = await params;
   const { documentId, view } = await searchParams;
   const linkedDocument = (documentId === internalDocumentId && objectId === OBJECT_ID) || (documentId === fixtureMeetingDocumentId && fixtureUploads.some(item => item.id === objectId));
+  const importedCandidate = documentId === fixtureIrDocument.id && objectId === fixtureUpload.id && view === undefined;
   if (view !== undefined && (view !== 'corrected' || !documentId)) notFound();
+  if (documentId !== undefined && !linkedDocument && !importedCandidate) notFound();
   if (objectId !== OBJECT_ID && !fixtureUploads.some(item => item.id === objectId)) notFound();
   const origin = fixtureOrigin(process.env), requestHeaders = await headers(), host = requestHeaders.get('host');
   if (!origin || host !== new URL(origin).host) notFound();

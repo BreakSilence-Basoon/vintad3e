@@ -76,6 +76,7 @@ test('sales filters accept original options and bound invalid input', () => {
 });
 import { getFixtureSales, filterFixtureSales } from './sales-fixture.ts';
 import './sales-pagination.test.ts';
+import './filter-combinations.test.ts';
 
 test('synthetic sales honor explicit opt-in, KST dates, filters and ordering', () => {
   const now = new Date('2026-11-19T03:00:00.000Z');

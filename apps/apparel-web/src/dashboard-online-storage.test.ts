@@ -14,3 +14,13 @@ test('online order preparation is stored in the current tab and invalid data is 
   assert.equal(saveOnlineChecklist(storage, { seongsuPicked: false, hanamPrepared: true }), false);
   assert.equal(entries.get(key), '{bad');
 });
+
+test('both preparation flags round-trip for every stored combination', () => {
+  const entries = new Map<string, string>();
+  const storage = { getItem: (key: string) => entries.get(key) ?? null, setItem: (key: string, value: string) => { entries.set(key, value); } } as Storage;
+  for (const seongsuPicked of [false, true]) for (const hanamPrepared of [false, true]) {
+    const checklist = { seongsuPicked, hanamPrepared };
+    assert.equal(saveOnlineChecklist(storage, checklist), true);
+    assert.deepEqual(readOnlineChecklist(storage), checklist);
+  }
+});

@@ -23,6 +23,23 @@ test('rejects invalid and inconsistent quantities using source messages', () => 
   assert.deepEqual(validateDraft(row, { ...draft, onHand: '3', target: '10', shortage: '4' }), { error: '부족 수량은 목표재고와 현재 수량 기준으로 계산된 값이어야 합니다.' });
   assert.deepEqual(validateDraft({ ...row, tracking: false }, { ...draft, target: '-1', shortage: '-1' }), { row: { ...row, tracking: false } });
 });
+
+test('stock validation handles zero, excess stock, fractional tolerance and untracked options', () => {
+  const row = defaultRow();
+  for (const value of ['-1', 'NaN', 'Infinity']) {
+    assert.deepEqual(validateDraft(row, { onHand: value, target: '0', shortage: '0' }), { error: '현재 수량은 0 이상의 숫자만 입력할 수 있습니다.' });
+    assert.deepEqual(validateDraft(row, { onHand: '0', target: value, shortage: '0' }), { error: '목표재고는 0 이상의 숫자만 입력할 수 있습니다.' });
+    assert.deepEqual(validateDraft(row, { onHand: '0', target: '0', shortage: value }), { error: '부족 수량은 0 이상의 숫자만 입력할 수 있습니다.' });
+  }
+  assert.ok('row' in validateDraft(row, { onHand: '0', target: '0', shortage: '3' }));
+  assert.ok('row' in validateDraft(row, { onHand: '12', target: '10', shortage: '0' }));
+  assert.ok('row' in validateDraft(row, { onHand: '3', target: '10', shortage: '7.0000005' }));
+  assert.deepEqual(validateDraft(row, { onHand: '3', target: '10', shortage: '7.000002' }), { error: '부족 수량은 목표재고와 현재 수량 기준으로 계산된 값이어야 합니다.' });
+  const untracked = { ...row, tracking: false };
+  assert.ok('row' in validateDraft(untracked, { onHand: '2', target: 'NaN', shortage: '-10' }));
+  assert.deepEqual(validateDraft({ ...row, workQty: 1000001 }, toDraft(row)), { error: '작업수량을 확인해주세요.' });
+  assert.ok('row' in validateDraft({ ...row, workQty: 1000000 }, toDraft(row)));
+});
 import { fixtureInventoryRequest } from './shortage-fixture-request.ts';
 import { readFixtureStock } from './inventory-fixture-session.ts';
 

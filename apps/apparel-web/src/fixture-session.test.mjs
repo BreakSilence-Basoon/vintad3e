@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import './admin-return-path.test.mjs';
-import { fixtureOrigin, fixtureSession, handleFixtureSession, fixtureResumePath } from './fixture-session.mjs';
+import './fixture-sign-in-notice.test.mjs';
+import { fixtureOrigin, fixtureSession, handleFixtureSession, handleFixtureConfirmationReauth, fixtureResumePath } from './fixture-session.mjs';
 const origin = 'http://127.0.0.1:3826';
 const env = { NODE_ENV: 'development', VINTAD3E_APPAREL_FIXTURE: '1' };
 test('resume accepts internal paths only', () => {
@@ -10,6 +11,17 @@ test('resume accepts internal paths only', () => {
 });
 function post(action, headers = {}) { return new Request(`${origin}/api/fixture/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3826', origin, ...headers } }); }
 function cookie(response) { return response.headers.get('set-cookie').split(';')[0]; }
+
+test('confirmation reauthentication revokes only the local session and keeps its destination', () => {
+  const own = cookie(handleFixtureSession(post('login'), 'login', env, 2000));
+  const other = cookie(handleFixtureSession(post('login'), 'login', env, 2001));
+  const result = handleFixtureConfirmationReauth(post('logout', { cookie: own }), env, 2002);
+  assert.equal(result.headers.get('location'), '/sign-in?next=%2Fconfirmations%2Fproposal-01');
+  assert.equal(fixtureSession(own, '127.0.0.1:3826', env, 2003), false);
+  assert.equal(fixtureSession(other, '127.0.0.1:3826', env, 2003), true);
+  assert.equal(handleFixtureConfirmationReauth(post('logout', { cookie: other, origin: 'https://other.invalid' }), env, 2004).status, 403);
+  assert.equal(fixtureSession(other, '127.0.0.1:3826', env, 2005), true);
+});
 
 test('fixture login and logout rotate and revoke only local synthetic sessions', () => {
   assert.equal(fixtureOrigin(env), origin);

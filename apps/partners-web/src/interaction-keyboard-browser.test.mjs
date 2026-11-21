@@ -29,6 +29,16 @@ test('public guides navigate languages, copy and open images on desktop and mobi
         await enter(page, page.getByRole('link', { name: 'House music guide', exact: true }));
         await page.waitForURL('**/guide/dj/en-house');
         await page.getByRole('heading', { name: 'House music guide', exact: true }).waitFor();
+        await enter(page, page.getByRole('link', { name: 'DJ guide', exact: true }));
+        await page.waitForURL('**/guide/dj/en');
+        await enter(page, page.getByRole('link', { name: 'R&B and hip-hop music guide', exact: true }));
+        await page.waitForURL('**/guide/dj/en-rnb-hiphop');
+        await enter(page, page.getByRole('link', { name: '한국어', exact: true }));
+        await page.waitForURL('**/guide/dj/ko-rnb-hiphop');
+        assert.equal(await page.locator('nav[aria-label="가이드 탐색"] a[lang="ko"]').getAttribute('aria-current'), 'page');
+        await enter(page, page.getByRole('link', { name: 'DJ 가이드로', exact: true }));
+        await page.waitForURL('**/guide/dj');
+        assert.equal((await page.goto(`${origin}/guide/dj/unknown`)).status(), 404);
         await page.goto(`${origin}/proj-bedroom/guide/ko`);
         await page.locator('.bedroom-read-time').getByText(/^약 \d+분$/u).waitFor();
         const disclosure = page.locator('#guide-disclosure-0');

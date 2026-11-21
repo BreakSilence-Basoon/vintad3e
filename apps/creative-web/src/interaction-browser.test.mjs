@@ -34,11 +34,18 @@ test('creative login, confirmation and failures work in a browser', { timeout: 1
       const context = await browser.newContext({ viewport: { width, height: 844 } });
       const page = await context.newPage();
       try {
+        await page.goto(`${origin}/sign-in?error=AccessDenied&next=%2F`);
+        await page.getByText('회사 계정 정보를 확인하지 못했습니다. 다시 로그인해주세요.', { exact: true }).waitFor();
+        await page.waitForFunction(() => !new URL(location.href).searchParams.has('error'));
+        assert.equal(new URL(page.url()).searchParams.get('next'), '/');
         await page.goto(`${origin}/confirmations/proposal-01`);
         assert.equal(new URL(page.url()).pathname, '/sign-in');
         assert.equal(await page.evaluate(async () => (await fetch('/api/fixture/confirmation')).status), 401);
         await press(page, 'button', '회사 계정으로 로그인');
         await page.waitForURL('**/confirmations/proposal-01');
+        await page.goto(`${origin}/sign-in?mode=cover&mode=other&next=%2F`);
+        await page.getByRole('link', { name: 'Creative로 돌아가기' }).waitFor();
+        await page.goto(origin + '/confirmations/proposal-01');
         await page.getByRole('link', { name:'staff01@example.invalid 로그인 화면 보기' }).click();
         await page.getByRole('link', { name:'Creative로 돌아가기' }).click();
         await page.waitForURL(origin + '/');

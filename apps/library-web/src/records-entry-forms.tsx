@@ -25,13 +25,30 @@ export function ObjectUploadForm({ fixture = false, inputId = 'library-object-fi
   const [file, setFile] = useState<File | null>(null);
   const selected = file ? (includeCorrected ? fixtureUploads : [fixtureUpload]).find(item => item.filename === file.name && new TextEncoder().encode(item.body).length === file.size) : undefined;
   const [stage, setStage] = useState<'select' | 'proposal' | 'loaded' | 'reviewed' | 'confirmed' | 'approved' | 'uploaded'>('select');
+  const [proposalId, setProposalId] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
   const hydrated = useSyncExternalStore(subscribe, hydratedSnapshot, serverSnapshot);
   async function prepare() {
     if (!fixture || !file || !selected) { setError(true); return; }
     setBusy(true); setError(false);
-    try { if (await file.text() !== selected.body) throw new Error('invalid'); setStage('proposal'); } catch { setError(true); } finally { setBusy(false); }
+    try {
+      if (await file.text() !== selected.body) throw new Error('invalid');
+      const response = await fetch('/api/fixture/object-confirmation', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'prepare', objectId: selected.id }) });
+      const result = response.ok ? await response.json() : null;
+      if (!result || result.objectId !== selected.id || result.state !== 'loaded' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(result.proposalId)) throw new Error('invalid');
+      setProposalId(result.proposalId); setStage('proposal');
+    } catch { setError(true); } finally { setBusy(false); }
+  }
+  async function confirm(action: 'load' | 'review' | 'confirm', next: 'loaded' | 'reviewed' | 'confirmed') {
+    if (!proposalId || !selected || busy) return;
+    setBusy(true); setError(false);
+    try {
+      const response = await fetch('/api/fixture/object-confirmation', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, proposalId }) });
+      const result = response.ok ? await response.json() : null;
+      if (result?.proposalId !== proposalId || result.objectId !== selected.id || (action === 'load' ? !['loaded', 'reviewed', 'confirmed'].includes(result.state) : result.state !== next)) throw new Error('invalid');
+      setStage(result.state);
+    } catch { setError(true); } finally { setBusy(false); }
   }
   async function upload() {
     if (!file || !selected || busy) return;
@@ -47,10 +64,10 @@ export function ObjectUploadForm({ fixture = false, inputId = 'library-object-fi
   return <section className="library-register" aria-label="파일 올리기" aria-busy={busy} data-hydrated={hydrated}>
     <div className="library-field"><Label htmlFor={inputId} appearance="native">파일</Label><Input id={inputId} appearance="native" type="file" disabled={busy || stage !== 'select'} onChange={event => { setFile(event.target.files?.[0] ?? null); setError(false); }} /></div>
     {stage === 'select' && <Button profile="library" type="button" disabled={!file || busy} onClick={() => void prepare()}>업로드 내용 확인</Button>}
-    {stage === 'proposal' && <Button profile="library" type="button" onClick={() => setStage('loaded')}>제안 불러오기</Button>}
+    {stage === 'proposal' && <Button profile="library" type="button" disabled={busy} onClick={() => void confirm('load', 'loaded')}>제안 불러오기</Button>}
     {['loaded', 'reviewed', 'confirmed'].includes(stage) && <section className="staff-section" aria-labelledby={`${inputId}-summary`}><h2 id={`${inputId}-summary`}>제안 내용</h2><dl><dt>앱</dt><dd>Library</dd><dt>작업</dt><dd>파일 올리기</dd><dt>대상</dt><dd>{selected?.filename}</dd></dl></section>}
-    {stage === 'loaded' && <Button profile="library" type="button" onClick={() => setStage('reviewed')}>제안 검토</Button>}
-    {stage === 'reviewed' && <Button profile="library" type="button" onClick={() => setStage('confirmed')}>이 변경 확인</Button>}
+    {stage === 'loaded' && <Button profile="library" type="button" disabled={busy} onClick={() => void confirm('review', 'reviewed')}>제안 검토</Button>}
+    {stage === 'reviewed' && <Button profile="library" type="button" disabled={busy} onClick={() => void confirm('confirm', 'confirmed')}>이 변경 확인</Button>}
     {stage === 'confirmed' && <Button profile="library" type="button" onClick={() => setStage('approved')}>업로드 승인</Button>}
     {stage === 'approved' && <Button profile="library" type="button" disabled={busy} onClick={() => void upload()}>파일 올리기</Button>}
     {stage === 'uploaded' && selected && <><p role="status">파일을 올렸습니다.</p><Link href={`/objects/${selected.id}`}>파일 열기</Link></>}

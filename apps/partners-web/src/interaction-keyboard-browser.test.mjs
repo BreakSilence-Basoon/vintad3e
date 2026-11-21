@@ -66,6 +66,35 @@ test('public guides navigate languages, copy and open images on desktop and mobi
         await page.waitForURL('**/proj-bedroom/guide/ja');
         await page.getByText('アーティスト向けブリーフ', { exact: true }).waitFor();
         await page.locator('.bedroom-read-time').getByText(/^約\d+分$/u).waitFor();
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.goto(`${origin}/proj-bedroom/guide/ko`);
+        const track = page.locator('.bedroom-image-track').filter({ has: page.locator('#guide-space-0-0') });
+        await track.scrollIntoViewIfNeeded();
+        const box = await track.boundingBox();
+        assert.ok(box && box.width > 100);
+        await page.mouse.move(box.x + box.width * .8, box.y + box.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(box.x + box.width * .2, box.y + box.height / 2, { steps: 8 });
+        await page.mouse.up();
+        await page.waitForFunction(el => el.scrollLeft > 10, await track.elementHandle());
+        assert.equal(await page.locator('.bedroom-lightbox[open]').count(), 0);
+        await track.locator('figure').nth(1).evaluate(element => element.scrollIntoView({ block: 'center', inline: 'start', behavior: 'instant' }));
+        await page.waitForFunction(el => el.scrollLeft > 10, await track.elementHandle());
+        const before = await page.locator('#guide-space-0-1').evaluate(element => {
+          const rect = element.getBoundingClientRect();
+          const readingLine = Math.min(120, innerHeight * .2);
+          window.scrollTo(0, window.scrollY + rect.top + rect.height / 2 - readingLine);
+          return { fraction: .5 };
+        });
+        await enter(page, page.getByRole('button', { name: '언어 선택', exact: true }));
+        await enter(page, page.locator('.guest-language-float__choices button[lang=en]'));
+        await page.waitForURL('**/proj-bedroom/guide/en');
+        await page.waitForFunction(() => document.querySelector('#guide-space-0-1')?.closest('.bedroom-image-track')?.scrollLeft > 10);
+        const after = await page.locator('#guide-space-0-1').evaluate(element => {
+          const rect = element.getBoundingClientRect();
+          return (Math.min(120, innerHeight * .2) - rect.top) / rect.height;
+        });
+        assert.ok(Math.abs(after - before.fraction) < .15, `reading position changed: ${after}`);
       } finally { await context.close(); }
     }
   } finally {

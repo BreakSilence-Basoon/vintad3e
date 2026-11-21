@@ -26,3 +26,24 @@ test('attendance pagination preserves the selected range and sort', () => {
   assert.equal(new URL(buildHistoryHref(staff, 1, true), 'http://localhost').searchParams.get('employee'), staffId);
   assert.equal(new URL(buildHistoryHref(staff, 1), 'http://localhost').searchParams.has('employee'), false);
 });
+
+test('attendance periods, ordering and employee visibility survive pagination', () => {
+  const employee = '00000000-0000-4000-8000-000000000001';
+  for (const range of ['all', 'today', 'last7', 'last30', 'custom']) {
+    for (const sort of ['asc', 'desc']) {
+      for (const includeEmployee of [false, true]) {
+        const filters = parseHistoryFilters({ range, sort, employee, from: '2026-09-01', to: '2026-09-30' });
+        const url = new URL(buildHistoryHref(filters, 2, includeEmployee), 'http://localhost');
+        const restored = parseHistoryFilters(Object.fromEntries(url.searchParams));
+        assert.equal(restored.range, range);
+        assert.equal(restored.sort, sort);
+        assert.equal(restored.employee, includeEmployee ? employee : 'all');
+        assert.equal(url.searchParams.get('historyPage'), '2');
+        if (range === 'custom') {
+          assert.equal(restored.from, '2026-09-01');
+          assert.equal(restored.to, '2026-09-30');
+        }
+      }
+    }
+  }
+});

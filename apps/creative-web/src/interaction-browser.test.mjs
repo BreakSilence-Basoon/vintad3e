@@ -53,6 +53,13 @@ test('creative login, confirmation and failures work in a browser', { timeout: 1
         await page.getByRole('link', { name:'Creative 홈으로 이동' }).click();
         await page.waitForURL(origin + '/');
         await page.getByText('매장 촬영', { exact:true }).waitFor();
+        assert.equal(await page.locator('.staff-list__item').count(), 2);
+        await page.getByText('홍보 자료', { exact:true }).waitFor();
+        assert.equal(await page.getByRole('alert').filter({ hasText: '프로젝트 목록을 불러오지 못했습니다.' }).count(), 0);
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        await page.reload();
+        await page.getByText('매장 촬영', { exact:true }).waitFor();
+        assert.equal(await page.locator('.staff-list__item').count(), 2);
         await page.goto(origin + '/confirmations/proposal-01');
 
         // Invalid actions must not skip the review or change the stored proposal.
@@ -105,7 +112,7 @@ test('creative project empty and read-error states match original', { timeout: 1
     const port=await freePort(), origin=`http://127.0.0.1:${port}`;
     const server=spawn(process.execPath,['node_modules/next/dist/bin/next','dev','--hostname','127.0.0.1','--port',String(port)],{cwd:process.cwd(),env:{...process.env,NODE_ENV:'development',VINTAD3E_CREATIVE_FIXTURE:'1',VINTAD3E_CREATIVE_FIXTURE_ORIGIN:origin,VINTAD3E_CREATIVE_FIXTURE_STATE:state},stdio:'ignore'});
     try { let ready=false; for(let i=0;i<120;i++){try{if((await fetch(origin)).ok){ready=true;break;}}catch{} await delay(250);} assert.ok(ready);
-      for(const width of [1440,390]) {const context=await browser.newContext({viewport:{width,height:844}});try{const page=await context.newPage();await page.goto(origin);await page.waitForURL('**/sign-in');await page.getByRole('button',{name:'회사 계정으로 로그인'}).click();await page.waitForURL(origin+'/');if(state==='empty'){await page.getByText('등록된 프로젝트가 없습니다.').waitFor();assert.equal(await page.locator('.staff-list__item').count(),0);}else{await page.getByRole('alert').filter({hasText:'프로젝트 목록을 불러오지 못했습니다.'}).waitFor();await page.reload();await page.getByText('프로젝트 목록을 불러오지 못했습니다.').waitFor();}assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}finally{await context.close();}}
+      for(const width of [1440,390]) {const context=await browser.newContext({viewport:{width,height:844}});try{const page=await context.newPage();await page.goto(origin);await page.waitForURL('**/sign-in');await page.getByRole('button',{name:'회사 계정으로 로그인'}).click();await page.waitForURL(origin+'/');const notice=state==='empty'?'등록된 프로젝트가 없습니다.':'프로젝트 목록을 불러오지 못했습니다.';const result=()=>state==='empty'?page.getByText(notice):page.getByRole('alert').filter({hasText:notice});await result().waitFor();assert.equal(await page.locator('.staff-list__item').count(),0);await page.reload();await result().waitFor();assert.equal(await page.locator('.staff-list__item').count(),0);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}finally{await context.close();}}
     } finally {server.kill('SIGTERM');if(server.exitCode===null)await Promise.race([once(server,'exit'),delay(5000)]);if(server.exitCode===null)server.kill('SIGKILL');}
   }} finally {await browser.close();}
 });

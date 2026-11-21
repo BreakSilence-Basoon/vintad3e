@@ -11,9 +11,16 @@ on:
 permissions:
   contents: read
 jobs:
-  accessibility:
+  accessibility-shard:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        apps:
+          - portal timetable apparel
+          - supporters partners library
+          - floor creative admin
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -21,4 +28,17 @@ jobs:
           node-version: '24'
       - run: corepack enable
       - run: corepack pnpm install --frozen-lockfile --ignore-scripts
-      - run: node scripts/accessibility-audit.mjs
+      - name: Audit the selected apps
+        env:
+          APPS: ${{ matrix.apps }}
+        run: node scripts/accessibility-audit.mjs $APPS
+  accessibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [accessibility-shard]
+    if: ${{ always() }}
+    steps:
+      - name: Require all accessibility audits
+        env:
+          AUDIT_RESULT: ${{ needs.accessibility-shard.result }}
+        run: test "$AUDIT_RESULT" = success

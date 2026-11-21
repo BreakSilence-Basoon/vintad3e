@@ -43,7 +43,6 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/timetable-api test
       - run: corepack pnpm --filter @vintad3e/timetable-api exec node --test integration/browser-web.test.mjs
       - run: corepack pnpm --filter @vintad3e/timetable-web test
-      - run: corepack pnpm --filter @vintad3e/timetable-web test:fixture-http
       - run: corepack pnpm --filter @vintad3e/timetable-web test:fixture-browser
       - run: corepack pnpm --filter @vintad3e/timetable-web build
       - run: corepack pnpm --filter @vintad3e/timetable-web exec node --test src/history-view-http.test.mjs
@@ -55,14 +54,12 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/apparel-web test:fixture-http
       - run: corepack pnpm --filter @vintad3e/apparel-web build
       - run: corepack pnpm --filter @vintad3e/supporters-web test
-      - run: corepack pnpm --filter @vintad3e/supporters-web test:fixture-browser
       - run: corepack pnpm --filter @vintad3e/supporters-web build
       - run: corepack pnpm --filter @vintad3e/partners-web test
       - run: corepack pnpm --filter @vintad3e/partners-web build
       - run: corepack pnpm --filter @vintad3e/library-web test
       - run: corepack pnpm --filter @vintad3e/library-web build
       - run: corepack pnpm --filter @vintad3e/floor-web test
-      - run: corepack pnpm --filter @vintad3e/floor-web test:fixture-browser
       - run: corepack pnpm --filter @vintad3e/floor-web build
       - run: corepack pnpm --filter @vintad3e/creative-web test
       - run: corepack pnpm --filter @vintad3e/creative-web test:fixture-http
@@ -71,6 +68,31 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/admin-web test
       - run: corepack pnpm --filter @vintad3e/admin-web test:fixture-browser
       - run: corepack pnpm --filter @vintad3e/admin-web build
+  parallel-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: timetable-web
+            command: test:fixture-http
+          - app: supporters-web
+            command: test:fixture-browser
+          - app: floor-web
+            command: test:fixture-browser
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - run: corepack enable
+      - run: corepack pnpm install --frozen-lockfile --ignore-scripts
+      - name: Run fixture tests
+        env:
+          APP: ${{ matrix.app }}
+          COMMAND: ${{ matrix.command }}
+        run: corepack pnpm --filter "@vintad3e/$APP" "$COMMAND"
   heavy-browser:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -89,15 +111,16 @@ jobs:
   selection:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [selection-core, heavy-browser]
+    needs: [selection-core, heavy-browser, parallel-fixtures]
     if: ${{ always() }}
     steps:
       - name: Require all workspace checks
         env:
           CORE_RESULT: ${{ needs.selection-core.result }}
           BROWSER_RESULT: ${{ needs.heavy-browser.result }}
+          FIXTURE_RESULT: ${{ needs.parallel-fixtures.result }}
         run: |
-          test "$CORE_RESULT" = success && test "$BROWSER_RESULT" = success
+          test "$CORE_RESULT" = success && test "$BROWSER_RESULT" = success && test "$FIXTURE_RESULT" = success
   browser-audit:
     runs-on: ubuntu-latest
     timeout-minutes: 15

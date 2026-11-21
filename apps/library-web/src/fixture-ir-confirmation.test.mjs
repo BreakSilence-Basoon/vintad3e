@@ -243,6 +243,68 @@ test('Notion lifecycle proof and document state survive verified synthetic login
   assert.equal(readFixtureNotionImport(replacement, host, env, fixtureNotionDocument.id, 55009), null);
 });
 
+test('expired synthetic Notion deletion can be reissued once with a new review', async () => {
+  const start = 2_000_000, cookie = login(start), other = login(start);
+  const call = (who, body, now) => handleFixtureIrConfirmation(post(who, body), env, now);
+  const imported = await (await call(cookie, { action: 'prepare', kind: 'notion' }, start + 1)).json();
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await call(cookie, { action, proposalId: imported.proposalId }, start + 2)).status, 200);
+  const original = await (await call(cookie, { action: 'prepare', kind: 'notion-delete' }, start + 3)).json();
+  const before = await (await handleFixtureIrConfirmation(read(cookie, original.proposalId), env, start + 4)).json();
+  const reissue = { action: 'reissue', proposalId: original.proposalId, proof: original.proof };
+  assert.equal((await call(cookie, reissue, start + 4)).status, 409);
+  const expired = start + 3 + 15 * 60_000;
+  assert.equal((await handleFixtureIrConfirmation(read(cookie, original.proposalId), env, expired)).status, 404);
+  assert.equal((await call(cookie, { action: 'review', proposalId: original.proposalId }, expired)).status, 404);
+  assert.equal((await call(other, reissue, expired)).status, 404);
+  assert.equal((await call(cookie, { ...reissue, proof: 'A'.repeat(43) }, expired)).status, 404);
+  const responses = await Promise.all([call(cookie, reissue, expired), call(cookie, reissue, expired)]);
+  assert.deepEqual(responses.map(response => response.status).sort(), [200, 409]);
+  const replacement = await responses.find(response => response.status === 200).json();
+  assert.notEqual(replacement.proposalId, original.proposalId);
+  const after = await (await handleFixtureIrConfirmation(read(cookie, replacement.proposalId), env, expired + 1)).json();
+  assert.equal(after.canonical, before.canonical);
+  assert.equal(after.state, 'loaded');
+  assert.equal((await call(cookie, { action: 'execute', proposalId: replacement.proposalId }, expired + 1)).status, 409);
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await call(cookie, { action, proposalId: replacement.proposalId }, expired + 2)).status, 200);
+  assert.equal(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, expired + 3), null);
+});
+
+test('expired synthetic Notion proposals cannot reissue after source state changes or execution', async () => {
+  const start = 4_000_000, cookie = login(start);
+  const call = (body, now) => handleFixtureIrConfirmation(post(cookie, body), env, now);
+  const prepare = async kind => (await call({ action: 'prepare', kind }, start + 1)).json();
+  const apply = async proposal => { for (const action of ['review', 'confirm', 'execute']) assert.equal((await call({ action, proposalId: proposal.proposalId }, start + 2)).status, 200); };
+  const imported = await prepare('notion'); await apply(imported);
+  const stale = await prepare('notion-delete');
+  const deletion = await prepare('notion-delete'); await apply(deletion);
+  const restoration = await prepare('notion-restore'); await apply(restoration);
+  const expired = start + 1 + 15 * 60_000;
+  for (const proposal of [stale, deletion, imported]) assert.equal((await call({ action: 'reissue', proposalId: proposal.proposalId, proof: proposal.proof }, expired)).status, 409);
+  assert.deepEqual(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, expired), fixtureNotionDocument);
+  assert.equal((await call({ action: 'reissue', proposalId: stale.proposalId, proof: stale.proof }, start + 1 + 30 * 60_000)).status, 401);
+});
+
+test('expired synthetic Notion import and restoration each require a fresh approval', async () => {
+  const start = 6_000_000, cookie = login(start);
+  const call = (body, now) => handleFixtureIrConfirmation(post(cookie, body), env, now);
+  const original = await (await call({ action: 'prepare', kind: 'notion' }, start + 1)).json();
+  const firstExpiry = start + 1 + 15 * 60_000;
+  const replacement = await (await call({ action: 'reissue', proposalId: original.proposalId, proof: original.proof }, firstExpiry)).json();
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await call({ action, proposalId: replacement.proposalId }, firstExpiry + 1)).status, 200);
+  const deletion = await (await call({ action: 'prepare', kind: 'notion-delete' }, firstExpiry + 2)).json();
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await call({ action, proposalId: deletion.proposalId }, firstExpiry + 3)).status, 200);
+  const restoration = await (await call({ action: 'prepare', kind: 'notion-restore' }, firstExpiry + 4)).json();
+  const renewed = handleFixtureSession(new Request(`${origin}/login`, { method: 'POST', headers: { host, origin, cookie } }), 'login', env, firstExpiry + 5).headers.get('set-cookie').split(';')[0];
+  const renewedCall = (body, now) => handleFixtureIrConfirmation(post(renewed, body), env, now);
+  assert.equal((await renewedCall({ action: 'restore', proposalId: restoration.proposalId, proof: restoration.proof }, firstExpiry + 6)).status, 200);
+  const restoreExpiry = firstExpiry + 4 + 15 * 60_000;
+  const renewedProposal = await (await renewedCall({ action: 'reissue', proposalId: restoration.proposalId, proof: restoration.proof }, restoreExpiry)).json();
+  assert.notEqual(renewedProposal.proposalId, restoration.proposalId);
+  assert.equal((await renewedCall({ action: 'execute', proposalId: renewedProposal.proposalId }, restoreExpiry + 1)).status, 409);
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await renewedCall({ action, proposalId: renewedProposal.proposalId }, restoreExpiry + 2)).status, 200);
+  assert.deepEqual(readFixtureNotionImport(renewed, host, env, fixtureNotionDocument.id, restoreExpiry + 3), fixtureNotionDocument);
+});
+
 test('isolated cleanup keeps its deletion proof through synthetic login recovery', async () => {
   const old = login(60000);
   async function prepare(cookie, kind) { const response = await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind }), env, 60001); assert.equal(response.status, 200); return response.json(); }

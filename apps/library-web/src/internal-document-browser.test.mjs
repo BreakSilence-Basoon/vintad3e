@@ -21,5 +21,5 @@ test('internal readers require login and show synthetic documents', {timeout:120
  }
  assert.equal((await page.goto(origin+`/${kind}/unknown`)).status(),404);assert.equal((await page.goto(origin+'/documents/legacy-document')).status(),404);
  }finally{await context.close();}}
- }finally{await browser?.close();child.kill('SIGTERM');if(child.exitCode===null)await Promise.race([once(child,'exit'),delay(5000)]);if(child.exitCode===null)child.kill('SIGKILL');}
+ }finally{await browser?.close();child.kill('SIGTERM');if(child.exitCode===null && child.signalCode === null)await Promise.race([once(child,'exit'),delay(5000, undefined, { ref: false })]);if(child.exitCode===null && child.signalCode === null)child.kill('SIGKILL');}
 });

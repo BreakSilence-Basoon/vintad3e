@@ -95,6 +95,6 @@ test('synthetic internal-document confirmations recover in the same tab', { time
       } finally { await context.close(); }
     }
   } finally {
-    await browser?.close(); server.kill('SIGTERM'); if (server.exitCode === null) await Promise.race([once(server, 'exit'), delay(5000)]); if (server.exitCode === null) server.kill('SIGKILL');
+    await browser?.close(); server.kill('SIGTERM'); if (server.exitCode === null && server.signalCode === null) await Promise.race([once(server, 'exit'), delay(5000, undefined, { ref: false })]); if (server.exitCode === null && server.signalCode === null) server.kill('SIGKILL');
   }
 });

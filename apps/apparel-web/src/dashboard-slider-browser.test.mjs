@@ -27,8 +27,13 @@ test('home inventory panels respond to dragging and reject short drags on deskto
         await page.locator('.dashboard-monitor[data-hydrated="true"]').waitFor();
         const slider = page.locator('.dashboard-inventory-switcher');
         const stage = slider.locator('.dashboard-inventory-switcher__stage');
+        await slider.locator('.dashboard-inventory-switcher__stage.is-measured').waitFor();
+        const settle = () => stage.locator('.dashboard-inventory-switcher__track').evaluate(async element => {
+          await new Promise(requestAnimationFrame);
+          await Promise.all(element.getAnimations().map(animation => animation.finished.catch(() => {})));
+        });
         async function drag(direction, distance) {
-          await stage.evaluate(element => element.scrollIntoView({ block: 'start' }));
+          await stage.scrollIntoViewIfNeeded();
           const point = await stage.evaluate((element, sign) => {
             const rect = element.getBoundingClientRect();
             const x = rect.left + rect.width * (sign < 0 ? 0.8 : 0.2);
@@ -48,11 +53,17 @@ test('home inventory panels respond to dragging and reject short drags on deskto
         assert.equal(await slider.getAttribute('data-active-slide'), 'shortage');
         await drag(-1, 'short');
         assert.equal(await slider.getAttribute('data-active-slide'), 'shortage');
+        await drag(1, 'long');
+        assert.equal(await slider.getAttribute('data-active-slide'), 'shortage');
         await drag(-1, 'long');
         await slider.locator('.dashboard-inventory-switcher__panel.is-active [aria-label="목표재고 추적표 보기"][aria-current="true"]').waitFor();
+        await settle();
+        assert.equal(await slider.getAttribute('data-active-slide'), 'tracking');
+        await drag(-1, 'long');
         assert.equal(await slider.getAttribute('data-active-slide'), 'tracking');
         await drag(1, 'long');
         await slider.locator('.dashboard-inventory-switcher__panel.is-active [aria-label="매장 디자인별 부족 수량 보기"][aria-current="true"]').waitFor();
+        await settle();
         assert.equal(await slider.getAttribute('data-active-slide'), 'shortage');
       } finally { await context.close(); }
     }

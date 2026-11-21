@@ -38,7 +38,7 @@ test('inventory read error follows the source screen at desktop and mobile width
   }
 });
 
-test('floor sales search, pagination and inventory read view work with keyboard input', { timeout: 90000 }, async () => {
+test('floor sales search, pagination and inventory read view work with keyboard input', { timeout: 150000 }, async () => {
   const port = await freePort(), origin = `http://127.0.0.1:${port}`;
   const child = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '--hostname', '127.0.0.1', '--port', String(port)], { cwd: process.cwd(), env: { ...process.env, NODE_ENV: 'development', VINTAD3E_FLOOR_FIXTURE: '1', VINTAD3E_FLOOR_FIXTURE_ORIGIN: origin }, stdio: 'ignore' });
   let browser;
@@ -53,6 +53,14 @@ test('floor sales search, pagination and inventory read view work with keyboard 
       try {
         await page.goto(`${origin}/sales?salesPage=wrong`);
         await page.waitForURL('**/sign-in?next=%2F');
+        for (const [error, title] of [['AccessDenied', '로그인을 완료하지 못했습니다.'], ['SessionExpired', '다시 로그인이 필요합니다.'], ['__proto__', '로그인을 완료하지 못했습니다.']]) {
+          await page.goto(`${origin}/sign-in?next=%2F&error=${error}`);
+          await page.getByRole('alert').locator('strong').filter({ hasText: title }).waitFor();
+          await page.waitForFunction(() => !new URL(location.href).searchParams.has('error'));
+          assert.equal(new URL(page.url()).searchParams.get('next'), '/');
+        }
+        await page.reload();
+        assert.equal(await page.locator('.staff-sign-in-toast').count(), 0);
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL(origin + '/');
         const dateInput = page.getByLabel('영업일 선택');
@@ -70,7 +78,10 @@ test('floor sales search, pagination and inventory read view work with keyboard 
         await page.getByRole('region', { name: '빈 영업일' }).waitFor();
         await page.goto(`${origin}/?date=not-a-date`);
         assert.equal(await dateInput.inputValue(), latestDate);
-        await page.goto(`${origin}/sign-in?mode=cover&next=%2Finventory`);
+        await page.goto(`${origin}/sign-in?mode=cover&next=%2Fsales%3Frange%3D7d`);
+        await enter(page, page.getByRole('link', { name: 'Floor로 돌아가기' }));
+        await page.waitForURL('**/sales?range=7d');
+        await page.goto(`${origin}/sign-in?mode=cover&mode=other&next=%2Finventory`);
         await enter(page, page.getByRole('link', { name: 'Floor로 돌아가기' }));
         await page.waitForURL('**/inventory');
         await page.goto(`${origin}/sales?salesPage=wrong`);
@@ -86,9 +97,40 @@ test('floor sales search, pagination and inventory read view work with keyboard 
         assert.equal(await page.locator('.sales-audit-card').count(), 0);
         await enter(page, form.getByRole('button', { name: '초기화' }));
         await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 18);
+        await form.locator('select[name=range]').selectOption('30d');
+        await form.locator('select[name=sort]').selectOption('asc');
+        await enter(page, form.getByRole('button', { name: '적용' }));
+        await page.waitForFunction(() => { const params = new URL(location.href).searchParams; return params.get('range') === '30d' && params.get('sort') === 'asc'; });
+        await page.locator('.sales-audit-card').first().getByText('주스').first().waitFor();
+        const more = page.locator('[aria-label="판매내역 더 불러오기"] a');
+        assert.match(await more.getAttribute('href'), /range=30d/);
+        assert.match(await more.getAttribute('href'), /sort=asc/);
+        await enter(page, more);
+        await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 21);
+        await form.locator('select[name=range]').selectOption('custom');
+        const custom = page.getByRole('group', { name: '기간 직접 지정' });
+        await custom.getByLabel('시작일').fill('2024-01-01');
+        await custom.getByLabel('종료일').fill('2024-01-02');
+        await enter(page, custom.getByRole('button', { name: '닫기' }));
+        await enter(page, form.getByRole('button', { name: '적용' }));
+        await page.waitForFunction(() => { const params = new URL(location.href).searchParams; return params.get('range') === 'custom' && params.get('from') === '2024-01-01' && params.get('to') === '2024-01-02'; });
+        await page.waitForFunction(() => document.querySelectorAll('.sales-audit-card').length === 0);
+        assert.equal(await page.locator('.sales-audit-card').count(), 0);
         await page.goto(`${origin}/inventory`);
         await page.waitForFunction(() => document.querySelector('main')?.textContent.includes('재료 01'));
         assert.equal(await page.locator('.inventory-editor').count(), 0);
+        await page.goto(`${origin}/confirmations/proposal-01`);
+        await enter(page, page.getByRole('button', { name: '제안 불러오기' }));
+        await page.getByRole('heading', { name: '제안 내용' }).waitFor();
+        await enter(page, page.getByRole('button', { name: '제안 검토' }));
+        await enter(page, page.getByRole('button', { name: '이 변경 확인' }));
+        await page.getByRole('status').filter({ hasText: '확인되었습니다.' }).waitFor();
+        const unknown = await page.goto(`${origin}/confirmations/not-found`);
+        assert.equal(unknown.status(), 404);
+        await page.goto(`${origin}/access-denied`);
+        await page.getByRole('heading', { name: 'Floor를 사용할 수 없습니다.' }).waitFor();
+        await enter(page, page.getByRole('button', { name: '다른 Google 계정으로 로그인' }));
+        await page.waitForURL('**/sign-in');
       } finally { await context.close(); }
     }
   } finally {

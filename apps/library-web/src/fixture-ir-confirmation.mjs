@@ -135,7 +135,7 @@ export async function handleFixtureIrConfirmation(request, env, now = Date.now()
     let bumpGeneration = false;
     if (record.kind === 'notion-delete' || record.kind === 'notion-restore') {
       const audit = notionAudits.get(session), from = record.kind === 'notion-delete' ? notionImports : notionDeleted, to = record.kind === 'notion-delete' ? notionDeleted : notionImports, expiresAt = from.get(session), proof = record.example.change.notionProof;
-      if (!audit || !(expiresAt > now) || record.generation !== audit.generation || record.example.change.revision !== audit.revision || proof.importProposalId !== audit.importProposalId || (record.kind === 'notion-restore' && (proof.deletionProposalId !== audit.deletionProposalId || proof.aclRevisionAfter !== audit.revision))) return failure(409);
+      if (!audit || !(expiresAt > now) || record.generation !== audit.generation || record.example.change.revision !== audit.revision || proof.batchId !== fixtureNotionExample.change.batchId || proof.sourceId !== '00000000-0000-4000-8000-000000000110' || proof.sourceSha256 !== fixtureNotionExample.change.sourceSha256 || proof.importProposalId !== audit.importProposalId || (record.kind === 'notion-restore' && (proof.deletionProposalId !== audit.deletionProposalId || proof.aclRevisionAfter !== audit.revision))) return failure(409);
       if (!to.has(session) && to.size >= 128) return failure(503);
       from.delete(session); to.set(session, expiresAt); notionAudits.set(session, { importProposalId: audit.importProposalId, revision: audit.revision + 1, generation: randomUUID(), ...(record.kind === 'notion-delete' ? { deletionProposalId: record.id } : {}) });
     } else if (record.kind === 'cleanup') {

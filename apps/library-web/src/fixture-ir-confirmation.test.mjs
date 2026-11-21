@@ -212,6 +212,7 @@ test('Notion lifecycle uses synthetic import and deletion proofs and rejects sta
   const deleted = await prepare('notion-delete'), stale = await prepare('notion-delete');
   const deleteView = await (await handleFixtureIrConfirmation(read(cookie, deleted.proposalId), env, 50004)).json();
   assert.equal(deleteView.example.change.notionProof.importProposalId, imported.proposalId);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: deleted.proposalId, proof: 'forged' }), env, 50004)).status, 400);
   await apply(deleted); assert.equal(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, 50005), null);
   assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'prepare', kind: 'notion-restore' }), env, 50005)).status, 409);
   const restored = await prepare('notion-restore');

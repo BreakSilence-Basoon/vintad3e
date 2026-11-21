@@ -8,6 +8,7 @@ test('accepts supported internal search destinations and existing synthetic resu
   for (const path of [`/meetings/${id}`, `/ir/${id}`, `/publications/${id}`, `/objects/${id}`, `/objects/${id}?documentId=${id}`, `/objects/${id}?documentId=${id}&view=corrected`]) assert.equal(isSearchResultHref(path), true, path);
   const data = searchFixture('development', '1', '', 'all', '', Date.now());
   assert.ok(data?.results.length);
+  assert.ok(data.results.some(item => item.href === '/ir/00000000-0000-4000-8000-000000000001'));
   for (const item of data.results) assert.equal(isSearchResultHref(item.href), true, item.href);
 });
 

@@ -53,11 +53,13 @@ test('meeting corrected fixture opens safe transcript and note links on desktop 
         const transcript = page.locator('.library-transcript'); await transcript.waitFor();
         assert.equal(await transcript.locator('.library-transcript__speaker').count(), 2);
         await enter(page, page.getByRole('link', { name: '교정 근거 ¹' }));
+        await page.waitForURL(/#meeting-note-%C2%B9$/);
         assert.equal(new URL(page.url()).hash, '#meeting-note-%C2%B9');
         const note = page.locator('tr[id="meeting-note-¹"]');
         await note.waitFor();
         assert.match(await note.innerText(), /업무 순서를 확인한 근거/u);
         await enter(page, page.getByRole('link', { name: '본문의 교정 표식으로 돌아가기' }));
+        await page.waitForURL(/#meeting-reference-1$/);
         assert.equal(new URL(page.url()).hash, '#meeting-reference-1');
       } finally { await context.close(); }
     }

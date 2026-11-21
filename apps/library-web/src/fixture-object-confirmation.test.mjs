@@ -42,3 +42,15 @@ test('synthetic upload proposals reject wrong origin, unknown data and productio
   assert.equal((await handleFixtureObjectConfirmation(post(cookie, { action: 'prepare', objectId: 'unknown' }), env, 5001)).status, 400);
   assert.equal((await handleFixtureObjectConfirmation(post(cookie, { action: 'prepare', objectId: fixtureUpload.id }), { ...env, NODE_ENV: 'production' }, 5001)).status, 404);
 });
+
+test('a rotated synthetic login resumes only with its saved recovery proof', async () => {
+  const old = login(9000);
+  const proposal = await (await handleFixtureObjectConfirmation(post(old, { action: 'prepare', objectId: fixtureUpload.id }), env, 9001)).json();
+  assert.equal((await handleFixtureObjectConfirmation(post(old, { action: 'review', proposalId: proposal.proposalId }), env, 9002)).status, 200);
+  const replacement = handleFixtureSession(new Request(`${origin}/login`, { method: 'POST', headers: { host, origin, cookie: old } }), 'login', env, 9003).headers.get('set-cookie').split(';')[0];
+  assert.equal((await handleFixtureObjectConfirmation(read(old, proposal.proposalId), env, 9004)).status, 401);
+  assert.equal((await handleFixtureObjectConfirmation(read(replacement, proposal.proposalId), env, 9004)).status, 404);
+  const restored = await handleFixtureObjectConfirmation(post(replacement, { action: 'restore', proposalId: proposal.proposalId, proof: proposal.proof }), env, 9005);
+  assert.equal((await restored.json()).state, 'reviewed');
+  assert.equal((await handleFixtureObjectConfirmation(post(replacement, { action: 'confirm', proposalId: proposal.proposalId }), env, 9006)).status, 200);
+});

@@ -28,7 +28,7 @@ export function FixtureObjectConfirmation({ proposalId }: { proposalId: string }
       const expected = { uploadId: file.id, size: new TextEncoder().encode(file.body).length, filename: file.filename, contentType: file.filename.endsWith('.html') ? 'text/html' : 'text/plain', audience: 'ADMIN' };
       const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(next.canonical))), value => value.toString(16).padStart(2, '0')).join('');
       if (JSON.stringify(expected) !== next.canonical || digest !== next.changeDigest) throw new Error('unavailable');
-      if (record && (next.objectId !== record.objectId || next.changeDigest !== record.changeDigest || next.canonical !== record.canonical)) throw new Error('unavailable');
+      if (record && (next.objectId !== record.objectId || next.changeDigest !== record.changeDigest || next.permissionDigest !== record.permissionDigest || next.canonical !== record.canonical)) throw new Error('unavailable');
       setRecord(next);
     } catch { setError('unavailable'); }
     finally { inFlight.current = false; setBusy(false); }

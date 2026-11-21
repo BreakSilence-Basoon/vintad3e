@@ -7,10 +7,12 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "test": "node scripts/check-founder-note.mjs && node --test tests/workspace-selection.test.mjs scripts/fixture-process.test.cjs scripts/fixture-http.test.cjs scripts/next-agent-rules.test.mjs",
+    "test": "node scripts/check-founder-note.mjs && node scripts/check-internal-links.mjs && node --test tests/docs-internal-links.test.mjs tests/workspace-selection.test.mjs scripts/fixture-process.test.cjs scripts/fixture-http.test.cjs scripts/next-agent-rules.test.mjs",
     "test:browser-smoke": "node scripts/browser-smoke.mjs"
   },
   "devDependencies": {
+    "github-slugger": "2.0.0",
+    "markdown-it": "15.0.3",
     "playwright": "1.56.1"
   }
 }

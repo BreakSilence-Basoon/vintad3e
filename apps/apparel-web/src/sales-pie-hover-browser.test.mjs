@@ -28,10 +28,18 @@ test('sales chart shows and clears option details on desktop and mobile widths',
         const scope = page.getByRole('tablist', { name: '의류 매출 범위' });
         const metric = page.getByRole('tablist', { name: '지표' });
         const chart = page.getByRole('img', { name: '그래픽별 매출 파이 (조각에 마우스를 올리면 SKU별로 펼쳐 보임)' });
-        for (const group of ['전체', '온라인']) for (const measure of ['금액', '수량']) {
-          await scope.getByRole('tab', { name: group, exact: true }).click();
-          await metric.getByRole('tab', { name: measure, exact: true }).click();
-          const segment = chart.locator('path[aria-label^="후드 "]');
+        for (const group of ['전체', '온라인', '오프라인']) for (const measure of ['금액', '수량']) {
+          const tab = scope.getByRole('tab', { name: group, exact: true });
+          await tab.click();
+          await page.waitForFunction(element => element.getAttribute('aria-selected') === 'true', await tab.elementHandle());
+          const metricTab = metric.getByRole('tab', { name: measure, exact: true });
+          await metricTab.click();
+          await page.waitForFunction(element => element.getAttribute('aria-selected') === 'true', await metricTab.elementHandle());
+          if (group === '오프라인' && await chart.count() === 0) {
+            await page.getByText('선택한 범위의 의류 판매 데이터가 없습니다.', { exact: true }).waitFor();
+            continue;
+          }
+          const segment = group === '오프라인' ? chart.locator('path[aria-label]').first() : chart.locator('path[aria-label^="후드 "]');
           await segment.scrollIntoViewIfNeeded();
           const point = await segment.evaluate(element => {
             const rect = element.getBoundingClientRect();
@@ -48,6 +56,12 @@ test('sales chart shows and clears option details on desktop and mobile widths',
           await page.mouse.move(1, 1);
           await chart.locator('foreignObject').waitFor({ state: 'detached' });
         }
+        const now = Date.now(), day = 86_400_000;
+        const emptyRange = new URLSearchParams({ from: new Date(now - 10 * day).toISOString(), to: new Date(now - 5 * day).toISOString() });
+        await page.goto(`${origin}/admin/stats?${emptyRange}`);
+        await page.locator('.console-section[data-hydrated="true"]').waitFor();
+        await page.getByText('선택한 범위의 의류 판매 데이터가 없습니다.', { exact: true }).waitFor();
+        assert.equal(await chart.count(), 0);
       } finally { await context.close(); }
     }
   } finally {

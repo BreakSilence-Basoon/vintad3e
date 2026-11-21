@@ -62,6 +62,24 @@ test('sales chart shows and clears option details on desktop and mobile widths',
         await page.locator('.console-section[data-hydrated="true"]').waitFor();
         await page.getByText('선택한 범위의 의류 판매 데이터가 없습니다.', { exact: true }).waitFor();
         assert.equal(await chart.count(), 0);
+        await page.goto(`${origin}/admin/stats`);
+        await page.locator('.console-section[data-hydrated="true"]').waitFor();
+        const endpoint = /\/admin\/stats\/sales-overview\?/;
+        await page.route(endpoint, async route => {
+          const upstream = await route.fetch();
+          const data = await upstream.json();
+          data.onlineRevenueUnavailable = true;
+          data.unconvertedCurrencyTotals = [{ currencyCode: 'USD', amount: null, saleCount: 1 }];
+          data.onlineApparelByDesign = [];
+          data.storeApparelByDesign = [];
+          data.onlineApparelOther = null;
+          data.storeApparelOther = null;
+          await route.fulfill({ response: upstream, json: data });
+        });
+        await page.getByTitle('확대 — 짧은 기간(최대 일별)').click();
+        await page.locator('p.console-empty').filter({ hasText: '환율 확인 필요' }).waitFor();
+        assert.equal(await chart.count(), 0);
+        await page.unroute(endpoint);
       } finally { await context.close(); }
     }
   } finally {

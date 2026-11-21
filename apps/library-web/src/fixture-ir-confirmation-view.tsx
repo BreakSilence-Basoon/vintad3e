@@ -3,12 +3,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@vintad3e/ui/components';
 import { confirmationPayloadText, escapeConfirmationText } from './fixture-confirmation-display';
 
-type RecordView = { proposalId: string; kind: 'single' | 'batch' | 'notion'; state: 'loaded' | 'reviewed' | 'approved' | 'executed'; checkedAt: number; expiresAt: number; example: { operation: string; target: string; change: unknown }; summary: { title: string; createdAt: string; sourceSha256: string } | null; canonical: string; changeDigest: string; permissionDigest: string };
+type RecordView = { proposalId: string; kind: 'single' | 'batch' | 'notion' | 'delete' | 'restore'; state: 'loaded' | 'reviewed' | 'approved' | 'executed'; checkedAt: number; expiresAt: number; example: { operation: string; target: string; change: unknown }; summary: { title: string; createdAt: string; sourceSha256: string } | null; canonical: string; changeDigest: string; permissionDigest: string };
 const preStyle = { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: '28rem', overflow: 'auto', padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm, 8px)' } as const;
 async function sha(value: string) { return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))), byte => byte.toString(16).padStart(2, '0')).join(''); }
-async function expectedChange(kind: 'single' | 'batch' | 'notion') {
+async function expectedChange(kind: 'single' | 'batch' | 'notion' | 'delete' | 'restore') {
   const pageId = '00000000-0000-4000-8000-000000000101', stageId = '00000000-0000-4000-8000-000000000102';
   const sourceSha256 = await sha('업무를 시작하기 전에 필요한 사항을 확인합니다.');
+  if (kind === 'delete' || kind === 'restore') return { action: kind, id: pageId, kind: 'document', revision: kind === 'delete' ? 1 : 2 };
   if (kind === 'notion') return { stageId: '00000000-0000-4000-8000-000000000103', sourceSha256, envelopeSha256: await sha(JSON.stringify({ title: '가게 안내 기록', body: '업무를 시작하기 전에 필요한 사항을 확인합니다.' })), title: '가게 안내 기록' };
   const entry = { pageId, stageId, sourceSha256, contentSha256: sourceSha256 };
   return kind === 'single' ? { stageId, sourceSha256, contentSha256: sourceSha256 } : { attachmentManifestSha256: await sha('[]'), entries: [entry], manifestSha256: await sha(JSON.stringify([entry])) };
@@ -26,7 +27,7 @@ export function FixtureIrConfirmation({ proposalId }: { proposalId: string }) {
       }
       if (response.status === 401) { setError('sign-in-required'); return; }
       const next = response.ok ? await response.json() : null;
-      if (!next || next.proposalId !== proposalId || !['single', 'batch', 'notion'].includes(next.kind) || !['loaded', 'reviewed', 'approved', 'executed'].includes(next.state) || !Number.isFinite(next.checkedAt) || !Number.isFinite(next.expiresAt) || next.expiresAt <= Date.now() || !next.example || next.example.operation !== (next.kind === 'single' ? 'library.ir.import' : next.kind === 'batch' ? 'library.ir.batch-import' : 'library.notion.import') || next.example.target !== (next.kind === 'notion' ? 'notion-import' : 'ir-import') || typeof next.canonical !== 'string' || JSON.stringify(next.example.change) !== next.canonical || !/^[a-f0-9]{64}$/.test(next.changeDigest) || !/^[a-f0-9]{64}$/.test(next.permissionDigest)) throw new Error('unavailable');
+      if (!next || next.proposalId !== proposalId || !['single', 'batch', 'notion', 'delete', 'restore'].includes(next.kind) || !['loaded', 'reviewed', 'approved', 'executed'].includes(next.state) || !Number.isFinite(next.checkedAt) || !Number.isFinite(next.expiresAt) || next.expiresAt <= Date.now() || !next.example || next.example.operation !== (next.kind === 'single' ? 'library.ir.import' : next.kind === 'batch' ? 'library.ir.batch-import' : next.kind === 'notion' ? 'library.notion.import' : 'library.content.lifecycle') || next.example.target !== (next.kind === 'notion' ? 'notion-import' : next.kind === 'delete' || next.kind === 'restore' ? 'content-lifecycle' : 'ir-import') || typeof next.canonical !== 'string' || JSON.stringify(next.example.change) !== next.canonical || !/^[a-f0-9]{64}$/.test(next.changeDigest) || !/^[a-f0-9]{64}$/.test(next.permissionDigest)) throw new Error('unavailable');
       const digest = await sha(next.canonical);
       if (JSON.stringify(await expectedChange(next.kind)) !== next.canonical || (next.kind === 'batch' && !['loaded', 'executed'].includes(next.state))) throw new Error('unavailable');
       if (next.kind === 'batch' && (!next.summary || next.summary.title !== '가게 안내 기록' || next.summary.createdAt !== '2025-12-30T00:00:00.000Z' || !/^[a-f0-9]{64}$/.test(next.summary.sourceSha256) || next.summary.sourceSha256 !== next.example.change?.entries?.[0]?.sourceSha256)) throw new Error('unavailable');

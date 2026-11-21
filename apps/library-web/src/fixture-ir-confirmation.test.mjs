@@ -78,3 +78,21 @@ test('an applied synthetic document follows a verified login recovery', async ()
   assert.deepEqual(readFixtureIrImport(replacement, host, env, fixtureIrDocument.id, 16006), fixtureIrDocument);
   assert.equal(readFixtureIrImport(old, host, env, fixtureIrDocument.id, 16006), null);
 });
+
+test('synthetic lifecycle delete and restore preserve session isolation and reject stale proposals', async () => {
+  const cookie = login(20000), other = login(20000);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'delete' }), env, 20001)).status, 409);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'restore' }), env, 20001)).status, 409);
+  const imported = await (await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'single' }), env, 20002)).json();
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: imported.proposalId }), env, 20003)).status, 200);
+  const removed = await (await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'delete' }), env, 20004)).json();
+  const stale = await (await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'delete' }), env, 20004)).json();
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: removed.proposalId }), env, 20005)).status, 200);
+  assert.equal(readFixtureIrImport(cookie, host, env, fixtureIrDocument.id, 20006), null);
+  assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'prepare', kind: 'restore' }), env, 20006)).status, 409);
+  const restored = await (await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'restore' }), env, 20007)).json();
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: restored.proposalId }), env, 20008)).status, 200);
+  assert.deepEqual(readFixtureIrImport(cookie, host, env, fixtureIrDocument.id, 20009), fixtureIrDocument);
+  for (const action of ['review', 'confirm']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: stale.proposalId }), env, 20010)).status, 200);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: stale.proposalId }), env, 20010)).status, 409);
+});

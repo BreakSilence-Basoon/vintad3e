@@ -10,6 +10,8 @@ const entry = Object.freeze({ pageId, stageId, sourceSha256: sha(source), conten
 const examples = Object.freeze({
   single: Object.freeze({ operation: 'library.ir.import', target: 'ir-import', change: Object.freeze({ stageId, sourceSha256: entry.sourceSha256, contentSha256: entry.contentSha256 }) }),
   batch: Object.freeze({ operation: 'library.ir.batch-import', target: 'ir-import', change: Object.freeze({ attachmentManifestSha256: sha('[]'), entries: Object.freeze([entry]), manifestSha256: sha(JSON.stringify([entry])) }) }),
+  delete: Object.freeze({ operation: 'library.content.lifecycle', target: 'content-lifecycle', change: Object.freeze({ action: 'delete', id: pageId, kind: 'document', revision: 1 }) }),
+  restore: Object.freeze({ operation: 'library.content.lifecycle', target: 'content-lifecycle', change: Object.freeze({ action: 'restore', id: pageId, kind: 'document', revision: 2 }) }),
 });
 
 export const fixtureIrDocument = Object.freeze({ kind: 'ir', id: pageId, title: '가게 안내 기록', publisher: '직원', createdAt: '2025-12-30T00:00:00.000Z', body: source });

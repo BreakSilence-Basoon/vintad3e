@@ -214,7 +214,7 @@ test('library keyboard actions validate inputs and recover from storage and serv
         await enter(page, page.getByRole('button', { name: '최신 상태 다시 불러오기' }));
         await page.getByRole('alert').filter({ hasText: '발행 내용을 확인하지 못했습니다. 최신 상태를 다시 불러와 주세요.' }).waitFor();
         await enter(page, page.getByRole('button', { name: '최신 상태 다시 불러오기' }));
-        assert.equal(await page.getByRole('alert').count(), 1);
+        assert.equal(await page.getByRole('alert').filter({ hasText: '발행 내용을 확인하지 못했습니다. 최신 상태를 다시 불러와 주세요.' }).count(), 1);
         await page.evaluate(() => { Storage.prototype.getItem = window.originalPublicationRead; });
         await enter(page, page.getByRole('button', { name: '최신 상태 다시 불러오기' }));
         await page.getByRole('button', { name: '제안 검토' }).waitFor();

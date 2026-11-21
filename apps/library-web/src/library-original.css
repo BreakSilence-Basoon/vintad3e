@@ -1039,3 +1039,4 @@
 html:has(.library-transcript) { scroll-behavior: smooth; }
 @media (max-width: 480px) { .library-transcript__turn { grid-template-columns: 3.5em minmax(0,1fr); gap: 8px; } .library-transcript__speaker { font-size: .85rem; } }
 @media (prefers-reduced-motion: reduce) { html:has(.library-transcript) { scroll-behavior: auto; } }
+.publication-community__count { margin: 0; text-align: right; color: var(--muted); font-size: .78rem; font-variant-numeric: tabular-nums; }

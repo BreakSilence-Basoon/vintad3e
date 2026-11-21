@@ -63,10 +63,12 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         assert.equal(await input.evaluate(el => el.validity.valueMissing), true);
         await input.focus(); await page.keyboard.type('   ');
         await enter(page, form.getByRole('button', { name: '등록' }));
-        await page.getByRole('alert').waitFor();
+        await page.getByRole('alert').filter({ hasText: '기기를 등록하지 못했습니다.' }).waitFor();
         await input.fill('기기 01');
         await page.route('**/api/fixture/kiosk/register', route => route.fulfill({ status: 503, body: '' }));
+        const unavailable = page.waitForResponse(response => response.url().endsWith('/api/fixture/kiosk/register') && response.status() === 503);
         await enter(page, form.getByRole('button', { name: '등록' }));
+        await unavailable;
         await page.getByText('기기를 등록하지 못했습니다.', { exact: true }).waitFor();
         await page.unroute('**/api/fixture/kiosk/register');
         await enter(page, form.getByRole('button', { name: '등록' }));

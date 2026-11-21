@@ -26,6 +26,14 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await page.waitForURL('**/sign-in?next=%2F%3Fview%3Dhistory');
         await page.goto(`${origin}/admin/schedule?month=2026-05`);
         await page.waitForURL('**/sign-in?next=%2Fadmin%2Fschedule%3Fmonth%3D2026-05');
+        for (const [error, title] of [['AccessDenied', '로그인을 완료하지 못했습니다.'], ['SessionExpired', '다시 로그인이 필요합니다.'], ['__proto__', '로그인을 완료하지 못했습니다.']]) {
+          await page.goto(`${origin}/sign-in?next=%2Fadmin%2Fschedule%3Fmonth%3D2026-05&error=${error}`);
+          await page.getByRole('alert').locator('strong').filter({ hasText: title }).waitFor();
+          await page.waitForFunction(() => !new URL(location.href).searchParams.has('error'));
+          assert.equal(new URL(page.url()).searchParams.get('next'), '/admin/schedule?month=2026-05');
+        }
+        await page.reload();
+        assert.equal(await page.locator('.staff-sign-in-toast').count(), 0);
         await enter(page, page.getByRole('button', { name: '회사 계정으로 로그인' }));
         await page.waitForURL('**/?view=schedule&month=2026-05');
         assert.equal(await page.locator('[aria-label="1/2 출근부"] .timetable-page-loading').count(), 1);
@@ -39,7 +47,10 @@ test('kiosk registration, errors and camera denial work with keyboard input', { 
         await page.getByRole('link', { name: 'QR 코드 스캔' }).waitFor();
         const scanIcon = await page.getByRole('link', { name: 'QR 코드 스캔' }).locator('svg').boundingBox();
         assert.ok(scanIcon && scanIcon.width <= 30 && scanIcon.height <= 30);
+        await page.goto(`${origin}/sign-in?next=%2F%3Fview%3Dschedule%26month%3D2026-05`);
+        await page.waitForURL('**/?view=schedule&month=2026-05');
         await enter(page, page.getByRole('link', { name: '로그인 전 화면 보기, staff01@example.invalid' }));
+        await page.goto(`${origin}/sign-in?mode=cover&mode=other&next=%2F%3Fview%3Dschedule%26month%3D2026-05`);
         await enter(page, page.getByRole('link', { name: 'Timetable로 돌아가기' }));
         await page.waitForURL('**/?view=schedule&month=2026-05');
         await context.clearCookies();

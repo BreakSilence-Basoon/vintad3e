@@ -6,7 +6,7 @@ import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright';
 
-test('synthetic internal-document confirmations recover in the same tab', { timeout: 300000 }, async () => {
+test('synthetic internal-document confirmations recover in the same tab', { timeout: 360000 }, async () => {
   const listener = createServer(); listener.listen(0, '127.0.0.1'); await once(listener, 'listening');
   const port = listener.address().port; await new Promise(resolve => listener.close(resolve));
   const origin = `http://127.0.0.1:${port}`;
@@ -86,6 +86,12 @@ test('synthetic internal-document confirmations recover in the same tab', { time
         for (const label of ['제안 검토', '이 변경 확인', '문서 발행']) await page.getByRole('button', { name: label, exact: true }).click();
         await page.getByRole('status').filter({ hasText: '문서 발행 결과를 확인했습니다.' }).waitFor();
         assert.equal((await page.request.get(`${origin}${notionPath}`)).status(), 200);
+        for (const [kind, expected] of [['notion-delete', 404], ['notion-restore', 200]]) {
+          const lifecycle = await prepare(kind); await page.goto(`${origin}/confirmations/${lifecycle}`);
+          for (const label of ['제안 검토', '이 변경 확인', '변경 적용']) await page.getByRole('button', { name: label, exact: true }).click();
+          await page.getByRole('status').filter({ hasText: '변경 결과를 확인했습니다.' }).waitFor();
+          assert.equal((await page.request.get(`${origin}${notionPath}`)).status(), expected);
+        }
       } finally { await context.close(); }
     }
   } finally {

@@ -8,6 +8,7 @@ import { fixtureUpload } from './fixture-upload-spec.mjs';
 import { getFixtureUpload, handleFixtureUpload } from './fixture-upload.mjs';
 import { fixtureIrExclusive, handleFixtureIrExclusiveUpload } from './fixture-ir-exclusive.mjs';
 import { handleFixtureMeetingConfirmation } from './fixture-meeting-confirmation.mjs';
+import { applyFixtureMeetingChange, readFixtureMeetingContent } from './fixture-meeting-content.ts';
 
 const origin = 'http://127.0.0.1:3829', host = '127.0.0.1:3829';
 const env = { NODE_ENV: 'development', VINTAD3E_LIBRARY_FIXTURE: '1' };
@@ -183,6 +184,9 @@ test('isolated cleanup requires deletion proof, rejects stale state and preserve
   assert.equal((await handleFixtureUpload(shared, env, 40003)).status, 200);
   const meeting = await (await handleFixtureMeetingConfirmation(post(cookie, { action: 'prepare', meetingId: '00000000-0000-4000-8000-000000000004', change: { kind: 'attach', objectId: fixtureUpload.id } }), env, 40003)).json();
   for (const action of ['load', 'review', 'confirm', 'execute']) assert.equal((await handleFixtureMeetingConfirmation(post(cookie, { action, proposalId: meeting.proposalId, changeDigest: meeting.changeDigest }), env, 40003)).status, 200);
+  const saved = new Map(), store = { getItem: name => saved.get(name) ?? null, setItem: (name, value) => { saved.set(name, value); } };
+  const meetingId = '00000000-0000-4000-8000-000000000004';
+  assert.equal(applyFixtureMeetingChange(store, meetingId, { kind: 'attach', objectId: fixtureUpload.id }, new Date('2026-01-02T03:00:00.000Z'))?.attached, true);
   await apply(await prepare('isolated-attach'));
   assert.deepEqual(readFixtureIrIsolatedAttachment(cookie, host, env, fixtureIrDocument.id, 40004), fixtureIrExclusive);
   assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'cleanup' }), env, 40004)).status, 409);
@@ -198,6 +202,59 @@ test('isolated cleanup requires deletion proof, rejects stale state and preserve
   await apply(cleanup);
   assert.equal(readFixtureIrIsolatedObject(cookie, host, env, 40008), null);
   assert.deepEqual(getFixtureUpload(cookie, host, env, 40008), fixtureUpload);
+  assert.equal(readFixtureMeetingContent(store, meetingId)?.attached, true);
   assert.equal((await (await handleFixtureMeetingConfirmation(post(cookie, { action: 'load', proposalId: meeting.proposalId, changeDigest: meeting.changeDigest }), env, 40008)).json()).state, 'executed');
   assert.equal(fixtureIrExclusive.body, '업무를 시작하기 전에 필요한 사항을 확인합니다.');
+});
+
+test('Notion lifecycle uses synthetic import and deletion proofs and rejects stale changes', async () => {
+  const cookie = login(50000), other = login(50000);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'notion-delete' }), env, 50001)).status, 409);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'notion-restore' }), env, 50001)).status, 409);
+  async function prepare(kind) { const response = await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind }), env, 50002); assert.equal(response.status, 200); return response.json(); }
+  async function apply(proposal) { for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: proposal.proposalId }), env, 50003)).status, 200); }
+  const imported = await prepare('notion'); await apply(imported);
+  const deleted = await prepare('notion-delete'), stale = await prepare('notion-delete');
+  const deleteView = await (await handleFixtureIrConfirmation(read(cookie, deleted.proposalId), env, 50004)).json();
+  assert.equal(deleteView.example.change.notionProof.importProposalId, imported.proposalId);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: deleted.proposalId, proof: 'forged' }), env, 50004)).status, 400);
+  await apply(deleted); assert.equal(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, 50005), null);
+  assert.equal((await handleFixtureIrConfirmation(post(other, { action: 'prepare', kind: 'notion-restore' }), env, 50005)).status, 409);
+  const restored = await prepare('notion-restore');
+  const restoreView = await (await handleFixtureIrConfirmation(read(cookie, restored.proposalId), env, 50006)).json();
+  assert.equal(restoreView.example.change.notionProof.deletionProposalId, deleted.proposalId);
+  assert.equal(restoreView.example.change.notionProof.aclRevisionAfter, 2);
+  await apply(restored); assert.deepEqual(readFixtureNotionImport(cookie, host, env, fixtureNotionDocument.id, 50007), fixtureNotionDocument);
+  for (const action of ['review', 'confirm']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: stale.proposalId }), env, 50008)).status, 200);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'execute', proposalId: stale.proposalId }), env, 50008)).status, 409);
+});
+
+test('Notion lifecycle proof and document state survive verified synthetic login recovery', async () => {
+  const old = login(55000);
+  const imported = await (await handleFixtureIrConfirmation(post(old, { action: 'prepare', kind: 'notion' }), env, 55001)).json();
+  for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(old, { action, proposalId: imported.proposalId }), env, 55002)).status, 200);
+  const deletion = await (await handleFixtureIrConfirmation(post(old, { action: 'prepare', kind: 'notion-delete' }), env, 55003)).json();
+  assert.equal((await handleFixtureIrConfirmation(post(old, { action: 'review', proposalId: deletion.proposalId }), env, 55004)).status, 200);
+  const replacement = handleFixtureSession(new Request(`${origin}/login`, { method: 'POST', headers: { host, origin, cookie: old } }), 'login', env, 55005).headers.get('set-cookie').split(';')[0];
+  assert.equal(readFixtureNotionImport(replacement, host, env, fixtureNotionDocument.id, 55006), null);
+  assert.equal((await handleFixtureIrConfirmation(post(replacement, { action: 'restore', proposalId: deletion.proposalId, proof: deletion.proof }), env, 55006)).status, 200);
+  assert.deepEqual(readFixtureNotionImport(replacement, host, env, fixtureNotionDocument.id, 55007), fixtureNotionDocument);
+  for (const action of ['confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(replacement, { action, proposalId: deletion.proposalId }), env, 55008)).status, 200);
+  assert.equal(readFixtureNotionImport(replacement, host, env, fixtureNotionDocument.id, 55009), null);
+});
+
+test('isolated cleanup keeps its deletion proof through synthetic login recovery', async () => {
+  const old = login(60000);
+  async function prepare(cookie, kind) { const response = await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind }), env, 60001); assert.equal(response.status, 200); return response.json(); }
+  async function apply(cookie, proposal) { for (const action of ['review', 'confirm', 'execute']) assert.equal((await handleFixtureIrConfirmation(post(cookie, { action, proposalId: proposal.proposalId }), env, 60002)).status, 200); }
+  await apply(old, await prepare(old, 'single')); await apply(old, await prepare(old, 'reserve'));
+  const file = new Request(`${origin}/upload`, { method: 'POST', headers: { host, origin, cookie: old, 'content-type': 'text/plain' }, body: fixtureIrExclusive.body });
+  assert.equal((await handleFixtureIrExclusiveUpload(file, env, readFixtureIrReservation(old, host, env, '00000000-0000-4000-8000-000000000106', 60003), 60003)).status, 200);
+  await apply(old, await prepare(old, 'isolated-attach')); await apply(old, await prepare(old, 'delete'));
+  const cleanup = await prepare(old, 'cleanup');
+  const replacement = handleFixtureSession(new Request(`${origin}/login`, { method: 'POST', headers: { host, origin, cookie: old } }), 'login', env, 60004).headers.get('set-cookie').split(';')[0];
+  assert.equal((await handleFixtureIrConfirmation(post(replacement, { action: 'restore', proposalId: cleanup.proposalId, proof: cleanup.proof }), env, 60005)).status, 200);
+  assert.deepEqual(readFixtureIrIsolatedObject(replacement, host, env, 60006), fixtureIrExclusive);
+  await apply(replacement, cleanup);
+  assert.equal(readFixtureIrIsolatedObject(replacement, host, env, 60007), null);
 });

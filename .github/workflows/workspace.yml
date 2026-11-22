@@ -43,12 +43,10 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/timetable-api test
       - run: corepack pnpm --filter @vintad3e/timetable-api exec node --test integration/browser-web.test.mjs
       - run: corepack pnpm --filter @vintad3e/timetable-web test
-      - run: corepack pnpm --filter @vintad3e/timetable-web test:fixture-browser
       - run: corepack pnpm --filter @vintad3e/timetable-web build
       - run: corepack pnpm --filter @vintad3e/timetable-web exec node --test src/history-view-http.test.mjs
       - run: corepack pnpm --filter @vintad3e/portal-web test
       - run: corepack pnpm --filter @vintad3e/portal-web test:fixture-http
-      - run: corepack pnpm --filter @vintad3e/portal-web test:fixture-browser
       - run: corepack pnpm --filter @vintad3e/portal-web build
       - run: corepack pnpm --filter @vintad3e/apparel-web test
       - run: corepack pnpm --filter @vintad3e/apparel-web test:fixture-http
@@ -63,10 +61,8 @@ jobs:
       - run: corepack pnpm --filter @vintad3e/floor-web build
       - run: corepack pnpm --filter @vintad3e/creative-web test
       - run: corepack pnpm --filter @vintad3e/creative-web test:fixture-http
-      - run: corepack pnpm --filter @vintad3e/creative-web test:fixture-browser
       - run: corepack pnpm --filter @vintad3e/creative-web build
       - run: corepack pnpm --filter @vintad3e/admin-web test
-      - run: corepack pnpm --filter @vintad3e/admin-web test:fixture-browser
       - run: corepack pnpm --filter @vintad3e/admin-web build
   parallel-fixtures:
     runs-on: ubuntu-latest
@@ -80,6 +76,14 @@ jobs:
           - app: supporters-web
             command: test:fixture-browser
           - app: floor-web
+            command: test:fixture-browser
+          - app: timetable-web
+            command: test:fixture-browser
+          - app: portal-web
+            command: test:fixture-browser
+          - app: creative-web
+            command: test:fixture-browser
+          - app: admin-web
             command: test:fixture-browser
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -108,10 +112,29 @@ jobs:
       - run: corepack enable
       - run: corepack pnpm install --frozen-lockfile --ignore-scripts
       - run: corepack pnpm --filter @vintad3e/${{ matrix.app }} test:fixture-browser
+        env:
+          NODE_OPTIONS: ${{ matrix.app == 'library-web' && '--test-shard=1/3' || '' }}
+  library-browser-shards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ['2/3', '3/3']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - run: corepack enable
+      - run: corepack pnpm install --frozen-lockfile --ignore-scripts
+      - run: corepack pnpm --filter @vintad3e/library-web test:fixture-browser
+        env:
+          NODE_OPTIONS: --test-shard=${{ matrix.shard }}
   selection:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [selection-core, heavy-browser, parallel-fixtures]
+    needs: [selection-core, heavy-browser, parallel-fixtures, library-browser-shards]
     if: ${{ always() }}
     steps:
       - name: Require all workspace checks
@@ -119,8 +142,9 @@ jobs:
           CORE_RESULT: ${{ needs.selection-core.result }}
           BROWSER_RESULT: ${{ needs.heavy-browser.result }}
           FIXTURE_RESULT: ${{ needs.parallel-fixtures.result }}
+          LIBRARY_RESULT: ${{ needs.library-browser-shards.result }}
         run: |
-          test "$CORE_RESULT" = success && test "$BROWSER_RESULT" = success && test "$FIXTURE_RESULT" = success
+          test "$CORE_RESULT" = success && test "$BROWSER_RESULT" = success && test "$FIXTURE_RESULT" = success && test "$LIBRARY_RESULT" = success
   browser-audit:
     runs-on: ubuntu-latest
     timeout-minutes: 15

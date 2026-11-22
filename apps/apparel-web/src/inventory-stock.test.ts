@@ -14,6 +14,22 @@ test('stock edits calculate shortage and dirty state against saved values', () =
   assert.equal(isDirty(result.row, draft), false);
 });
 
+test('blank tracked quantities are unsaved invalid input, not zero', () => {
+  const row = defaultRow(), draft = toDraft(row);
+  for (const field of ['onHand', 'target', 'shortage'] as const) {
+    for (const blank of ['', '   ']) {
+      const changed = { ...draft, [field]: blank };
+      assert.equal(isDirty(row, changed), true);
+      assert.ok('error' in validateDraft(row, changed), field);
+    }
+  }
+  assert.ok('row' in validateDraft(row, { onHand: '0', target: '0', shortage: '0' }));
+  const untracked = { ...row, tracking: false };
+  assert.equal(isDirty(untracked, { ...draft, target: '', shortage: '' }), false);
+  assert.ok('row' in validateDraft(untracked, { ...draft, target: '', shortage: '' }));
+  assert.ok('error' in validateDraft(untracked, { ...draft, onHand: '' }));
+});
+
 test('rejects invalid and inconsistent quantities using source messages', () => {
   const row = defaultRow(), draft = toDraft(row);
   assert.deepEqual(validateDraft(row, { ...draft, onHand: '-1' }), { error: '현재 수량은 0 이상의 숫자만 입력할 수 있습니다.' });

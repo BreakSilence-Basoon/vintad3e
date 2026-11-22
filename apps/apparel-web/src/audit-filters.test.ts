@@ -15,6 +15,16 @@ test('audit filters allow only synthetic actors and bound user input', () => {
   assert.equal(parseAuditFilters({ actor: 'unknown' }).actor, 'all');
 });
 
+test('audit dates reject impossible calendar values without changing valid leap days', () => {
+  for (const value of ['2026-02-30', '2026-02-29', '2026-04-31', '2026-13-01']) {
+    const filters = parseAuditFilters({ range: 'custom', from: value, to: value });
+    assert.equal(filters.from, '', value);
+    assert.equal(filters.to, '', value);
+  }
+  const leap = parseAuditFilters({ range: 'custom', from: '2028-02-29', to: '2028-02-29' });
+  assert.equal(leap.from, '2028-02-29'); assert.equal(leap.to, '2028-02-29');
+});
+
 test('synthetic audit entries honor explicit opt-in, KST dates, filters and ordering', () => {
   const now = new Date('2026-11-19T03:00:00.000Z');
   const entries = getFixtureAudit('development', '1', now);

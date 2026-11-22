@@ -13,7 +13,7 @@ test('attendance filter defaults and invalid custom periods match the original',
 test('attendance pagination preserves the selected range and sort', () => {
   assert.equal(parseHistoryPage(undefined), 1);
   assert.equal(parseHistoryPage('9999'), 1000);
-  assert.equal(parseHistoryPage('2.9'), 2);
+  assert.equal(parseHistoryPage('2.9'), 1);
   const filters = parseHistoryFilters({ range: 'all', sort: 'asc' });
   const href = buildHistoryHref(filters, 2);
   const params = new URL(href, 'http://localhost').searchParams;
@@ -25,6 +25,16 @@ test('attendance pagination preserves the selected range and sort', () => {
   const staff = parseHistoryFilters({ employee: staffId });
   assert.equal(new URL(buildHistoryHref(staff, 1, true), 'http://localhost').searchParams.get('employee'), staffId);
   assert.equal(new URL(buildHistoryHref(staff, 1), 'http://localhost').searchParams.has('employee'), false);
+});
+
+test('invalid calendar dates and fractional page numbers fail closed', () => {
+  for (const value of ['2026-02-30', '2026-02-29', '2026-04-31', '2026-13-01']) {
+    assert.deepEqual(parseHistoryFilters({ range: 'custom', from: value, to: '2026-12-31' }), { employee: 'all', from: '', range: 'all', sort: 'desc', to: '' });
+  }
+  assert.equal(parseHistoryFilters({ range: 'custom', from: '2028-02-29', to: '2028-02-29' }).range, 'custom');
+  for (const value of ['0.5', '2.0', '2.9', '-1', '1e2', '']) assert.equal(parseHistoryPage(value), 1);
+  assert.equal(parseHistoryPage('2'), 2);
+  assert.equal(parseHistoryPage('1001'), 1000);
 });
 
 test('attendance periods, ordering and employee visibility survive pagination', () => {

@@ -9,6 +9,13 @@ test('app permission selection and synthetic menu names', () => {
   assert.ok(fixtureMenus('partners').includes('대관'));
   assert.deepEqual(fixtureMenus('missing'), []);
 });
+test('unknown and inherited property names never become menus or permissions', () => {
+  for (const appId of ['', 'missing', '__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
+    assert.deepEqual(fixtureMenus(appId), []);
+    assert.deepEqual(fixtureMenuPermissions('development', '1', appId), []);
+  }
+  assert.deepEqual(fixtureMenus('portal'), ['앱 타일']);
+});
 test('app members are synthetic, separated by app and gated to development', () => {
   const now = Date.parse('2026-11-18T00:00:00Z');
   assert.deepEqual(fixtureAppMembers('production', '1', 'portal', now), []);

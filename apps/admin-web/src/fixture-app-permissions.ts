@@ -8,7 +8,7 @@ const menuNames: Record<string, readonly string[]> = {
   floor: ['메뉴 분석', '판매내역', '재고 관리'], ledger: ['앱 접근'], creative: ['앱 접근'],
   admin: ['앱 접근'], chat: ['외부 AI 연결 승인', '웹 화면'],
 };
-export function fixtureMenus(appId: string): readonly string[] { return menuNames[appId] ?? []; }
+export function fixtureMenus(appId: string): readonly string[] { return Object.hasOwn(menuNames, appId) ? menuNames[appId] : []; }
 
 // Synthetic presentation values only. These do not authorize any operation.
 export function fixtureMenuPermissions(env: string | undefined, enabled: string | undefined, appId: string) {

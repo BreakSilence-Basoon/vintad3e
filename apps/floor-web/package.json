@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1 --port 3830",
     "build": "next build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test src/sales-filters.test.ts src/sales-fixture.test.ts src/floor-fixture-daily.test.ts src/inventory-fixture.test.ts src/fixture-session.test.mjs src/fixture-confirmation.test.mjs src/fixture-confirmation-store.test.mjs src/fixture-sign-in-notice.test.mjs src/inventory-ingredients.test.mjs src/inventory-counts.test.mjs src/inventory-purchases.test.mjs src/inventory-recipes.test.mjs",
+    "test": "node --test src/sales-filters.test.ts src/sales-fixture.test.ts src/floor-fixture-daily.test.ts src/inventory-fixture.test.ts src/fixture-session.test.mjs src/fixture-confirmation.test.mjs src/fixture-confirmation-store.test.mjs src/fixture-sign-in-notice.test.mjs src/inventory-ingredients.test.mjs src/inventory-counts.test.mjs src/inventory-purchases.test.mjs src/inventory-recipes.test.mjs src/fixture-boundaries.test.mjs",
     "test:fixture-browser": "node --test --test-concurrency=1 src/sales-fixture-browser.test.mjs src/sales-keyboard-browser.test.mjs"
   },
   "dependencies": {

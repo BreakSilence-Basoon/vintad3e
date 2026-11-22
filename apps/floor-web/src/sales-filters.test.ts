@@ -28,6 +28,29 @@ test("default filters reset to the sales route and pagination remains bounded", 
   assert.equal(parseSalesPage("999999"), 200);
 });
 
+test("fractional and malformed page numbers fall back to the first page", () => {
+  for (const value of ["0.5", "1.5", "2.0", "-1", "1e2", "Infinity", "", " 2 "]) {
+    assert.equal(parseSalesPage(value), 1, value);
+  }
+  assert.equal(parseSalesPage("2"), 2);
+  assert.equal(parseSalesPage("999999"), 200);
+  assert.equal(parseSalesPage(["2", "3"]), 2);
+});
+
+test("invalid calendar dates are discarded instead of rolling into another month", () => {
+  for (const day of ["2026-02-30", "2026-02-29", "2026-04-31", "2026-13-01"]) {
+    const filters = parseSalesFilters({ range: "custom", from: day, to: day });
+    assert.equal(filters.from, "", day);
+    assert.equal(filters.to, "", day);
+    assert.equal(filters.dateFrom, null, day);
+    assert.equal(filters.dateTo, null, day);
+    assert.equal(buildSalesHref(1, filters), "/sales?range=custom");
+  }
+  const leap = parseSalesFilters({ range: "custom", from: "2028-02-29", to: "2028-02-29" });
+  assert.equal(leap.dateFrom?.toISOString(), "2028-02-28T15:00:00.000Z");
+  assert.equal(leap.dateTo?.toISOString(), "2028-02-29T15:00:00.000Z");
+});
+
 test("all period and sort choices preserve filters when loading another page", () => {
   for (const range of ["all", "today", "7d", "30d", "custom"]) {
     for (const sort of ["asc", "desc"]) {

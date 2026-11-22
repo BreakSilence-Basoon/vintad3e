@@ -32,13 +32,15 @@ function getSingleParam(value: string | string[] | undefined) {
 const MAX_SALES_PAGE = 200;
 
 export function parseSalesPage(value: string | string[] | undefined) {
-  const page = Number(getSingleParam(value));
+  const text = getSingleParam(value);
+  if (typeof text !== "string" || !/^\d+$/.test(text)) return 1;
+  const page = Number(text);
 
   if (!Number.isFinite(page) || page <= 0) {
     return 1;
   }
 
-  return Math.min(Math.floor(page), MAX_SALES_PAGE);
+  return Math.min(page, MAX_SALES_PAGE);
 }
 
 function parseRangeFilter(value: string | string[] | undefined): SalesDateRange {
@@ -58,7 +60,9 @@ function parseSalesSortDirection(
 function parseDateInput(value: string | string[] | undefined) {
   const date = getSingleParam(value)?.trim() ?? "";
 
-  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return "";
+  const parsed = new Date(`${date}T00:00:00.000Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date ? date : "";
 }
 
 function parseKeywordInput(value: string | string[] | undefined) {

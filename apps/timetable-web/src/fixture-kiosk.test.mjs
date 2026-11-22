@@ -4,6 +4,21 @@ import { fixtureKioskDevice, fixtureKioskOrigin, handleFixtureKiosk } from './fi
 const origin = 'http://127.0.0.1:3824';
 const env = { NODE_ENV: 'development', VINTAD3E_TIMETABLE_FIXTURE: '1', VINTAD3E_TIMETABLE_FIXTURE_ADMIN: '1' };
 function post(action, body, extra = {}) { return new Request(`${origin}/api/fixture/kiosk/${action}`, { method: 'POST', headers: { host: '127.0.0.1:3824', origin, 'content-type': 'application/json', ...extra }, body: JSON.stringify(body) }); }
+test('kiosk rejects oversized streamed bodies even without a length header', async () => {
+  const request = post('register', { label: '예시', padding: 'x'.repeat(5000) });
+  assert.equal(request.headers.get('content-length'), null);
+  assert.equal((await handleFixtureKiosk(request, env, 'register')).status, 413);
+  const base = { label: '예시', padding: '' }, padding = 'x'.repeat(4096 - Buffer.byteLength(JSON.stringify(base)));
+  assert.equal(Buffer.byteLength(JSON.stringify({ ...base, padding })), 4096);
+  const bytes = Buffer.from(JSON.stringify({ ...base, padding: `${padding}x` }));
+  const body = new ReadableStream({ start(controller) { controller.enqueue(bytes.subarray(0, 2000)); controller.enqueue(bytes.subarray(2000)); controller.close(); } });
+  const streamed = new Request(`${origin}/api/fixture/kiosk/register`, { method: 'POST', headers: { host: '127.0.0.1:3824', origin, 'content-type': 'application/json' }, body, duplex: 'half' });
+  assert.equal((await handleFixtureKiosk(streamed, env, 'register')).status, 413);
+  const good = await handleFixtureKiosk(post('register', { ...base, padding }), env, 'register');
+  assert.equal(good.status, 201);
+  const device = await good.json();
+  assert.equal((await handleFixtureKiosk(post('revoke', { id: device.id }), env, 'revoke')).status, 204);
+});
 test('a synthetic device issues one-use, expiring challenges and can be revoked', async () => {
   const registered = await handleFixtureKiosk(post('register', { label: '기기 01' }), env, 'register', 1000);
   assert.equal(registered.status, 201);

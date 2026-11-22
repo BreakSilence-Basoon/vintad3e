@@ -4,7 +4,11 @@ type SearchParams = Record<string, string | string[] | undefined>;
 const validRanges: AttendanceHistoryRange[] = ['all', 'today', 'last7', 'last30', 'custom'];
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
-const isDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value);
+const isDate = (value: string) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+};
 
 // Same selection rules as the original attendance panel; this does not read records.
 export function parseHistoryFilters(params: SearchParams): AttendanceHistoryFilters {
@@ -18,8 +22,10 @@ export function parseHistoryFilters(params: SearchParams): AttendanceHistoryFilt
 }
 
 export function parseHistoryPage(value: string | string[] | undefined) {
-  const page = Number(first(value));
-  return Number.isFinite(page) && page > 0 ? Math.min(Math.floor(page), 1000) : 1;
+  const text = first(value);
+  if (typeof text !== 'string' || !/^\d+$/.test(text)) return 1;
+  const page = Number(text);
+  return Number.isFinite(page) && page > 0 ? Math.min(page, 1000) : 1;
 }
 
 export function buildHistoryHref(filters: AttendanceHistoryFilters, historyPage: number, includeEmployee = false) {

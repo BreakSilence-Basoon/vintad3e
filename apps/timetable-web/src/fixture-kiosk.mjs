@@ -29,7 +29,20 @@ export async function handleFixtureKiosk(request, env, action, now = Date.now())
   if (!['register', 'revoke', 'challenge', 'scan', 'correct', 'void'].includes(action)) return new Response(null, { status: 404, headers: noStore });
   if (['register', 'revoke', 'correct', 'void'].includes(action) && env.VINTAD3E_TIMETABLE_FIXTURE_ADMIN !== '1') return new Response(null, { status: 404, headers: noStore });
   if (Number(request.headers.get('content-length') || 0) > 4096) return new Response(null, { status: 413, headers: noStore });
-  let data; try { data = await request.json(); } catch { return new Response(null, { status: 400, headers: noStore }); }
+  if (!request.body) return new Response(null, { status: 400, headers: noStore });
+  const reader = request.body.getReader(), decoder = new TextDecoder();
+  let data, text = '', size = 0;
+  try {
+    while (true) {
+      const part = await reader.read();
+      if (part.done) break;
+      size += part.value.byteLength;
+      if (size > 4096) { try { await reader.cancel(); } catch {} return new Response(null, { status: 413, headers: noStore }); }
+      text += decoder.decode(part.value, { stream: true });
+    }
+    data = JSON.parse(text + decoder.decode());
+  } catch { return new Response(null, { status: 400, headers: noStore }); }
+  finally { reader.releaseLock(); }
   if (!data || typeof data !== 'object' || Array.isArray(data)) return new Response(null, { status: 400, headers: noStore });
   if (action === 'correct' || action === 'void') {
     const event = typeof data.id === 'string' ? state.events.find(item => item.id === data.id) : null;

@@ -5,7 +5,12 @@ const single = (value: string | string[] | undefined) => Array.isArray(value) ? 
 function allowed<T extends string>(value: string | undefined, values: readonly T[], fallback: T): T {
   return values.includes(value as T) ? value as T : fallback;
 }
-const date = (value: string | undefined) => /^\d{4}-\d{2}-\d{2}$/.test(value?.trim() ?? '') ? value!.trim() : '';
+const date = (value: string | undefined) => {
+  const text = value?.trim() ?? '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return '';
+  const parsed = new Date(`${text}T00:00:00.000Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === text ? text : '';
+};
 
 export function parseAuditFilters(params: Params): AuditFilterFormState {
   return {

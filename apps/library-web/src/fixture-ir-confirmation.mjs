@@ -19,7 +19,7 @@ const notionDeleted = globalThis[Symbol.for('vintad3e.library.fixture.notion.del
 const notionAudits = globalThis[Symbol.for('vintad3e.library.fixture.notion.audits')] ??= new Map();
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const sha = value => createHash('sha256').update(value).digest('hex');
-const failure = status => Response.json({ error: status === 401 ? 'sign-in-required' : 'unavailable' }, { status, headers: { 'cache-control': 'no-store' } });
+const failure = status => Response.json({ error: status === 400 ? 'invalid_request' : status === 401 ? 'sign-in-required' : 'unavailable' }, { status, headers: { 'cache-control': 'no-store' } });
 const view = record => Response.json({ proposalId: record.id, kind: record.kind, state: record.state, checkedAt: record.checkedAt, expiresAt: record.expiresAt, example: record.example, summary: record.summary, canonical: record.canonical, changeDigest: record.changeDigest, permissionDigest: record.permissionDigest }, { headers: { 'cache-control': 'no-store' } });
 
 export function readFixtureIrImport(cookie, host, env, documentId, now = Date.now()) {

@@ -16,6 +16,20 @@ const login = now => handleFixtureSession(new Request(`${origin}/login`, { metho
 const post = (cookie, body, extra = {}) => new Request(`${origin}/confirmation`, { method: 'POST', headers: { host, origin, cookie, 'content-type': 'application/json', ...extra }, body: JSON.stringify(body) });
 const read = (cookie, id) => new Request(`${origin}/confirmation?proposalId=${id}`, { headers: { host, cookie } });
 
+test('invalid synthetic IR batch preparations return a 400 invalid_request without executing', async () => {
+  const cookie = login(500), now = 501;
+  for (const body of [{}, { action: 'prepare' }, { action: 'prepare', kind: 'batch', entries: [] }, { action: 'prepare', kind: 'batch-reserve', entries: [] }]) {
+    const response = await handleFixtureIrConfirmation(post(cookie, body), env, now);
+    assert.equal(response.status, 400);
+    assert.deepEqual(await response.json(), { error: 'invalid_request' });
+  }
+  assert.equal(readFixtureIrImport(cookie, host, env, fixtureIrDocument.id, now), null);
+  assert.equal((await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'batch' }), env, now)).status, 200);
+  const unavailable = await handleFixtureIrConfirmation(read(cookie, 'unknown'), env, now);
+  assert.equal(unavailable.status, 404);
+  assert.deepEqual(await unavailable.json(), { error: 'unavailable' });
+});
+
 test('single internal-document confirmation enforces review, authorization and expiry', async () => {
   const cookie = login(1000), other = login(1000);
   const proposal = await (await handleFixtureIrConfirmation(post(cookie, { action: 'prepare', kind: 'single' }), env, 1001)).json();
